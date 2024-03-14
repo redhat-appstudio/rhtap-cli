@@ -1,0 +1,36 @@
+{{- range $s := include "subscriptions.enabled" . | fromYaml }}
+  {{- if $s.operatorGroup }}
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  namespace: {{ $s.namespace }}
+  name: {{ $s.name }}
+spec:
+  {{- $s.operatorGroup | toYaml | nindent 2 }}
+  {{- end }}
+
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  namespace: {{ $s.namespace }}
+  name: {{ $s.name }}
+spec:
+  name: {{ $s.name }}
+  channel: {{ $s.channel }}
+  installPlanApproval: Automatic
+  source: {{ $s.source }}
+  sourceNamespace: {{ $s.sourceNamespace }}
+  startingCSV: {{ $s.startingCSV }}
+  {{- if $s.config }}
+  config:
+    {{- if $s.config.argoCDClusterNamespace }}
+    env:
+      - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
+        value: "openshift-gitops,{{ $s.config.argoCDClusterNamespace }}"
+    {{- else }}
+      {{ $s.config | nindent 4 }}
+    {{- end }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,17 @@
+{{- range $k, $v := include "infrastructure.postgresClusters.enabled" . | fromYaml }}
+---
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  namespace: {{ $v.namespace }}
+  name: {{ $k }}
+spec:
+  openshift: true
+  postgresVersion: {{ $v.postgresVersion }}
+  backups:
+    pgbackrest:
+      repos:
+        {{- $v.backupRepos | toYaml | nindent 8 }}
+  instances:
+    {{- $v.instances | toYaml | nindent 4 }}
+{{- end }}

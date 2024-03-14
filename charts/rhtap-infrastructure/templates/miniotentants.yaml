@@ -1,0 +1,39 @@
+{{- range $k, $v := include "infrastructure.minIOTentants.enabled" . | fromYaml }}
+---
+apiVersion: minio.min.io/v2
+kind: Tenant
+metadata:
+  annotations:
+    prometheus.io/path: /minio/v2/metrics/cluster
+    prometheus.io/port: "9000"
+    prometheus.io/scrape: "true"
+  namespace: {{ $v.namespace }}
+  name: {{ $k }}
+spec:
+  requestAutoCert: false
+  configuration:
+    name: {{ include "infrastructure.minIOTentant.secretName" $k }}
+  pools:
+    # TODO: move this section to "values.yaml".
+    - name: pool-0
+      servers: 1
+      containerSecurityContext:
+        runAsNonRoot: true
+      securityContext:
+        fsGroupChangePolicy: OnRootMismatch
+        runAsNonRoot: true
+      volumesPerServer: 1
+      volumeClaimTemplate:
+        apiVersion: v1
+        kind: persistentvolumeclaims
+        metadata: {}
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+  serviceMetadata:
+    minioServiceAnnotations:
+  {{- $v.service.annotations | toYaml | nindent 6 }}
+{{- end }}

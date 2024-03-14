@@ -1,0 +1,18 @@
+{{- range $k, $v := include "infrastructure.kafkas.enabled" . | fromYaml }}
+  {{- range $t := $v.topics }}
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: {{ printf "%s-%s" $k $t.name }}
+  labels:
+    strimzi.io/cluster: {{ $k }}
+spec:
+  partitions: {{ $t.partitions | default 1 }}
+  replicas: {{ $t.replicas | default 1 }}
+    {{- with $t.config }}
+  config:
+      {{- . | toYaml | nindent 4 }}
+    {{- end }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,6 @@
+---
+apiVersion: v2
+name: rhtap-infrastructure
+description: RHTAP Infrastructure
+type: application
+version: 0.0.1

@@ -1,0 +1,26 @@
+MinIO Tenants:
+{{- range $k, $v := include "infrastructure.minIOTentants.enabled" . | fromYaml }}
+  {{- $secretName := include "infrastructure.minIOTentant.secretName" $k }}
+  - Name: {{ $k }}
+    Namespace: {{ $v.namespace }}
+    Root Credentials: {{ $secretName }} (Secret)
+{{- end }}
+
+Kafkas:
+{{- range $k, $v := include "infrastructure.kafkas.enabled" . | fromYaml }}
+  - Name: {{ $k }}
+    Namespace: {{ $v.namespace }}
+    Username: {{ $v.username }}
+    Credentials: {{ $v.username }} (Secret)
+    Topics:
+  {{- range $t := $v.topics }}
+      - {{ $t.name }}
+  {{- end }}
+{{- end }}
+
+PostgreSQL Clusters:
+{{- range $k, $v := include "infrastructure.postgresClusters.enabled" . | fromYaml }}
+  - Namespace: {{ $v.namespace }}
+         Name: {{ $k }}
+      Version: {{ $v.postgresVersion }}
+{{- end }}

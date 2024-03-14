@@ -1,0 +1,28 @@
+{{- range $k, $v := include "infrastructure.kafkas.enabled" . | fromYaml }}
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  labels:
+    strimzi.io/cluster: {{ $k }}
+  namespace: {{ $v.namespace }}
+  name: {{ $v.username }}
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+  {{- range $t := $v.topics }}
+    acls:
+      - host: '*'
+        resource:
+          type: topic
+          name: {{ $t.name }}
+          patternType: literal
+        operations:
+          - Create
+          - Describe
+          - Read
+          - Write
+  {{- end }}
+{{- end }}

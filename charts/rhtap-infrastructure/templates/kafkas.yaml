@@ -1,0 +1,43 @@
+{{- range $k, $v := include "infrastructure.kafkas.enabled" . | fromYaml }}
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  namespace: {{ required ".infrastructure.kafkas.*.namespace is required" $v.namespace }}
+  name: {{ $k }}
+spec:
+  kafka:
+    replicas: {{ required ".infrastructure.kafkas.*.replicas is required" $v.replicas }}
+    version: {{ required ".infrastructure.kafkas.*.version is required" $v.version }}
+    authorization:
+      type: simple
+    listeners:
+      - name: plain
+        type: internal
+        port: 9092
+        tls: false
+        authentication:
+          enablePlain: true
+          sasl: true
+          type: scram-sha-512
+      - name: tls
+        type: internal
+        port: 9093
+        tls: true
+        authentication:
+          enablePlain: true
+          sasl: true
+          type: scram-sha-512
+  {{- with $v.config }}
+    config:
+    {{- . | toYaml | nindent 6 }}
+  {{- end }}
+    storage:
+  {{- required ".infrastructure.kafkas.*.kafkaStorage is required"
+        $v.kafkaStorage | toYaml | nindent 6 }}
+  zookeeper:
+    replicas: {{ $v.replicas }}
+    storage:
+  {{- required ".infrastructure.kafkas.*.zookeeperStorage is required"
+      $v.zookeeperStorage | toYaml | nindent 6 }}
+{{- end }}

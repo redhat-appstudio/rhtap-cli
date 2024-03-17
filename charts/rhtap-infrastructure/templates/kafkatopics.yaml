@@ -4,11 +4,12 @@
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaTopic
 metadata:
-  name: {{ printf "%s-%s" $k $t.name }}
   labels:
     strimzi.io/cluster: {{ $k }}
+  namespace: {{ $v.namespace }}
+  name: {{ printf "%s-%s" $k $t.name }}
 spec:
-  partitions: {{ $t.partitions | default 1 }}
+  partitions: {{ $t.partitions | default 2 }}
   replicas: {{ $t.replicas | default 1 }}
     {{- with $t.config }}
   config:

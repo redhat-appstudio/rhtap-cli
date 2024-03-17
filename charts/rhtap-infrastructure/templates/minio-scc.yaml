@@ -1,0 +1,47 @@
+{{- $sa := "minio-tenant" -}}
+{{- $saAdmin := printf "%s-admin" $sa -}}
+{{- range include "infrastructure.minIOTentants.namespaces.enabled" . | fromJsonArray }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: minio
+  name: {{ $sa }}
+  namespace: {{ . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app: minio
+  name: {{ $saAdmin }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: {{ $sa }}
+    namespace: {{ . }}
+---
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  labels:
+    app: minio
+  name: {{ $sa}}
+allowPrivilegedContainer: false
+runAsUser:
+  type: MustRunAs
+  uid: 1000
+fsGroup:
+  type: MustRunAs
+  ranges:
+    - min: 1000
+      max: 1000
+seLinuxContext:
+  type: MustRunAs
+users:
+  - {{ printf "system:serviceaccount:%s:%s" . $sa }}
+{{- end }}

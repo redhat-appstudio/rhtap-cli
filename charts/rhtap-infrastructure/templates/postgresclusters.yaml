@@ -3,15 +3,32 @@
 apiVersion: postgres-operator.crunchydata.com/v1beta1
 kind: PostgresCluster
 metadata:
+  labels:
+    app: postgres
   namespace: {{ $v.namespace }}
   name: {{ $k }}
 spec:
   openshift: true
   postgresVersion: {{ $v.postgresVersion }}
+  # TODO: Move this configuration into "values.yaml", at least the flag for user
+  # options like "SUPERUSER".
+  users:
+    - name: {{ $k }}
+      databases:
+        - {{ $k }}
+      options: SUPERUSER
   backups:
     pgbackrest:
+  {{- with $v.pgbackrestConfig }}
+      config:
+        {{- toYaml . | nindent 8 }}
+  {{- end }}
       repos:
         {{- $v.backupRepos | toYaml | nindent 8 }}
   instances:
     {{- $v.instances | toYaml | nindent 4 }}
+  {{ with $v.patroni }}
+  patroni:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}

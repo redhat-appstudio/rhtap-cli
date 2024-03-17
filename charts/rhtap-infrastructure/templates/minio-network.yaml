@@ -1,0 +1,43 @@
+{{- range $k, $v := include "infrastructure.minIOTentants.enabled" . | fromYaml }}
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  labels:
+    app: minio
+  namespace: {{ $v.namespace }}
+  name: {{ printf "minio-operator-%s" $k }}
+spec:
+  policyTypes:
+    - Ingress
+  podSelector:
+    matchLabels:
+      v1.min.io/tenant: {{ $k }}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: minio-operator
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: minio-operator
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  labels:
+    app: minio
+  namespace: {{ $v.namespace }}
+  name: {{ printf "minio-tenant-%s" $k }}
+spec:
+  policyTypes:
+    - Ingress
+  podSelector:
+    matchLabels:
+      v1.min.io/tenant: {{ $k }}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ $v.namespace }}
+{{- end }}

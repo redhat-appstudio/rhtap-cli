@@ -7,33 +7,46 @@ metadata:
     prometheus.io/path: /minio/v2/metrics/cluster
     prometheus.io/port: "9000"
     prometheus.io/scrape: "true"
+  labels:
+    app: minio
   namespace: {{ $v.namespace }}
   name: {{ $k }}
 spec:
-  requestAutoCert: false
+  serviceAccountName: minio-tenant
   configuration:
-    name: {{ include "infrastructure.minIOTentant.secretName" $k }}
+    name: {{ $v.rootSecretName }}
+  credSecret:
+    name: {{ $v.storageUserSecretName }}
+  # TODO: expose this configuration to "values.yaml".
+  buckets:
+    - name: bombastic
+    - name: vexination
+    - name: v11y
   pools:
     # TODO: move this section to "values.yaml".
     - name: pool-0
       servers: 1
       containerSecurityContext:
         runAsNonRoot: true
-      securityContext:
-        fsGroupChangePolicy: OnRootMismatch
-        runAsNonRoot: true
       volumesPerServer: 1
       volumeClaimTemplate:
         apiVersion: v1
         kind: persistentvolumeclaims
-        metadata: {}
+        metadata:
+          name: {{ $k }}-pvc
         spec:
           accessModes:
             - ReadWriteOnce
           resources:
             requests:
-              storage: 1Gi
+              storage: 500Mi
+  mountPath: /export
+  {{ with $v.service }}
   serviceMetadata:
+    {{ with .annotations }}
     minioServiceAnnotations:
-  {{- $v.service.annotations | toYaml | nindent 6 }}
+      {{- . | toYaml | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  requestAutoCert: false
 {{- end }}

@@ -1,5 +1,11 @@
-{{- define "infrastructure.minIOTentant.secretName" -}}
-{{ . }}-root-env
+{{- define "infrastructure.minIOTentants.namespaces.enabled" -}}
+  {{- $namespaces := list }}
+  {{- range $v := .Values.infrastructure.minIOTentants -}}
+    {{- if and $v.enabled (not (has $v.namespace $namespaces)) -}}
+      {{- $namespaces = append $namespaces $v.namespace -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $namespaces | toJson -}}
 {{- end -}}
 
 {{- define "infrastructure.minIOTentants.enabled" -}}

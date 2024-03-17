@@ -3,9 +3,14 @@
 apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
+  labels:
+    app: {{ $k }}
   namespace: {{ required ".infrastructure.kafkas.*.namespace is required" $v.namespace }}
   name: {{ $k }}
 spec:
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
   kafka:
     replicas: {{ required ".infrastructure.kafkas.*.replicas is required" $v.replicas }}
     version: {{ required ".infrastructure.kafkas.*.version is required" $v.version }}
@@ -17,17 +22,17 @@ spec:
         port: 9092
         tls: false
         authentication:
-          enablePlain: true
-          sasl: true
           type: scram-sha-512
+        configuration:
+          useServiceDnsDomain: true
       - name: tls
         type: internal
         port: 9093
         tls: true
         authentication:
-          enablePlain: true
-          sasl: true
           type: scram-sha-512
+        configuration:
+          useServiceDnsDomain: true
   {{- with $v.config }}
     config:
     {{- . | toYaml | nindent 6 }}

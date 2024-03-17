@@ -1,9 +1,9 @@
 MinIO Tenants:
 {{- range $k, $v := include "infrastructure.minIOTentants.enabled" . | fromYaml }}
-  {{- $secretName := include "infrastructure.minIOTentant.secretName" $k }}
   - Name: {{ $k }}
     Namespace: {{ $v.namespace }}
-    Root Credentials: {{ $secretName }} (Secret)
+    Root Credentials: {{ $v.rootSecretName }} (Secret)
+    Storage User Credentials: {{ $v.storageUserSecretName }} (Secret)
 {{- end }}
 
 Kafkas:

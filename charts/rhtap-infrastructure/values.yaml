@@ -32,17 +32,19 @@ infrastructure:
     tpa:
       enabled: false
       namespace: __OVERWRITE_ME__
-      rootSecretName: __OVERWRITE_ME__
-      tls:
-        secretName: &minioTLSSecretName tpa-minio-svc-tls
-      service:
-        annotations:
-          service.beta.openshift.io/serving-cert-secret-name: *minioTLSSecretName
+      rootSecretName: tpa-minio-root-env
+      storageUserSecretName: tpa-minio-user-env
+      tlsSecretName: &minioTLSSecretName tpa-minio-svc-tls
+      # service:
+      #   annotations:
+      #     service.beta.openshift.io/serving-cert-secret-name: *minioTLSSecretName
   postgresClusters:
     keycloak:
       enabled: false
       namespace: __OVERWRITE_ME__
       postgresVersion: 14
+      pgbackrestConfig:
+        repo1-retention-full: "3"
       backupRepos:
         - name: repo1
           volume:
@@ -51,7 +53,7 @@ infrastructure:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 1Gi
+                  storage: 500Mi
       instances:
         - replicas: 1
           dataVolumeClaimSpec:
@@ -59,11 +61,13 @@ infrastructure:
               - ReadWriteOnce
             resources:
               requests:
-                storage: 1Gi
+                storage: 500Mi
     guac:
       enabled: false
       namespace: __OVERWRITE_ME__
       postgresVersion: 14
+      pgbackrestConfig:
+        repo1-retention-full: "3"
       backupRepos:
         - name: repo1
           volume:
@@ -72,7 +76,7 @@ infrastructure:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 1Gi
+                  storage: 500Mi
       instances:
         - replicas: 1
           dataVolumeClaimSpec:
@@ -80,4 +84,10 @@ infrastructure:
               - ReadWriteOnce
             resources:
               requests:
-                storage: 1Gi
+                storage: 500Mi
+      patroni:
+        dynamicConfiguration:
+          postgresql:
+            pg_hba:
+              - host all all 0.0.0.0/0 scram-sha-256
+              - host all all ::1/128 scram-sha-256

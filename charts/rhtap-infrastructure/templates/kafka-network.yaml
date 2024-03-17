@@ -1,0 +1,21 @@
+{{- range $k, $v := include "infrastructure.kafkas.enabled" . | fromYaml }}
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  labels:
+    app: kafka
+  namespace: {{ $v.namespace }}
+  name: {{ printf "kafka-%s" $k }}
+spec:
+  policyTypes:
+    - Ingress
+  podSelector:
+    matchLabels:
+      strimzi.io/cluster: {{ $k }}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ $v.namespace }}
+{{- end }}

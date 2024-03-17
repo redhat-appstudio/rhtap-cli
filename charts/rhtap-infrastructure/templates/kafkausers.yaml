@@ -12,8 +12,8 @@ spec:
     type: scram-sha-512
   authorization:
     type: simple
-  {{- range $t := $v.topics }}
     acls:
+  {{- range $t := $v.topics }}
       - host: '*'
         resource:
           type: topic

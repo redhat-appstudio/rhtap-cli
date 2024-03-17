@@ -1,0 +1,37 @@
+{{- if .Values.backingServices.keycloak.enabled }}
+{{- $keycloakName := include "backingServices.keycloak.name" . -}}
+{{- $k := .Values.backingServices.keycloak -}}
+---
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  namespace: {{ $k.namespace }}
+  name: {{ $keycloakName }}
+spec:
+  instances: 1
+  # TODO: Make sure this setting is exposed through "values.yaml".
+  additionalOptions:
+    - name: proxy
+      value: reencrypt
+  db:
+    vendor: postgres
+    database: {{ $k.database.name }}
+    host: {{ $k.database.host }}
+    usernameSecret:
+      name: {{ $k.database.secretName }}
+      key: user
+    passwordSecret:
+      name: {{ $k.database.secretName }}
+      key: password
+  hostname:
+    hostname: {{ include "backingServices.keycloak.domainName" . }}
+    # TODO: Expose configuration via "values.yaml".
+    strict: false
+  http:
+    # TODO: Expoxse this configuration via "values.yaml", when HTTP is enabled it
+    # should also make sure the hostname/route are configured appropriately.
+    httpEnabled: true
+    tlsSecret: {{ $k.route.tls.secretName }}
+  ingress:
+    enabled: false
+{{- end }}

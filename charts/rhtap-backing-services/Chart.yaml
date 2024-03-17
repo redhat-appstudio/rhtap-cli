@@ -1,0 +1,6 @@
+---
+apiVersion: v2
+name: rhtap-backing-services
+description: RHTAP Backing Services
+type: application
+version: 0.0.1

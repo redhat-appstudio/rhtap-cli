@@ -1,0 +1,43 @@
+{{- if .Values.backingServices.keycloak.enabled }}
+{{- $keycloakName := include "backingServices.keycloak.name" . -}}
+{{- $k := .Values.backingServices.keycloak -}}
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  annotations:
+    {{- $k.route.annotations | toYaml | nindent 4 }}
+  namespace: {{ $k.namespace }}
+  name: {{ $keycloakName }}
+spec:
+  host: {{ include "backingServices.keycloak.domainName" . }}
+  to:
+    kind: Service
+    name: {{ $keycloakName }}
+    weight: 100
+  port:
+    targetPort: https
+  tls:
+    termination: {{ $k.route.tls.termination }}
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  annotations:
+    {{- $k.route.annotations | toYaml | nindent 4 }}
+  namespace: {{ $k.namespace }}
+  name: {{ $keycloakName }}-http
+spec:
+  # TODO: change me, allow external configuration.
+  host: keycloak-crc-rhtap-keycloak.apps-crc.testing
+  to:
+    kind: Service
+    name: {{ $keycloakName }}
+    weight: 100
+  port:
+    targetPort: http
+  wildcardPolicy: None
+{{- end }}

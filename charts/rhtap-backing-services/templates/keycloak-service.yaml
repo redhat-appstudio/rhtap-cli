@@ -1,0 +1,32 @@
+{{- if .Values.backingServices.keycloak.enabled }}
+{{- $keycloakName := include "backingServices.keycloak.name" . -}}
+{{- $k := .Values.backingServices.keycloak -}}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  annotations:
+    {{- $k.service.annotations | toYaml | nindent 4 }}
+  namespace: {{ $k.namespace }}
+  name: {{ $keycloakName }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: https
+      protocol: TCP
+      port: 8443
+      targetPort: 8443
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: keycloak
+    app.kubernetes.io/instance: {{ $keycloakName }}
+    app.kubernetes.io/managed-by: keycloak-operator
+  sessionAffinity: None
+  ipFamilyPolicy: SingleStack
+  ipFamilies:
+    - IPv4
+  internalTrafficPolicy: Cluster
+{{- end }}

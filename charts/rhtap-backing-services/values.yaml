@@ -1,0 +1,24 @@
+---
+backingServices:
+  #
+  # Keycloak (AIM)
+  #
+  keycloak:
+    enabled: false
+    namespace: __OVERWRITE_ME__
+    instances: 1
+    database:
+      host: __OVERWRITE_ME__
+      name: keycloak
+      secretName: __OVERWRITE_ME__
+    route:
+      # TODO: Can I use the same URL for HTTP and HTTPS?
+      domain: __OVERWRITE_ME__
+      tls:
+        secretName: &keycloakRouteTLSSecretName keycloak-tls
+        termination: reencrypt
+      annotations:
+        route.openshift.io/termination: reencrypt
+    service:
+      annotations:
+        service.beta.openshift.io/serving-cert-secret-name: *keycloakRouteTLSSecretName

@@ -1,0 +1,10 @@
+---
+apiVersion: v2
+name: rhtap-tpa
+description: RHTAP Trusted Profile Analyzer
+type: application
+version: 0.0.1
+
+dependencies:
+  - name: trustification
+    version: 0.2.0

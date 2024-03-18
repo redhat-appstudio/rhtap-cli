@@ -5,6 +5,8 @@
 apiVersion: k8s.keycloak.org/v2alpha1
 kind: Keycloak
 metadata:
+  labels:
+    app: keycloak
   namespace: {{ $k.namespace }}
   name: {{ $keycloakName }}
 spec:

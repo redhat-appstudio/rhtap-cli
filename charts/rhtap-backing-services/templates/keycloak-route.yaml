@@ -7,6 +7,8 @@ apiVersion: route.openshift.io/v1
 metadata:
   annotations:
     {{- $k.route.annotations | toYaml | nindent 4 }}
+  labels:
+    app: keycloak
   namespace: {{ $k.namespace }}
   name: {{ $keycloakName }}
 spec:
@@ -28,6 +30,8 @@ apiVersion: route.openshift.io/v1
 metadata:
   annotations:
     {{- $k.route.annotations | toYaml | nindent 4 }}
+  labels:
+    app: keycloak
   namespace: {{ $k.namespace }}
   name: {{ $keycloakName }}-http
 spec:

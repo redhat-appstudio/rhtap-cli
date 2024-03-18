@@ -9,6 +9,7 @@ metadata:
   namespace: {{ $v.namespace }}
   name: {{ printf "%s-%s" $k $t.name }}
 spec:
+  topicName: {{ $t.name | quote }}
   partitions: {{ $t.partitions | default 2 }}
   replicas: {{ $t.replicas | default 1 }}
     {{- with $t.config }}

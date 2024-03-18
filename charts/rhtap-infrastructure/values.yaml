@@ -8,6 +8,9 @@ infrastructure:
       # Username for the Kafka user, which will generate a Secret, with the same
       # name, containing the password.
       username: __OVERWRITE_ME__
+      # Group ID the Kafka consumers will be using, it's added on the topics ACL
+      # to allow the group ID to access the topics.
+      groupID: group
       version: 3.6.0
       config:
         default.replication.factor: 1

@@ -13,6 +13,12 @@ spec:
   authorization:
     type: simple
     acls:
+      - host: "*"
+        resource:
+          type: {{ $v.groupID }}
+          name: my-group
+          patternType: literal
+        operation: All
   {{- range $t := $v.topics }}
       - host: '*'
         resource:

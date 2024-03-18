@@ -8,3 +8,4 @@ version: 0.0.1
 dependencies:
   - name: trustification
     version: 0.2.0
+    condition: trustedProfileAnalyzer.enabled

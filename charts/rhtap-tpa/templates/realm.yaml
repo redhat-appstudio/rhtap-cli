@@ -1,0 +1,120 @@
+{{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport -}}
+{{- $appDomain := .Values.trustedProfileAnalyzer.appDomain -}}
+{{- if $keycloak.enabled }}
+---
+  {{- 
+    $adminSecretObj := 
+      (lookup "v1" "Secret" .Release.Namespace $keycloak.oidcClientsSecretName) |
+      default dict
+  -}}
+  {{- $adminSecretData := (get $adminSecretObj "data") | default dict -}}
+  {{- $adminPassword := (get $adminSecretData "password") | default (randAlphaNum 16 | b64enc) -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app: keycloak
+  namespace: {{ .Release.Namespace }}
+  name: {{
+    required ".admin.secretName is required"
+    $keycloak.admin.secretName
+  }}
+type: Opaque
+data:
+  username: {{
+    required ".admin.username is required" $keycloak.admin.username | b64enc
+  }}
+  password: {{ $adminPassword }}
+---
+  {{- 
+    $oidcSecretObj := 
+      (lookup "v1" "Secret" .Release.Namespace $keycloak.oidcClientsSecretName) |
+      default dict
+  -}}
+  {{- $oidcSecretData := (get $oidcSecretObj "data") | default dict -}}
+  {{- $oidcCredentials := dict -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app: keycloak
+  namespace: {{ .Release.Namespace }}
+  name: {{
+    required ".oidcClientsSecretName is required"
+    $keycloak.oidcClientsSecretName
+  }}
+type: Opaque
+data:
+  {{- range $k, $v := include "keycloakRealmImport.clients.enabled" . | fromYaml }}
+    {{- $s := (get $oidcSecretData $k) | default (include "generate.client.secret" . | b64enc) }}
+    {{- $oidcCredentials := mergeOverwrite $oidcCredentials (dict $k $s) }}
+  {{ $k }}: {{ $s }}
+  {{- end }}
+---
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: KeycloakRealmImport
+metadata:
+  labels:
+    app: keycloak
+  namespace: {{
+    required ".keycloakCR.namespace is required"
+      $keycloak.keycloakCR.namespace
+  }}
+  name: {{ printf "%s-%s" $keycloak.keycloakCR.name $keycloak.realm }}
+spec:
+  keycloakCRName: {{
+    required ".keycloakCR.name is required"
+      $keycloak.keycloakCR.name
+  }}
+  realm: 
+    enabled: true
+    realm: {{ required ".realm is required" $keycloak.realm }}
+    displayName: {{ required ".displayName is required" $keycloak.displayName }}
+    registrationAllowed: true
+    resetPasswordAllowed: true
+    loginWithEmailAllowed: false
+    roles:
+      realm:
+    {{- range $r := $keycloak.roles}}
+        - name: {{ $r | quote }}
+    {{- end }}
+    clients:
+      - clientId: frontend
+        enabled: true
+        redirectUris:
+          - "http://localhost:*"
+    {{- range $prefix := $keycloak.redirectURIsPrefixes }}
+      {{- $fqdn := printf "https://%s%s" $prefix $appDomain }}
+          - {{ $fqdn | quote }}
+          - {{ printf "%s/*" $fqdn | quote }}
+    {{- end }}
+    {{- include "keycloakRealmImport.spec.clients.attributes" . | nindent 8 }}
+        defaultClientScopes:
+    {{- include "keycloakRealmImport.spec.clients.defaultClientScopes" . | nindent 10 }}
+        optionalClientScopes:
+    {{- include "keycloakRealmImport.spec.clients.optionalClientScopes" . | nindent 10 }}
+    {{- range $k, $v := include "keycloakRealmImport.clients.enabled" . | fromYaml }}
+      - clientId: {{ $v.clientId }}
+        enabled: true
+        secret: {{ get $oidcCredentials $k | b64dec }}
+      {{- include "keycloakRealmImport.spec.clients.attributes" . | nindent 8 }}
+        defaultClientScopes:
+      {{- include "keycloakRealmImport.spec.clients.defaultClientScopes" . | nindent 10 }}
+      {{- with $v.defaultClientScopesExtra }}
+        {{- . | toYaml | nindent 10 }}
+      {{- end }}
+        optionalClientScopes:
+      {{- include "keycloakRealmImport.spec.clients.optionalClientScopes" . | nindent 10 }}
+    {{- end }}
+    users:
+      - username: {{ $keycloak.admin.username }}
+        enabled: true
+        credentials:
+          - type: password
+            value: {{ $adminPassword | b64dec }}
+            temporary: false
+        realmRoles:
+    {{- range $r := $keycloak.roles}}
+          - {{ $r | quote }}
+    {{- end }}
+{{- end }}

@@ -12,9 +12,12 @@ backingServices:
       name: keycloak
       secretName: __OVERWRITE_ME__
     route:
-      # TODO: Can I use the same URL for HTTP and HTTPS?
-      domain: __OVERWRITE_ME__
+      # The host for the Keycloak route, this is the URL Keycloak will respond to.
+      host: __OVERWRITE_ME__
       tls:
+        # Toggles the TLS configuration for the Keycloak route, when disabled the
+        # endpoint exposed is HTTP only.
+        enabled: true
         secretName: &keycloakRouteTLSSecretName keycloak-tls
         termination: reencrypt
       annotations:

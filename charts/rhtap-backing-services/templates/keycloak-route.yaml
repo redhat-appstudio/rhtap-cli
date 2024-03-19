@@ -12,36 +12,21 @@ metadata:
   namespace: {{ $k.namespace }}
   name: {{ $keycloakName }}
 spec:
-  host: {{ include "backingServices.keycloak.domainName" . }}
+  host: {{ required ".route.host is required" $k.route.host }}
   to:
     kind: Service
     name: {{ $keycloakName }}
     weight: 100
   port:
+  {{- if $k.route.tls.enabled -}}
     targetPort: https
+  {{- else }}
+    targetPort: http
+  {{- end }}
+  {{- if $k.route.tls.enabled -}}
   tls:
     termination: {{ $k.route.tls.termination }}
     insecureEdgeTerminationPolicy: Redirect
-  wildcardPolicy: None
-
----
-kind: Route
-apiVersion: route.openshift.io/v1
-metadata:
-  annotations:
-    {{- $k.route.annotations | toYaml | nindent 4 }}
-  labels:
-    app: keycloak
-  namespace: {{ $k.namespace }}
-  name: {{ $keycloakName }}-http
-spec:
-  # TODO: change me, allow external configuration.
-  host: keycloak-crc-rhtap-keycloak.apps-crc.testing
-  to:
-    kind: Service
-    name: {{ $keycloakName }}
-    weight: 100
-  port:
-    targetPort: http
+  {{- end }}
   wildcardPolicy: None
 {{- end }}

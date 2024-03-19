@@ -11,10 +11,16 @@ metadata:
   name: {{ $keycloakName }}
 spec:
   instances: 1
-  # TODO: Make sure this setting is exposed through "values.yaml".
+  {{- if not $k.route.tls.enabled }}
   additionalOptions:
-    - name: proxy
-      value: reencrypt
+    - name: hostname-strict-https
+      value: "false"
+    - name: hostname-port
+      value: "80"
+  {{- end }}
+  env:
+    - name: QUARKUS_TRANSACTION_MANAGER_ENABLE_RECOVERY
+      value: "true"
   db:
     vendor: postgres
     database: {{ $k.database.name }}
@@ -26,13 +32,15 @@ spec:
       name: {{ $k.database.secretName }}
       key: password
   hostname:
-    hostname: {{ include "backingServices.keycloak.domainName" . }}
-    # TODO: Expose configuration via "values.yaml".
+    hostname: {{ $k.route.host}}
     strict: false
+    strictBackchannel: false
   http:
-    # TODO: Expoxse this configuration via "values.yaml", when HTTP is enabled it
-    # should also make sure the hostname/route are configured appropriately.
+  {{- if $k.route.tls.enabled }}
+    httpEnabled: false
+  {{- else }}
     httpEnabled: true
+  {{- end }}
     tlsSecret: {{ $k.route.tls.secretName }}
   ingress:
     enabled: false

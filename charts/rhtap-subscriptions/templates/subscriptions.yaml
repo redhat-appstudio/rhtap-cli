@@ -22,7 +22,9 @@ spec:
   installPlanApproval: Automatic
   source: {{ $s.source }}
   sourceNamespace: {{ $s.sourceNamespace }}
-  startingCSV: {{ $s.startingCSV }}
+  {{- with $s.startingCSV }}
+  startingCSV: {{ . }}
+  {{- end }}
   {{- if $s.config }}
   config:
     {{- if $s.config.argoCDClusterNamespace }}

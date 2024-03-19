@@ -9,7 +9,6 @@ subscriptions:
     channel: stable
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-    startingCSV: amqstreams.v2.6.0-1
   crunchyData:
     enabled: false
     description: Crunchy-Data PostgreSQL Operator
@@ -19,7 +18,6 @@ subscriptions:
     channel: v5
     source: redhat-marketplace
     sourceNamespace: openshift-marketplace            
-    startingCSV: postgresoperator.v5.5.1
   minIO:
     enabled: false
     description: MinIO Operator
@@ -29,7 +27,6 @@ subscriptions:
     channel: stable
     source: certified-operators
     sourceNamespace: openshift-marketplace
-    startingCSV: minio-operator.v5.0.13
     operatorGroup:
       upgradeStrategy: Default
   openshiftGitOps:
@@ -39,7 +36,6 @@ subscriptions:
     namespace: openshift-operators
     name: openshift-gitops-operator
     channel: gitops-1.11
-    startingCSV: openshift-gitops-operator.v1.11.1
     source: redhat-operators
     sourceNamespace: openshift-marketplace
     config:
@@ -53,7 +49,6 @@ subscriptions:
     channel: stable-v22
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-    startingCSV: rhbk-operator.v22.0.9-opr.1
     operatorGroup:
       upgradeStrategy: Default
       targetNamespaces: []
@@ -64,7 +59,6 @@ subscriptions:
     namespace: openshift-operators
     name: openshift-pipelines-operator-rh
     channel: pipelines-1.14
-    startingCSV: openshift-pipelines-operator-rh.v1.14.1
     source: redhat-operators
     sourceNamespace: openshift-marketplace
   openshiftTrustedArtifactSigner:
@@ -74,6 +68,5 @@ subscriptions:
     namespace: openshift-operators
     name: rhtas-operator
     channel: stable
-    startingCSV: rhtas-operator.v0.0.2
     source: redhat-operators
     sourceNamespace: openshift-marketplace

@@ -27,18 +27,7 @@ trustedProfileAnalyzer:
       - &chickenUser chicken-user
       - &chickenManager chicken-manager
     # Realm's admin user.
-    admin:
-      # Stored in the Secret below as "username".
-      username: *chickenAdmin
-      # Creates a Secret with the admin user password (using the key "password"),
-      # or uses the it's payload when already created.
-      secretName: &realmAdminSecretName tpa-realm-chicken-admin
-    # List of domain prefixes to create the redirect URIs for the frontend OIDC
-    # client, this slice is combined with ".trustification.appDomain".
-    redirectURIsPrefixes:
-      - console
-      - sbom
-      - vex
+    adminSecretName: &realmAdminSecretName tpa-realm-chicken-admin
     # Name of the Secret generated with the enabled OIDC clients secrets, each
     # client key on the ".client" object will become a Secret key.
     oidcClientsSecretName: &oidcClientsSecretName tpa-chicken-realm-oidc-clients
@@ -46,26 +35,18 @@ trustedProfileAnalyzer:
     clients:
       walker:
         enabled: true
-        clientId: walker
-        defaultClientScopesExtra:
-          - create:document
-          - delete:document
-          - create.sbom
-        roles:
-          - *chickenManager
       testingManager:
         enabled: true
-        clientId: testing-manager
-        defaultClientScopesExtra:
-          - create:document
-          - delete:document
-        roles:
-          - *chickenManager
       testingUser:
         enabled: true
-        clientId: testing-user
-        roles:
-          - *chickenUser
+    frontendRedirectUris:
+      - "http://localhost:8080"
+      - "http://console-rhtap.apps-crc.testing"
+      - "http://console-rhtap.apps-crc.testing/*"
+      - "http://sbom-rhtap.apps-crc.testing"
+      - "http://sbom-rhtap.apps-crc.testing/*"
+      - "http://vex-rhtap.apps-crc.testing"
+      - "http://vex-rhtap.apps-crc.testing/*"
 #
 # Trustification
 #   https://github.com/trustification/trustification
@@ -77,7 +58,7 @@ trustification:
     logFilter: debug
     backtrace: true
   openshift:
-    useServiceCa: true
+    useServiceCa: false
   ingress:
     className: openshift-default
   guac:
@@ -163,26 +144,21 @@ trustification:
     issuerUrl: __OVERWRITE_ME__
     clients:
       walker:
-        clientId: walker
         clientSecret:
           valueFrom:
             secretKeyRef:
               name: *oidcClientsSecretName
-              key: clientSecret
+              key: walker
       #
       # TODO: DISABLE TESTING!!
       #
       testingUser:
-        clientId: testing-user
-        insecure: false
         clientSecret:
           valueFrom:
             secretKeyRef:
               name: *oidcClientsSecretName
               key: testingUser
       testingManager:
-        clientId: testing-manager
-        insecure: false
         clientSecret:
           valueFrom:
             secretKeyRef:

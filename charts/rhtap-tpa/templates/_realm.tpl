@@ -1,16 +1,17 @@
 {{- define "keycloakRealmImport.spec.clients.attributes" -}}
 clientAuthenticatorType: client-secret
-publicClient: true
-implicitFlowEnabled: true
-standardFlowEnabled: true
+publicClient: false
+implicitFlowEnabled: false 
+standardFlowEnabled: false
 directAccessGrantsEnabled: false
-serviceAccountsEnabled: false
+serviceAccountsEnabled: true
 fullScopeAllowed: true
 webOrigins:
   - "*"
 attributes:
   access.token.lifespan: "300"
   post.logout.redirect.uris: "+"
+protocol: openid-connect
 {{- end -}}
 
 {{- define "keycloakRealmImport.spec.clients.defaultClientScopes" -}}

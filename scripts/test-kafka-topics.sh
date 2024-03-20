@@ -37,12 +37,12 @@ test_kafka_topics() {
         exit 1
     fi
 
-    for i in {1..10}; do
+    for i in {1..30}; do
         wait_for_kafka_topics &&
             return 0
 
-        wait=$((i * 30))
-        echo "### [${i}/5] Waiting for ${wait} seconds before retrying..."
+        wait=$((i * 10))
+        echo "### [${i}/30] Waiting for ${wait} seconds before retrying..."
         sleep ${wait}
     done
     return 1

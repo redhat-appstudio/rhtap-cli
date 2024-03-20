@@ -1589,7 +1589,6 @@ spec:
     identityProviderMappers: []
     identityProviders: []
     internationalizationEnabled: false
-    keycloakVersion: 23.0.4
     loginWithEmailAllowed: false
     maxDeltaTimeSeconds: 43200
     maxFailureWaitSeconds: 900

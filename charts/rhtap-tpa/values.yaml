@@ -41,12 +41,12 @@ trustedProfileAnalyzer:
         enabled: true
     frontendRedirectUris:
       - "http://localhost:8080"
-      - "http://console-rhtap.apps-crc.testing"
-      - "http://console-rhtap.apps-crc.testing/*"
-      - "http://sbom-rhtap.apps-crc.testing"
-      - "http://sbom-rhtap.apps-crc.testing/*"
-      - "http://vex-rhtap.apps-crc.testing"
-      - "http://vex-rhtap.apps-crc.testing/*"
+      - "http://console-rhtap-tpa.apps-crc.testing"
+      - "http://console-rhtap-tpa.apps-crc.testing/*"
+      - "http://sbom-rhtap-tpa.apps-crc.testing"
+      - "http://sbom-rhtap-tpa.apps-crc.testing/*"
+      - "http://vex-rhtap-tpa.apps-crc.testing"
+      - "http://vex-rhtap-tpa.apps-crc.testing/*"
 #
 # Trustification
 #   https://github.com/trustification/trustification

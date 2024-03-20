@@ -16,6 +16,8 @@ spec:
     - name: {{ $k }}
       databases:
         - {{ $k }}
+      password:
+        type: AlphaNumeric
       options: SUPERUSER
   backups:
     pgbackrest:

@@ -11,14 +11,12 @@ metadata:
   name: {{ $keycloakName }}
 spec:
   instances: 1
-  {{- if not $keycloak.route.tls.enabled }}
   additionalOptions:
-    - name: hostname-strict-https
-      value: "false"
-    - name: hostname-port
-      value: "80"
     - name: enable-recovery
       value: "true"
+  {{- if not $keycloak.route.tls.enabled }}
+    - name: hostname-strict-https
+      value: "false"
   {{- end }}
   transaction:
     xaEnabled: true

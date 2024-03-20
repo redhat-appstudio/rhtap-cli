@@ -1,6 +1,7 @@
 {{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport -}}
-{{- $appDomain := .Values.trustedProfileAnalyzer.appDomain -}}
 {{- if $keycloak.enabled }}
+  {{- $appDomain := .Values.trustedProfileAnalyzer.appDomain -}}
+  {{- $adminUsername := "admin" -}}
 ---
   {{- 
     $adminSecretObj := 
@@ -12,6 +13,8 @@
 apiVersion: v1
 kind: Secret
 metadata:
+  annotations:
+    helm.sh/resource-policy: keep
   labels:
     app: keycloak
   namespace: {{ .Release.Namespace }}
@@ -21,6 +24,7 @@ metadata:
   }}
 type: Opaque
 data:
+  username: {{ $adminUsername | b64enc }}
   password: {{ $adminPassword }}
 ---
   {{- 
@@ -33,6 +37,8 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
+  annotations:
+    helm.sh/resource-policy: keep
   labels:
     app: keycloak
   namespace: {{ .Release.Namespace }}
@@ -1837,7 +1843,7 @@ spec:
     supportedLocales: []
     userManagedAccessAllowed: false
     users:
-      - username: admin
+      - username: {{ $adminUsername }}
         credentials:
           - type: password
             value: {{ $adminPassword | b64dec }}

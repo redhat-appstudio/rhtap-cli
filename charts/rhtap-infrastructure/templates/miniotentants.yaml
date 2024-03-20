@@ -17,33 +17,39 @@ spec:
     name: {{ $v.rootSecretName }}
   credSecret:
     name: {{ $v.storageUserSecretName }}
-  # TODO: expose this configuration to "values.yaml".
   buckets:
-    - name: bombastic
-    - name: vexination
-    - name: v11y
+    {{- $v.buckets | toYaml | nindent 4 }}
+  {{- if $v.kafkaNotify.enabled }}
+  env:
+    {{- range $topic := $v.kafkaNotify.topics }}
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_ENABLE_%s" (upper $topic.bucket)}}
+      value: "on"
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_BROKERS_%s" (upper $topic.bucket)}}
+      value: {{
+        required ".kafkaNotify.bootstrapServers is required"
+          $v.kafkaNotify.bootstrapServers
+      }}
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_TOPIC_%s" (upper $topic.bucket)}}
+      value: {{ required ".kafkaNotify.topics[].topic required" .topic }}
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_%s" (upper $topic.bucket)}}
+      value: "on"
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_MECHANISM_%s" (upper $topic.bucket)}}
+      value: "SHA512"
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_USERNAME_%s" (upper $topic.bucket)}}
+      value: {{
+        required ".kafkaNotify.username is required"
+          $v.kafkaNotify.username | quote
+      }}
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_PASSWORD_%s" (upper $topic.bucket)}}
+      {{- $v.kafkaNotify.password | toYaml | nindent 6 }}
+    {{- end }}
+  {{- end }}
   pools:
-    # TODO: move this section to "values.yaml".
-    - name: pool-0
-      servers: 1
-      containerSecurityContext:
-        runAsNonRoot: true
-      volumesPerServer: 1
-      volumeClaimTemplate:
-        apiVersion: v1
-        kind: persistentvolumeclaims
-        metadata:
-          name: {{ $k }}-pvc
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 500Mi
+    {{- $v.pools | toYaml | nindent 4 }}
   mountPath: /export
-  {{ with $v.service }}
+  {{- with $v.service }}
   serviceMetadata:
-    {{ with .annotations }}
+    {{- with .annotations }}
     minioServiceAnnotations:
       {{- . | toYaml | nindent 6 }}
     {{- end }}

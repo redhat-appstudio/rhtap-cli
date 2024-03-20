@@ -10,7 +10,8 @@ infrastructure:
       username: __OVERWRITE_ME__
       # Group ID the Kafka consumers will be using, it's added on the topics ACL
       # to allow the group ID to access the topics.
-      groupID: group
+      groupIDs:
+        - indexer
       version: 3.6.0
       config:
         default.replication.factor: 1
@@ -25,22 +26,90 @@ infrastructure:
       zookeeperStorage:
         type: persistent-claim
         size: 500Mi
-      topics: []
-        # - name: topics
-        #   config:
-        #     retention.ms: 604800000
-        #   partitions: 1
-        #   replicas: 1
+      topics:
+        - name: &topicSbomStored sbom-stored
+          config: &kafkaTopicConfig
+            retention.ms: 604800000
+        - name: sbom-failed
+          config: *kafkaTopicConfig
+        - name: sbom-indexed
+          config: *kafkaTopicConfig
+        - name: &topicVexStored vex-stored
+          config: *kafkaTopicConfig
+        - name: vex-failed
+          config: *kafkaTopicConfig
+        - name: vex-indexed
+          config: *kafkaTopicConfig
+        - name: &topicV11yStored v11y-stored
+          config: *kafkaTopicConfig
+        - name: v11y-failed
+          config: *kafkaTopicConfig
+        - name: v11y-indexed
+          config: *kafkaTopicConfig
+  #
+  # MinIO Tentants
+  #
   minIOTentants:
+    # Trusted Profile Analyzer (TPA) needs an S3 compatible storage to store
+    # documents and to create integration with Kafka, a message is issued upon
+    # document creation.
     tpa:
       enabled: false
+      # Target namespace for the MinIO Tenant and related resources.
       namespace: __OVERWRITE_ME__
+      # Secret name to store MinIO's root passord, the password is genearted when
+      # then secret is empty.
       rootSecretName: tpa-minio-root-env
-      storageUserSecretName: tpa-minio-user-env
-      tlsSecretName: &minioTLSSecretName tpa-minio-svc-tls
+      # Secret name to store the access and secret keys for API access.
+      storageUserSecretName: tpa-minio-storage-user
+      # Secret name for the service TLS settings, should be mounted on the MinIO
+      # pods to enable TLS communication between internal services.
+      # TODO: enable internal TLS communication;
+      # tlsSecretName: &minioTLSSecretName tpa-minio-svc-tls
       # service:
       #   annotations:
       #     service.beta.openshift.io/serving-cert-secret-name: *minioTLSSecretName
+      # The list of buckets to be created on the MinIO Tenant.
+      buckets:
+        - name: &bucketBombastic bombastic
+        - name: &bucketVexination vexination
+        - name: &bucketV11y v11y
+      # Kafka notification settings, the MinIO Tenant will issue a message to the
+      # configured topic based on the bucket activity.
+      kafkaNotify:
+        enabled: true
+        # Kafka bootstrap servers.
+        bootstrapServers: __OVERWRITE_ME__
+        # Kafka username.
+        username: __OVERWRITE_ME__
+        # Secret with Kafka's password (valueFrom).
+        password: {}
+        # The list of buckets and Kakfa topics.
+        topics:
+          - bucket: *bucketBombastic
+            topic: *topicSbomStored
+          - bucket: *bucketVexination
+            topic: *topicVexStored
+          - bucket: *bucketV11y
+            topic: *topicV11yStored
+      # MinIO storage pools
+      pools:
+        - name: pool-0
+          servers: 1
+          containerSecurityContext:
+            runAsNonRoot: true
+          volumesPerServer: 1
+          volumeClaimTemplate:
+            apiVersion: v1
+            kind: persistentvolumeclaims
+            metadata:
+              name: tpa-minio-pvc
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 500Mi
   postgresClusters:
     keycloak:
       enabled: false

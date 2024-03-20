@@ -22,9 +22,6 @@ spec:
   {{- end }}
   transaction:
     xaEnabled: true
-  env:
-    - name: QUARKUS_TRANSACTION_MANAGER_ENABLE_RECOVERY
-      value: "true"
   db:
     vendor: postgres
     database: {{ $k.database.name }}

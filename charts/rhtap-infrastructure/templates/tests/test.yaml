@@ -31,4 +31,61 @@ spec:
           mountPath: /scripts
       securityContext:
         allowPrivilegeEscalation: false
-  # TODO: write me! create the test container with the test script, etc.
+{{- range $k, $v := include "infrastructure.kafkas.enabled" . | fromYaml }}
+    - name: {{ printf "%s-kafka-topics-%s" $name $k }}
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      env:
+        - name: NAMESPACE
+          value: {{ $v.namespace }}
+      command:
+        - /scripts/test-kafka-topics.sh
+      args:
+  {{- range $t := $v.topics }}
+        - {{ printf "%s-%s" $k $t.name | quote }}
+  {{- end }}
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+{{- end }}
+{{- range $k, $v := include "infrastructure.minIOTentants.enabled" . | fromYaml }}
+    - name: {{ printf "%s-minio-tentant-%s" $name $k }}
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      env:
+        - name: NAMESPACE
+          value: {{ $v.namespace }}
+      command:
+        - /scripts/test-statefulsets.sh
+      args:
+        - {{ printf "v1.min.io/tenant=%s" $k | quote }}
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+{{- end }}
+{{- range $k, $v := include "infrastructure.postgresClusters.enabled" . | fromYaml }}
+    - name: {{ printf "%s-postgrescluster-%s" $name $k }}
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      env:
+        - name: NAMESPACE
+          value: {{ $v.namespace }}
+      command:
+        - /scripts/test-statefulsets.sh
+      args:
+        - {{
+          printf "%s,%s=%s"
+            "postgres-operator.crunchydata.com/data=pgbackrest"
+            "postgres-operator.crunchydata.com/cluster"
+            $k | quote
+        }}
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+{{- end }}
+  volumes:
+    - name: scripts
+      emptyDir: {}

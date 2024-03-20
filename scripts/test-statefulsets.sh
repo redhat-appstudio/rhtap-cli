@@ -4,17 +4,18 @@ shopt -s inherit_errexit
 set -Eeu -o pipefail
 
 declare -r NAMESPACE="${NAMESPACE:-}"
-declare -r -a STATEFULSETS=("${@}")
+declare -r -a STATEFULSETS_SELECTORS=("${@}")
 
 rollout_status() {
-    oc rollout status statefulset "${1}" \
+    oc rollout status statefulset \
         --namespace="${NAMESPACE}" \
         --watch \
-        --timeout=30s
+        --timeout=10s \
+        --selector="${1}"
 }
 
 wait_for_statefulset() {
-    for s in "${STATEFULSETS[@]}"; do
+    for s in "${STATEFULSETS_SELECTORS[@]}"; do
         echo "# Checking if StatefulSet '${s}' is ready..."
         if ! rollout_status "${s}"; then
             echo -en "#\n# WARNING: StatefulSet '${s}' is not ready!\n#\n"
@@ -27,12 +28,12 @@ wait_for_statefulset() {
 
 test_infrastructure() {
     if [[ -z "${NAMESPACE}" ]]; then
-        echo "Usage: $$ NAMESPACE=namespace $0 <STATEFULSETS>"
+        echo "Usage: \$ NAMESPACE=namespace $0 <STATEFULSETS_SELECTORS>"
         exit 1
     fi
 
-    if [[ ${#STATEFULSETS[@]} -eq 0 ]]; then
-        echo "Usage: $$ NAMESPACE=namespace $0 <STATEFULSETS>"
+    if [[ ${#STATEFULSETS_SELECTORS[@]} -eq 0 ]]; then
+        echo "Usage: \$ NAMESPACE=namespace $0 <STATEFULSETS_SELECTORS>"
         exit 1
     fi
 
@@ -50,7 +51,7 @@ test_infrastructure() {
 }
 
 if test_infrastructure; then
-    echo "# StatefulSets are ready: '${STATEFULSETS[*]}'"
+    echo "# StatefulSets are ready: '${STATEFULSETS_SELECTORS[*]}'"
     exit 0
 else
     echo "# ERROR: StatefulSets not ready!"

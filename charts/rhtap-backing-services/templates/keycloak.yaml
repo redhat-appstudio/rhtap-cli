@@ -1,17 +1,17 @@
 {{- if .Values.backingServices.keycloak.enabled }}
-{{- $keycloakName := include "backingServices.keycloak.name" . -}}
-{{- $k := .Values.backingServices.keycloak -}}
+  {{- $keycloakName := include "backingServices.keycloak.name" . -}}
+  {{- $keycloak := .Values.backingServices.keycloak -}}
 ---
 apiVersion: k8s.keycloak.org/v2alpha1
 kind: Keycloak
 metadata:
   labels:
     app: keycloak
-  namespace: {{ $k.namespace }}
+  namespace: {{ $keycloak.namespace }}
   name: {{ $keycloakName }}
 spec:
   instances: 1
-  {{- if not $k.route.tls.enabled }}
+  {{- if not $keycloak.route.tls.enabled }}
   additionalOptions:
     - name: hostname-strict-https
       value: "false"
@@ -24,25 +24,25 @@ spec:
     xaEnabled: true
   db:
     vendor: postgres
-    database: {{ $k.database.name }}
-    host: {{ $k.database.host }}
+    database: {{ $keycloak.database.name }}
+    host: {{ $keycloak.database.host }}
     usernameSecret:
-      name: {{ $k.database.secretName }}
+      name: {{ $keycloak.database.secretName }}
       key: user
     passwordSecret:
-      name: {{ $k.database.secretName }}
+      name: {{ $keycloak.database.secretName }}
       key: password
   hostname:
-    hostname: {{ $k.route.host}}
+    hostname: {{ $keycloak.route.host}}
     strict: false
     strictBackchannel: false
   http:
-  {{- if $k.route.tls.enabled }}
+  {{- if $keycloak.route.tls.enabled }}
     httpEnabled: false
   {{- else }}
     httpEnabled: true
   {{- end }}
-    tlsSecret: {{ $k.route.tls.secretName }}
+    tlsSecret: {{ $keycloak.route.tls.secretName }}
   ingress:
     enabled: false
 {{- end }}

@@ -17,7 +17,11 @@ spec:
       value: "false"
     - name: hostname-port
       value: "80"
+    - name: enable-recovery
+      value: "true"
   {{- end }}
+  transaction:
+    xaEnabled: true
   env:
     - name: QUARKUS_TRANSACTION_MANAGER_ENABLE_RECOVERY
       value: "true"

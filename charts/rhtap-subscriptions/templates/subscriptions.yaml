@@ -4,6 +4,8 @@
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
+  annotations:
+    helm.sh/resource-policy: keep
   namespace: {{ $s.namespace }}
   name: {{ $s.name }}
 spec:
@@ -14,6 +16,8 @@ spec:
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
+  annotations:
+    helm.sh/resource-policy: keep
   namespace: {{ $s.namespace }}
   name: {{ $s.name }}
 spec:

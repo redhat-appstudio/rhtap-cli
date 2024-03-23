@@ -30,11 +30,11 @@ test_subscriptions() {
         exit 1
     fi
 
-    for i in {1..10}; do
+    for i in {1..20}; do
         api_resources_available &&
             return 0
 
-        wait=$((i * 10))
+        wait=$((i * 3))
         echo "### [${i}/10] Waiting for ${wait} seconds before retrying..."
         sleep ${wait}
     done

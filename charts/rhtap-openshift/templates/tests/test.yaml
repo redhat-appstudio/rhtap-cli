@@ -11,7 +11,7 @@ metadata:
   name: {{ $name }} 
 spec:
   restartPolicy: Never
-  serviceAccountName: rhtap-installer
+  serviceAccountName: {{ .Release.Name }}
   containers:
     - name: copy-scripts
       image: registry.access.redhat.com/ubi8/ubi-minimal:latest

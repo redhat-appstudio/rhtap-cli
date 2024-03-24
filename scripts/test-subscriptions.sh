@@ -35,7 +35,7 @@ test_subscriptions() {
             return 0
 
         wait=$((i * 3))
-        echo "### [${i}/10] Waiting for ${wait} seconds before retrying..."
+        echo "### [${i}/20] Waiting for ${wait} seconds before retrying..."
         sleep ${wait}
     done
     return 1

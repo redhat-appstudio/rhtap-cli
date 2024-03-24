@@ -1,34 +1,3 @@
-{{- define "keycloakRealmImport.spec.clients.attributes" -}}
-clientAuthenticatorType: client-secret
-publicClient: false
-implicitFlowEnabled: false 
-standardFlowEnabled: false
-directAccessGrantsEnabled: false
-serviceAccountsEnabled: true
-fullScopeAllowed: true
-webOrigins:
-  - "*"
-attributes:
-  access.token.lifespan: "300"
-  post.logout.redirect.uris: "+"
-protocol: openid-connect
-{{- end -}}
-
-{{- define "keycloakRealmImport.spec.clients.defaultClientScopes" -}}
-- email
-- profile
-- roles
-- web-origins
-- read:document
-{{- end -}}
-
-{{- define "keycloakRealmImport.spec.clients.optionalClientScopes" -}}
-- address
-- microprofile-jwt
-- offline_access
-- phone
-{{- end -}}
-
 {{- define "keycloakRealmImport.clients.enabled" -}}
   {{- $enabled := dict -}}
   {{- range $k, $v := .Values.trustedProfileAnalyzer.keycloakRealmImport.clients -}}

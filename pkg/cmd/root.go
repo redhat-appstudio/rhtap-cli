@@ -28,16 +28,17 @@ func (r *RootCmd) getLogger() *slog.Logger {
 	return slog.New(slog.NewTextHandler(os.Stdout, logOpts))
 }
 
-// Cmd exposes the root command.
+// Cmd exposes the root command, while instantiating the subcommand and their
+// requirements.
 func (r *RootCmd) Cmd() *cobra.Command {
 	r.cmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
 		return r.cfg.UnmarshalYAML()
 	}
 
-	logger := r.getLogger()
+	logger := r.flags.GetLogger(os.Stdout)
 	for _, sub := range []subcmd.Interface{
-		subcmd.NewBootstrap(),
 		subcmd.NewDeploy(logger, r.flags, &r.cfg.Installer, r.kube),
+		subcmd.NewTemplate(logger, r.flags, &r.cfg.Installer, r.kube),
 	} {
 		r.cmd.AddCommand(subcmd.NewRunner(sub).Cmd())
 	}

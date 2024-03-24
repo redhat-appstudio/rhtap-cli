@@ -1,0 +1,29 @@
+---
+rhtapInstallerCLI:
+  namespace: &installerNamespace rhtap
+  features:
+    crc:
+      enabled: true
+    keycloak:
+      enabled: true
+      namespace: rhtap-keycloak
+    trustedProfileAnalyzer:
+      enabled: true
+      namespace: &trustedProfileAnalyzerNamespace rhtap-tpa
+    trustedArtifactSigner:
+      enabled: false
+      namespace: &trusttedArtifactSignerNamespace rhtap-tas
+    redHatDeveloperHub:
+      enabled: true
+      namespace: *installerNamespace
+  dependencies:
+    - chart: charts/rhtap-openshift
+      namespace: *installerNamespace
+    - chart: charts/rhtap-subscriptions
+      namespace: *installerNamespace
+    - chart: charts/rhtap-infrastructure
+      namespace: *installerNamespace
+    - chart: charts/rhtap-backing-services
+      namespace: *installerNamespace
+    - chart: charts/rhtap-tpa
+      namespace: *trustedProfileAnalyzerNamespace

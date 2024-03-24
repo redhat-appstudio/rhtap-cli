@@ -1,10 +1,9 @@
-{{- $crc := required "CRC settings required" .Installer.Features.CRC -}}
-{{- $tas := required "TAS settings required" .Installer.Features.TrustedArtifactSigner -}}
-{{- $tpa := required "TPA settings required" .Installer.Features.TrustedProfileAnalyzer -}}
-{{- $keycloak := required "Keycloak settings required" .Installer.Features.Keycloak -}}
-{{- $rhdh := required "RHDH settings required" .Installer.Features.RedHatDeveloperHub -}}
-{{/* TODO: bring information from the cluster, like ingress domain */}}
-{{- $ingresDomain := "apps-crc.testing" -}}
+{{- $crc := required "CRC settings" .Installer.Features.CRC -}}
+{{- $tas := required "TAS settings" .Installer.Features.TrustedArtifactSigner -}}
+{{- $tpa := required "TPA settings" .Installer.Features.TrustedProfileAnalyzer -}}
+{{- $keycloak := required "Keycloak settings" .Installer.Features.Keycloak -}}
+{{- $rhdh := required "RHDH settings" .Installer.Features.RedHatDeveloperHub -}}
+{{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 ---
 #
 # rhtap-openshift
@@ -92,7 +91,7 @@ infrastructure:
 #
 
 {{- $keycloakRouteTLSSecretName := "keycloak-tls" }}
-{{- $keycloakRouteHost := printf "keycloak-%s.%s" $tpa.Namespace $ingresDomain }}
+{{- $keycloakRouteHost := printf "keycloak-%s.%s" $tpa.Namespace $ingressDomain }}
 
 backingServices:
   keycloak:
@@ -121,13 +120,12 @@ backingServices:
 # rhtap-tpa
 #
 
-{{- $tpaAppDomain := printf "-%s.%s" $tpa.Namespace $ingresDomain }}
-{{- $guacDatabaseSSLMode := "disable" }}
-{{- $guacDatabaseSecretName := "guac-pguser-guac" }}
+{{- $tpaAppDomain := printf "-%s.%s" $tpa.Namespace $ingressDomain }}
+{{- $tpaGUACDatabaseSecretName := "guac-pguser-guac" }}
 
 trustedProfileAnalyzer:
   enabled: {{ $tpa.Enabled }}
-  appDomain: {{ $tpaAppDomain}}
+  appDomain: "{{ $tpaAppDomain }}"
   keycloakRealmImport:
     enabled: {{ $keycloak.Enabled }}
     keycloakCR:
@@ -135,30 +133,29 @@ trustedProfileAnalyzer:
       name: keycloak
 
 trustification:
-  appDomain: {{ $tpaAppDomain }}
+  appDomain: "{{ $tpaAppDomain }}"
   guac:
     database: &guacDatabase
-      sslMode: {{ $guacDatabaseSSLMode }}
       name:
         valueFrom:
           secretKeyRef:
-            name: {{ $guacDatabaseSecretName }}
+            name: {{ $tpaGUACDatabaseSecretName }}
       host:
         valueFrom:
           secretKeyRef:
-            name: {{ $guacDatabaseSecretName }}
+            name: {{ $tpaGUACDatabaseSecretName }}
       port:
         valueFrom:
           secretKeyRef:
-            name: {{ $guacDatabaseSecretName}}
+            name: {{ $tpaGUACDatabaseSecretName}}
       username:
         valueFrom:
           secretKeyRef:
-            name: {{ $guacDatabaseSecretName }}
+            name: {{ $tpaGUACDatabaseSecretName }}
       password:
         valueFrom:
           secretKeyRef:
-            name: {{ $guacDatabaseSecretName }}
+            name: {{ $tpaGUACDatabaseSecretName }}
     initDatabase: *guacDatabase
   storage:
     endpoint: {{ printf "http://minio.%s.svc.cluster.local:80" $tpa.Namespace }}

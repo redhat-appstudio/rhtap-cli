@@ -1,0 +1,53 @@
+{{- $name := printf "%s-test" .Chart.Name -}}
+{{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport -}}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: hook-succeeded
+  labels:
+    {{- include "rhtap-tpa.labels" . | nindent 4 }}
+  name: {{ $name }} 
+spec:
+  restartPolicy: Never
+  serviceAccountName: {{ .Release.Name }}
+  containers:
+    - name: copy-scripts
+      image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+      workingDir: /scripts
+      command:
+        - /bin/bash
+        - -c
+        - |
+          set -x -e
+{{- range $path, $content := .Files.Glob "scripts/*.sh" -}}
+  {{- $name := trimPrefix "scripts/" $path }}
+          printf '%s' "{{ $content | toString | b64enc }}" | base64 -d >{{ $name }}
+          chmod +x {{ $name }}
+{{- end }}
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+{{- if $keycloak.enabled }}
+    - name: {{ $name }}
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      env:
+        - name: NAMESPACE
+          value: {{ $keycloak.keycloakCR.namespace }}
+      command:
+        - /scripts/test-keycloakrealmimport.sh
+      args:
+        - {{ printf "%s-chicken" $keycloak.keycloakCR.name | quote }}
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+{{- end }}
+  volumes:
+    - name: scripts
+      emptyDir: {}

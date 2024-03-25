@@ -1,17 +1,17 @@
 MinIO Tenants:
 {{- range $k, $v := include "infrastructure.minIOTentants.enabled" . | fromYaml }}
-  - Name: {{ $k }}
-    Namespace: {{ $v.namespace }}
-    Root Credentials: {{ $v.rootSecretName }} (Secret)
+  - Name:                     {{ $k }}
+    Namespace:                {{ $v.namespace }}
+    Root Credentials:         {{ $v.rootSecretName }} (Secret)
     Storage User Credentials: {{ $v.storageUserSecretName }} (Secret)
 {{- end }}
 
 Kafkas:
 {{- range $k, $v := include "infrastructure.kafkas.enabled" . | fromYaml }}
-  - Name: {{ $k }}
-    Namespace: {{ $v.namespace }}
-    Username: {{ $v.username }}
-    Credentials: {{ $v.username }} (Secret)
+  - Name:         {{ $k }}
+    Namespace:    {{ $v.namespace }}
+    Username:     {{ $v.username }}
+    Credentials:  {{ $v.username }} (Secret)
     Topics:
   {{- range $t := $v.topics }}
       - {{ $t.name }}
@@ -20,7 +20,7 @@ Kafkas:
 
 PostgreSQL Clusters:
 {{- range $k, $v := include "infrastructure.postgresClusters.enabled" . | fromYaml }}
-  - Namespace: {{ $v.namespace }}
-         Name: {{ $k }}
-      Version: {{ $v.postgresVersion }}
+  - Namespace:  {{ $v.namespace }}
+    Name:       {{ $k }}
+    Version:    {{ $v.postgresVersion }}
 {{- end }}

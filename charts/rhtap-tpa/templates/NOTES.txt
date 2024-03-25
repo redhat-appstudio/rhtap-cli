@@ -1,0 +1,25 @@
+{{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport }}
+{{- if $keycloak.enabled }}
+Keycloak Realm Import:
+  - Namespace: {{ $keycloak.keycloakCR.namespace }}
+    Name:      {{ $keycloak.keycloakCR.name }}
+
+Keycloak "chicken" Realm Creadentails:
+  - Namespace:    {{ .Release.Namespace }}
+    Username:     chicken-admin 
+    Admin Secret: {{ $keycloak.adminSecretName }}
+    OIDC Secret:  {{ $keycloak.oidcClientsSecretName }}
+{{- end }}
+
+{{- $tpa := .Values.trustedProfileAnalyzer }}
+{{ if $tpa.enabled }}
+{{- $trustification := .Values.trustification }}
+Trusted Profile Analyzer (TPA):
+  - Keycloak URL:   {{ $trustification.oidc.issuerUrl }}
+    Namespace:      {{ .Release.Namespace }}
+    Bombastic API:  {{ printf "sbom%s" $trustification.appDomain }}
+    Documentation:  {{ printf "docs%s" $trustification.appDomain }}
+    SPOG API:       {{ printf "api%s" $trustification.appDomain }}
+    SPOG Console:   {{ printf "console%s" $trustification.appDomain }}
+    Vexination API: {{ printf "vex%s" $trustification.appDomain }}
+{{- end }}

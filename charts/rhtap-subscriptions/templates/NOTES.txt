@@ -2,5 +2,5 @@ OpenShift Subscriptions:
 {{- range $sub := include "subscriptions.enabled" . | fromYaml }}
   - Subscription: "{{ $sub.name }}" ({{ $sub.namespace }})
     API-Resource: "{{ $sub.apiResource }}"
-         Channel: "{{ $sub.channel }}"
+    Channel:      "{{ $sub.channel }}"
 {{- end }}

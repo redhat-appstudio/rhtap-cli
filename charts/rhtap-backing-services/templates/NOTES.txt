@@ -1,0 +1,13 @@
+{{- if .Values.backingServices.keycloak.enabled }}
+{{- $k := .Values.backingServices.keycloak }}
+{{- $keycloakName := include "backingServices.keycloak.name" . -}}
+Keycloak:
+  - Name:         {{ $keycloakName }}
+    Namespace:    {{ $k.namespace }}
+  {{- if $k.route.tls.enabled }}
+    Console URL:  {{ printf "https://%s" $k.route.host }}
+  {{- else }}
+    Console URL:  {{ printf "http://%s" $k.route.host }}
+  {{- end }}
+    Admin Secret: {{ printf "%s-initial-admin" $keycloakName }}
+{{- end }}

@@ -122,6 +122,8 @@ backingServices:
 
 {{- $tpaAppDomain := printf "-%s.%s" $tpa.Namespace $ingressDomain }}
 {{- $tpaGUACDatabaseSecretName := "guac-pguser-guac" }}
+{{- $tpaOIDCClientsSecretName := "tpa-realm-chicken-clients" }}
+{{- $tpaTestingUsersEnabled := false }}
 
 trustedProfileAnalyzer:
   enabled: {{ $tpa.Enabled }}
@@ -131,6 +133,14 @@ trustedProfileAnalyzer:
     keycloakCR:
       namespace: {{ $keycloak.Namespace }}
       name: keycloak
+    oidcClientsSecretName: {{ $tpaOIDCClientsSecretName }}
+    clients:
+      walker:
+        enabled: true
+      testingManager:
+        enabled: {{ $tpaTestingUsersEnabled }}
+      testingUser:
+        enabled: {{ $tpaTestingUsersEnabled }}
 
 trustification:
   appDomain: "{{ $tpaAppDomain }}"
@@ -178,3 +188,24 @@ trustification:
   oidc:
     # TODO: enable/disable HTTPS depending on CRC status.
     issuerUrl: {{ printf "http://%s/realms/chicken" $keycloakRouteHost }}
+    clients:
+      walker:
+        clientSecret:
+          valueFrom:
+            secretKeyRef:
+              name: {{ $tpaOIDCClientsSecretName }}
+              key: walker
+{{- if $tpaTestingUsersEnabled }}
+      testingUser:
+        clientSecret:
+          valueFrom:
+            secretKeyRef:
+              name: {{ $tpaOIDCClientsSecretName }}
+              key: testingUser
+      testingManager:
+        clientSecret:
+          valueFrom:
+            secretKeyRef:
+              name: {{ $tpaOIDCClientsSecretName }}
+              key: testingManager
+{{- end }}

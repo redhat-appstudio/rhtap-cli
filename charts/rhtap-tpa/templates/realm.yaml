@@ -48,7 +48,7 @@ metadata:
   }}
 type: Opaque
 data:
-  {{- range $k, $v := include "keycloakRealmImport.clients.enabled" . | fromYaml }}
+  {{- range $k, $v := .Values.trustedProfileAnalyzer.keycloakRealmImport.clients -}}
     {{- $s := (get $oidcSecretData $k) | default (include "generate.client.secret" . | b64enc) }}
     {{- $oidcCredentials := mergeOverwrite $oidcCredentials (dict $k $s) }}
   {{ $k }}: {{ $s }}
@@ -1174,7 +1174,7 @@ spec:
           - email
           - create:document
         directAccessGrantsEnabled: false
-        enabled: true
+        enabled: {{ $keycloak.clients.testingManager.enabled }}
         frontchannelLogout: false
         fullScopeAllowed: true
         implicitFlowEnabled: false
@@ -1244,7 +1244,7 @@ spec:
           - read:document
           - email
         directAccessGrantsEnabled: false
-        enabled: true
+        enabled: {{ $keycloak.clients.testingUser.enabled }}
         frontchannelLogout: false
         fullScopeAllowed: true
         implicitFlowEnabled: false
@@ -1315,7 +1315,7 @@ spec:
           - email
           - create:document
         directAccessGrantsEnabled: false
-        enabled: true
+        enabled: {{ $keycloak.clients.walker.enabled }}
         frontchannelLogout: false
         fullScopeAllowed: true
         implicitFlowEnabled: false

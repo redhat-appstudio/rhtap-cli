@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log/slog"
 	"os"
 
 	"github.com/otaviof/rhtap-installer-cli/pkg/config"
@@ -20,12 +19,6 @@ type RootCmd struct {
 	flags *flags.Flags   // global flags
 	cfg   *config.Config // installer configuration
 	kube  *k8s.Kube      // kubernetes client
-}
-
-// getLogger returns a logger instance.l
-func (r *RootCmd) getLogger() *slog.Logger {
-	logOpts := &slog.HandlerOptions{Level: r.flags.LogLevel}
-	return slog.New(slog.NewTextHandler(os.Stdout, logOpts))
 }
 
 // Cmd exposes the root command, while instantiating the subcommand and their

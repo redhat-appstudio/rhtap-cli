@@ -29,6 +29,9 @@ func (r *RootCmd) Cmd() *cobra.Command {
 	}
 
 	logger := r.flags.GetLogger(os.Stdout)
+
+	r.cmd.AddCommand(subcmd.NewBootstrap(logger, &r.cfg.Installer, r.kube))
+
 	for _, sub := range []subcmd.Interface{
 		subcmd.NewDeploy(logger, r.flags, &r.cfg.Installer, r.kube),
 		subcmd.NewTemplate(logger, r.flags, &r.cfg.Installer, r.kube),

@@ -24,13 +24,9 @@ type RootCmd struct {
 // Cmd exposes the root command, while instantiating the subcommand and their
 // requirements.
 func (r *RootCmd) Cmd() *cobra.Command {
-	r.cmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
-		return r.cfg.UnmarshalYAML()
-	}
-
 	logger := r.flags.GetLogger(os.Stdout)
 
-	r.cmd.AddCommand(subcmd.NewBootstrap(logger, &r.cfg.Installer, r.kube))
+	r.cmd.AddCommand(subcmd.NewDeveloperHub(logger, r.cfg, r.kube))
 
 	for _, sub := range []subcmd.Interface{
 		subcmd.NewDeploy(logger, r.flags, &r.cfg.Installer, r.kube),
@@ -44,13 +40,17 @@ func (r *RootCmd) Cmd() *cobra.Command {
 // NewRootCmd instantiates the root command, setting up the global flags.
 func NewRootCmd() *RootCmd {
 	f := flags.NewFlags()
+	cfg := config.NewConfig()
 	r := &RootCmd{
 		flags: f,
 		cmd: &cobra.Command{
 			Use:   AppName,
 			Short: "RHTAP Installer CLI",
+			PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+				return cfg.UnmarshalYAML()
+			},
 		},
-		cfg:  config.NewConfig(),
+		cfg:  cfg,
 		kube: k8s.NewKube(f),
 	}
 	p := r.cmd.PersistentFlags()

@@ -4,18 +4,21 @@ rhtapInstallerCLI:
   features:
     crc:
       enabled: true
-    keycloak:
-      enabled: true
-      namespace: rhtap-keycloak
     trustedProfileAnalyzer:
-      enabled: true
+      enabled: &tpaEnabled true
       namespace: &trustedProfileAnalyzerNamespace rhtap-tpa
+    keycloak:
+      enabled: *tpaEnabled
+      namespace: rhtap-keycloak
     trustedArtifactSigner:
       enabled: false
       namespace: &trusttedArtifactSignerNamespace rhtap-tas
     redHatDeveloperHub:
-      enabled: true
+      enabled: &rhdhEnabled true
       namespace: *installerNamespace
+    openShiftPipelines:
+      enabled: *rhdhEnabled
+      namespace: openshift-pipelines
   dependencies:
     - chart: charts/rhtap-openshift
       namespace: *installerNamespace

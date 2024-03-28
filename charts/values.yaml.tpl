@@ -91,7 +91,7 @@ infrastructure:
 #
 
 {{- $keycloakRouteTLSSecretName := "keycloak-tls" }}
-{{- $keycloakRouteHost := printf "keycloak-%s.%s" $tpa.Namespace $ingressDomain }}
+{{- $keycloakRouteHost := printf "sso.%s" $ingressDomain }}
 
 backingServices:
   keycloak:
@@ -105,7 +105,7 @@ backingServices:
     route:
       host: {{ $keycloakRouteHost }}
       tls:
-        enabled: false
+        enabled: {{ not $crc.Enabled }}
         secretName: {{ $keycloakRouteTLSSecretName }}
         termination: reencrypt
 {{- if $crc.Enabled }}
@@ -124,6 +124,7 @@ backingServices:
 {{- $tpaGUACDatabaseSecretName := "guac-pguser-guac" }}
 {{- $tpaOIDCClientsSecretName := "tpa-realm-chicken-clients" }}
 {{- $tpaTestingUsersEnabled := false }}
+{{- $tpaRealmPath := "realms/chicken" }}
 
 trustedProfileAnalyzer:
   enabled: {{ $tpa.Enabled }}
@@ -186,8 +187,11 @@ trustification:
           secretKeyRef:
             name: {{ $tpaKafkaSecretName }}
   oidc:
-    # TODO: enable/disable HTTPS depending on CRC status.
-    issuerUrl: {{ printf "http://%s/realms/chicken" $keycloakRouteHost }}
+{{- if $crc.Enabled }}
+    issuerUrl: {{ printf "http://%s/%s" $keycloakRouteHost $tpaRealmPath }}
+{{- else }}
+    issuerUrl: {{ printf "https://%s/%s" $keycloakRouteHost $tpaRealmPath }}
+{{- end }}
     clients:
       walker:
         clientSecret:

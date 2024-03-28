@@ -18,12 +18,12 @@ spec:
     name: {{ $keycloakName }}
     weight: 100
   port:
-  {{- if $k.route.tls.enabled -}}
+  {{- if $k.route.tls.enabled }}
     targetPort: https
   {{- else }}
     targetPort: http
   {{- end }}
-  {{- if $k.route.tls.enabled -}}
+  {{- if $k.route.tls.enabled }}
   tls:
     termination: {{ $k.route.tls.termination }}
     insecureEdgeTerminationPolicy: Redirect

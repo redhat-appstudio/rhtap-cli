@@ -1,0 +1,42 @@
+
+{{- $secureSign := .Values.trustedArtifactSigner.secureSign -}}
+{{- if $secureSign.enabled }}
+---
+apiVersion: rhtas.redhat.com/v1alpha1
+kind: Securesign
+metadata:
+  namespace: {{ $secureSign.namespace }}
+  name: {{ $secureSign.name }}
+spec:
+  fulcio:
+    externalAccess:
+      enabled: true
+  {{- with $secureSign.fulcio.certificate }}
+    certificate:
+    {{- . | toYaml | nindent 6 }}
+  {{- end }}
+    config:
+      OIDCIssuers:
+        '{{ $secureSign.fulcio.oidc.issuerURL }}':
+          IssuerURL: "{{ $secureSign.fulcio.oidc.issuerURL }}"
+          ClientID: {{ $secureSign.fulcio.oidc.clientID }}
+          Type: email
+  rekor:
+    externalAccess:
+      enabled: true
+    rekorSearchUI:
+      enabled: true
+    signer:
+      kms: secret
+  trillian:
+    database:
+      create: true
+  tuf:
+    externalAccess:
+      enabled: true
+    port: 80
+    keys:
+      - name: rekor.pub
+      - name: ctfe.pub
+      - name: fulcio_v1.crt.pem
+{{- end }}

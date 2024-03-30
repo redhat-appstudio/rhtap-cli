@@ -1,0 +1,24 @@
+---
+trustedArtifactSigner:
+  enabled: true
+  keycloakRealmImport:
+    enabled: true
+    keycloakCR:
+      namespace: __OVERWRITE_ME__
+      name: __OVERWRITE_ME__
+    oidcClientsSecretName: &oidcClientsSecretName trusted-artifact-signer-realm
+    clients:
+      trustedArtifactSigner:
+        enabled: true
+  secureSign:
+    enabled: true
+    namespace: __OVERWRITE_ME__
+    name: trusted-artifact-signer
+    fulcio:
+      oidc:
+        issuerURL: __OVERWRITE_ME__
+        clientID: trusted-artifact-signer
+      certificate:
+        commonName: fulcio.hostname
+        organizationEmail: __OVERWRITE_ME__
+        organizationName: __OVERWRITE_ME__

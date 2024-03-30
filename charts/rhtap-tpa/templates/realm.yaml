@@ -19,7 +19,7 @@ metadata:
     app: keycloak
   namespace: {{ .Release.Namespace }}
   name: {{
-    required ".admin.secretName is required"
+    required ".adminSsecretName is required"
     $keycloak.adminSecretName
   }}
 type: Opaque

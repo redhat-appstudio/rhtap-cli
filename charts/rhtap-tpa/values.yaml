@@ -19,7 +19,7 @@ trustedProfileAnalyzer:
       namespace: __OVERWRITE_ME__
       name: __OVERWRITE_ME__
     # Realm's admin user.
-    adminSecretName: &realmAdminSecretName tpa-realm-chicken-admin
+    adminSecretName: tpa-realm-chicken-admin
     # Name of the Secret generated with the enabled OIDC clients secrets, each
     # client key on the ".client" object will become a Secret key.
     oidcClientsSecretName: &oidcClientsSecretName tpa-realm-chicken-clients

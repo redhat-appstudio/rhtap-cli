@@ -39,8 +39,10 @@ spec:
       env:
         - name: NAMESPACE
           value: {{ $keycloak.namespace }}
+        - name: RESOURCE_TYPE
+          value: "statefulset"
       command:
-        - /scripts/test-statefulsets.sh
+        - /scripts/test-rollout-status.sh
       args:
         - {{
             printf "app=keycloak,app.kubernetes.io/instance=%s"

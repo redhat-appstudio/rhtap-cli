@@ -55,8 +55,10 @@ spec:
       env:
         - name: NAMESPACE
           value: {{ $v.namespace }}
+        - name: RESOURCE_TYPE
+          value: "statefulset"
       command:
-        - /scripts/test-statefulsets.sh
+        - /scripts/test-rollout-status.sh
       args:
         - {{ printf "v1.min.io/tenant=%s" $k | quote }}
       volumeMounts:
@@ -71,8 +73,10 @@ spec:
       env:
         - name: NAMESPACE
           value: {{ $v.namespace }}
+        - name: RESOURCE_TYPE
+          value: "statefulset"
       command:
-        - /scripts/test-statefulsets.sh
+        - /scripts/test-rollout-status.sh
       args:
         - {{
           printf "%s,%s=%s"

@@ -1,6 +1,8 @@
 
 {{- $secureSign := .Values.trustedArtifactSigner.secureSign -}}
 {{- if $secureSign.enabled }}
+  {{- $tasUsername := "trusted-artifact-signer" }}
+  {{- $tasEmail := printf "%s@%s" $tasUsername .Values.trustedArtifactSigner.ingressDomain }}
 ---
 apiVersion: rhtas.redhat.com/v1alpha1
 kind: Securesign
@@ -11,15 +13,15 @@ spec:
   fulcio:
     externalAccess:
       enabled: true
-  {{- with $secureSign.fulcio.certificate }}
     certificate:
-    {{- . | toYaml | nindent 6 }}
-  {{- end }}
+      commonName: {{ $secureSign.fulcio.certificate.commonName }}
+      organizationEmail:  {{ $tasEmail }}
+      organizationName: {{ $secureSign.fulcio.certificate.organizationName }}
     config:
       OIDCIssuers:
         '{{ $secureSign.fulcio.oidc.issuerURL }}':
           IssuerURL: "{{ $secureSign.fulcio.oidc.issuerURL }}"
-          ClientID: {{ $secureSign.fulcio.oidc.clientID }}
+          ClientID: {{ $tasEmail }}
           Type: email
   rekor:
     externalAccess:

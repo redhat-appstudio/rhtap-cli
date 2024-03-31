@@ -213,3 +213,31 @@ trustification:
               name: {{ $tpaOIDCClientsSecretName }}
               key: testingManager
 {{- end }}
+
+#
+# rhtap-tas
+#
+
+{{- $tasRealmPath := "realms/trusted-artifact-signer" }}
+
+trustedArtifactSigner:
+  enabled: {{ $tas.Enabled }}
+  ingressDomain: "{{ $ingressDomain }}"
+  keycloakRealmImport:
+    enabled: {{ $keycloak.Enabled }}
+    keycloakCR:
+      namespace: {{ $keycloak.Namespace }}
+      name: keycloak
+  secureSign:
+    enabled: {{ $tas.Enabled }}
+    namespace: {{ $tas.Namespace }}
+    fulcio:
+      oidc:
+{{- if $crc.Enabled }}
+        issuerURL: {{ printf "http://%s/%s" $keycloakRouteHost $tasRealmPath }}
+{{- else }}
+        issuerURL: {{ printf "https://%s/%s" $keycloakRouteHost $tasRealmPath }}
+{{- end }}
+      certificate:
+        # TODO: promopt the user for organizatio name input!
+        organizationName: RHTAP

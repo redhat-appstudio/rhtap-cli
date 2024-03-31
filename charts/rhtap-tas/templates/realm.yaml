@@ -1,5 +1,31 @@
 {{- $keycloak := .Values.trustedArtifactSigner.keycloakRealmImport -}}
 {{- if $keycloak.enabled }}
+  {{- $tasUsername := "trusted-artifact-signer" -}}
+  {{- $tasEmail := printf "%s@%s" $tasUsername .Values.trustedArtifactSigner.ingressDomain -}}
+---
+  {{- 
+    $tasSecretObj := 
+      (lookup "v1" "Secret" .Release.Namespace $keycloak.userSecretName) |
+      default dict
+  -}}
+  {{- $tasSecretData := (get $tasSecretObj "data") | default dict -}}
+  {{- $tasPassword := (get $tasSecretData "password") | default (randAlphaNum 16 | b64enc) -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    app: keycloak
+  namespace: {{ .Release.Namespace }}
+  name: {{
+    required ".userSecretName is required"
+    $keycloak.userSecretName
+  }}
+type: Opaque
+data:
+  username: {{ $tasUsername | b64enc }}
+  password: {{ $tasPassword }}
 ---
   {{- 
     $oidcSecretObj := 
@@ -1150,6 +1176,7 @@ spec:
         publicClient: true
         redirectUris:
           - "*"
+          - "urn:ietf:wg:oauth:2.0:oob"
         serviceAccountsEnabled: false
         standardFlowEnabled: true
         surrogateAuthRequired: false
@@ -1587,6 +1614,21 @@ spec:
     ssoSessionMaxLifespanRememberMe: 0
     supportedLocales: []
     userManagedAccessAllowed: false
+    users:
+      - username: {{ $tasUsername }}
+        email: {{ $tasEmail }}
+        credentials:
+          - type: password
+            value: {{ $tasPassword | b64dec }}
+            temporary: false
+        disableableCredentialTypes: []
+        emailVerified: false
+        enabled: true
+        groups: []
+        notBefore: 0
+        realmRoles: []
+        requiredActions: []
+        totp: false
     verifyEmail: false
     waitIncrementSeconds: 60
     webAuthnPolicyAcceptableAaguids: []

@@ -35,9 +35,11 @@ spec:
       image: quay.io/codeready-toolchain/oc-client-base:latest
       command:
         - /scripts/test-projects.sh
+{{- if .Values.openshift.projects }}
       args:
 {{- range $p := .Values.openshift.projects }}
         - {{ $p }}
+{{- end }}
 {{- end }}
       volumeMounts:
         - name: scripts

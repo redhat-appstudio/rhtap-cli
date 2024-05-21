@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/otaviof/rhtap-installer-cli/pkg/config"
-	"github.com/otaviof/rhtap-installer-cli/pkg/githubapp"
-	"github.com/otaviof/rhtap-installer-cli/pkg/k8s"
+	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
+	"github.com/redhat-appstudio/rhtap-cli/pkg/githubapp"
+	"github.com/redhat-appstudio/rhtap-cli/pkg/k8s"
 
 	"github.com/google/go-github/scrape"
 	"github.com/google/go-github/v60/github"

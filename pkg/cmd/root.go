@@ -3,10 +3,10 @@ package cmd
 import (
 	"os"
 
-	"github.com/otaviof/rhtap-installer-cli/pkg/config"
-	"github.com/otaviof/rhtap-installer-cli/pkg/flags"
-	"github.com/otaviof/rhtap-installer-cli/pkg/k8s"
-	"github.com/otaviof/rhtap-installer-cli/pkg/subcmd"
+	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
+	"github.com/redhat-appstudio/rhtap-cli/pkg/flags"
+	"github.com/redhat-appstudio/rhtap-cli/pkg/k8s"
+	"github.com/redhat-appstudio/rhtap-cli/pkg/subcmd"
 
 	"github.com/spf13/cobra"
 )

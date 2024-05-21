@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/otaviof/rhtap-installer-cli/pkg/cmd"
+	"github.com/redhat-appstudio/rhtap-cli/pkg/cmd"
 )
 
 func main() {

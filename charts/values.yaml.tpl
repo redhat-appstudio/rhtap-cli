@@ -60,6 +60,15 @@ subscriptions:
 {{- $tpaMinIORootSecretName := "tpa-minio-root-env" }}
 
 infrastructure:
+  argoCD:
+    controller:
+      resources:
+        limits:
+          cpu: "2"
+          memory: 6Gi
+        requests:
+          cpu: "1"
+          memory: 3Gi
   kafkas:
     tpa:
       enabled: {{ $tpa.Enabled }}

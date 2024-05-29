@@ -50,6 +50,8 @@ subscriptions:
     enabled: {{ $rhdh.Enabled }}
   openshiftTrustedArtifactSigner:
     enabled: {{ $tas.Enabled }}
+  redHatDeveloperHub:
+    enabled: {{ $rhdh.Enabled }}
 
 #
 # rhtap-infrastructure

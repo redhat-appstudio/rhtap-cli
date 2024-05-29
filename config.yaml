@@ -12,10 +12,10 @@ rhtapInstallerCLI:
       namespace: rhtap-keycloak
     trustedArtifactSigner:
       enabled: false
-      namespace: &trusttedArtifactSignerNamespace rhtap-tas
+      namespace: &trustedArtifactSignerNamespace rhtap-tas
     redHatDeveloperHub:
       enabled: &rhdhEnabled true
-      namespace: *installerNamespace
+      namespace: rhdh-operator
     openShiftPipelines:
       enabled: *rhdhEnabled
       namespace: openshift-pipelines

@@ -139,7 +139,21 @@ func (g *GithubIntegration) store(
 			Name:      g.secretName().Name,
 		},
 		Type: corev1.SecretTypeOpaque,
-		Data: githubapp.EncodeGithubAppConfig(appConfig),
+		Data: map[string][]byte{
+			"clientID":      []byte(*appConfig.ClientID),
+			"clientSecret":  []byte(*appConfig.ClientSecret),
+			"createdAt":     []byte(github.Stringify(*appConfig.CreatedAt)),
+			"externalURL":   []byte(*appConfig.ExternalURL),
+			"htmlURL":       []byte(*appConfig.HTMLURL),
+			"id":            []byte(github.Stringify(*appConfig.ID)),
+			"name":          []byte(*appConfig.Name),
+			"nodeID":        []byte(*appConfig.NodeID),
+			"owner":         []byte(github.Stringify(*appConfig.Owner)),
+			"pem":           []byte(*appConfig.PEM),
+			"slug":          []byte(*appConfig.Slug),
+			"updatedAt":     []byte(github.Stringify(*appConfig.UpdatedAt)),
+			"webhookSecret": []byte(*appConfig.WebhookSecret),
+		},
 	}
 	logger := g.log().With(
 		"secret-namespace", secret.GetNamespace(),

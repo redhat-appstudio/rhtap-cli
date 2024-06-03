@@ -70,3 +70,12 @@ subscriptions:
     channel: stable
     source: redhat-operators
     sourceNamespace: openshift-marketplace
+  redHatDeveloperHub:
+    enabled: false
+    description: Red Hat Developer Hub Operator
+    apiResource: backstages.rhdh.redhat.com
+    namespace: openshift-operators
+    name: rhdh
+    channel: fast-1.1
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace

@@ -1,0 +1,9 @@
+{{- range tuple "development" "prod" "stage" }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    argocd.argoproj.io/managed-by: rhtap-argocd
+  name: rhtap-app-{{ . }}
+{{- end }}

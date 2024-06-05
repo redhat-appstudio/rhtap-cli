@@ -3,6 +3,24 @@
 shopt -s inherit_errexit
 set -Eeu -o pipefail
 
+app_namespaces() {
+    ### Workaround
+    ### Helm does not support the patching of resources.
+    echo -n "* Patching ServiceAccounts in rhtap-app-*: "
+    for env in "development" "prod" "stage"; do
+        for SA in default pipeline; do
+            echo -n "."
+            kubectl patch serviceaccounts --namespace "rhtap-app-$env" "$SA" --patch "
+secrets:
+    - name: quay-auth
+imagePullSecrets:
+    - name: quay-auth
+" >/dev/null
+        done
+    done
+    echo "OK"
+}
+
 openshift_gitops() {
     NAMESPACE="rhtap"
     RHTAP_ARGOCD_INSTANCE="$NAMESPACE-argocd"
@@ -19,6 +37,8 @@ openshift_gitops() {
     done
     echo "OK"
 
+    ### Workaround
+    ### The ArgoCD token cannot be created via a manifest.
     echo -n "* Configure ArgoCD admin user: "
     if [ "$(kubectl get secret "$RHTAP_ARGOCD_INSTANCE-secret" -n "$NAMESPACE" -o name --ignore-not-found | wc -l)" = "0" ]; then
         ARGOCD_HOSTNAME="$(kubectl get route -n "$NAMESPACE" "$RHTAP_ARGOCD_INSTANCE-server" --ignore-not-found -o jsonpath="{.spec.host}")"
@@ -57,6 +77,7 @@ openshift_gitops() {
 main() {
     TEMP_DIR="$(mktemp -d)"
     cd "$TEMP_DIR"
+    app_namespaces
     openshift_gitops
     cd - >/dev/null
     rm -rf "$TEMP_DIR"

@@ -8,7 +8,11 @@ app_namespaces() {
     ### Helm does not support the patching of resources.
     echo -n "* Patching ServiceAccounts in rhtap-app-*: "
     for env in "development" "prod" "stage"; do
-        for SA in default pipeline; do
+        for SA in "default" "pipeline"; do
+            until kubectl get serviceaccounts --namespace "rhtap-app-$env" "$SA" >/dev/null 2>&1; do
+                echo -n "_"
+                sleep 2
+            done
             echo -n "."
             kubectl patch serviceaccounts --namespace "rhtap-app-$env" "$SA" --patch "
 secrets:

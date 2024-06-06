@@ -30,3 +30,5 @@ rhtapInstallerCLI:
       namespace: *installerNamespace
     - chart: charts/rhtap-tpa
       namespace: *trustedProfileAnalyzerNamespace
+    - chart: charts/rhtap-dh
+      namespace: *installerNamespace

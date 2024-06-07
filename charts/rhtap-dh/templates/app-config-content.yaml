@@ -1,0 +1,97 @@
+{{- define "rhtap-dh.app-conf" }}
+app:
+  title: Red Hat Developer Hub
+  baseUrl: ${BACKEND_URL}
+{{- $argocdSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-argocd-integration") }}
+{{- $argocdSecretData := ($argocdSecretObj.data | default dict) }}
+{{- if $argocdSecretData }}
+argocd:
+  appLocatorMethods:
+    - type: 'config'
+      instances:
+        - name: default
+          url: ${ARGOCD__URL}
+          token: ${ARGOCD__API_TOKEN}
+  password: ${ARGOCD__PASSWORD}
+  username: ${ARGOCD__USER}
+  waitCycles: 25
+{{- end }}
+auth:
+  environment: production
+  providers:
+  {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
+    github:
+      production:
+        clientId: ${GITHUB__APP__CLIENT__ID}
+        clientSecret: ${GITHUB__APP__CLIENT__SECRET}
+  {{- end }}
+  {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
+    gitlab:
+      production:
+        clientId: ${GITLAB__APP__CLIENT__ID}
+        clientSecret: ${GITLAB__APP__CLIENT__SECRET}
+  {{- end }}
+backend:
+  auth:
+    keys:
+      - secret: ${BACKEND_SECRET}
+  {{- if .Values.debug.ci }}
+    dangerouslyDisableDefaultAuthPolicy: true
+  {{- end }}
+  baseUrl: ${BACKEND_URL}
+  cors:
+    origin: ${BACKEND_URL}
+catalog:
+  locations:
+    - type: url
+      target: ${DEVELOPER_HUB__CATALOG__URL}
+  rules:
+    - allow:
+      - Component
+      - System
+      - Group
+      - Resource
+      - Location
+      - Template
+      - API
+integrations:
+{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
+  github:
+    - host: github.com
+      apps:
+        - appId: ${GITHUB__APP__ID}
+          clientId: ${GITHUB__APP__CLIENT__ID}
+          clientSecret: ${GITHUB__APP__CLIENT__SECRET}
+          webhookUrl: ${GITHUB__APP__WEBHOOK__URL}
+          webhookSecret: ${GITHUB__APP__WEBHOOK__SECRET}
+          privateKey: ${GITHUB__APP__PRIVATE_KEY}
+{{- end }}
+{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
+  gitlab:
+    - host: gitlab.com
+      token: ${GITLAB__TOKEN}
+{{- end }}
+proxy:
+  endpoints:
+    '/quay/api':
+      target: 'https://quay.io'
+      headers:
+        X-Requested-With: 'XMLHttpRequest'
+      {{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
+      {{- $quaySecretData := ($quaySecretObj.data | default dict) }}
+      {{- if $quaySecretData.token }}
+        Authorization: 'Bearer ${QUAY__API_TOKEN}'
+      {{- end }}
+      changeOrigin: true
+      # Change to "false" in case of using self hosted quay instance with a self-signed certificate
+      secure: true
+quay:
+  # The UI url for Quay, used to generate the link to Quay
+  uiUrl: 'https://quay.io'
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'local'
+  publisher:
+    type: 'local'
+{{- end }}

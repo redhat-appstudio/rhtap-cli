@@ -1,0 +1,106 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: developer-hub-rhtap-dynamic-plugins
+data:
+  dynamic-plugins.yaml: |
+    includes:
+      - dynamic-plugins.default.yaml
+    plugins:
+      # Installed plugins can be listed at:
+      # https://DH_HOSTNAME/api/dynamic-plugins-info/loaded-plugins
+    {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-argocd-integration") }}
+      - disabled: false
+        package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              roadiehq.backstage-plugin-argo-cd:
+                mountPoints:
+                  - config:
+                      if:
+                        allOf:
+                          - isArgocdAvailable
+                      layout:
+                        gridColumnEnd:
+                          lg: span 8
+                          xs: span 12
+                    importName: EntityArgoCDOverviewCard
+                    mountPoint: entity.page.overview/cards
+                  - config:
+                      if:
+                        allOf:
+                          - isArgocdAvailable
+                      layout:
+                        gridColumn: 1 / -1
+                    importName: EntityArgoCDHistoryCard
+                    mountPoint: entity.page.cd/cards
+      - disabled: false
+        package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
+        pluginConfig:
+          argocd:
+            appLocatorMethods:
+              - type: 'config'
+                instances: []
+      - disabled: false
+        package: ./dynamic-plugins/dist/roadiehq-scaffolder-backend-argocd-dynamic
+        pluginConfig:
+          argocd:
+            appLocatorMethods:
+              - type: 'config'
+                instances: []
+    {{- end }}
+      - disabled: false
+        package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
+      - disabled: false
+        package: ./dynamic-plugins/dist/backstage-plugin-techdocs
+      - disabled: false
+        package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+      - disabled: false
+        package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+  {{- range $index, $secret := (lookup "v1" "Secret" .Release.Namespace "").items }}
+    {{- if regexMatch "rhdh-kubernetes-plugin-token-.*" $secret.metadata.name }}
+        pluginConfig:
+          kubernetes:
+            clusterLocatorMethods:
+              - clusters:
+                  - authProvider: serviceAccount
+                    name: rhdh-kubernetes-plugin
+                    serviceAccountToken: {{ $secret.data.token | b64dec }}
+                    skipTLSVerify: true
+                    url: https://kubernetes.default.svc
+                type: config
+            customResources:
+              - apiVersion: v1
+                group: route.openshift.io
+                plural: routes
+              - apiVersion: v1
+                group: tekton.dev
+                plural: pipelineruns
+              - apiVersion: v1
+                group: tekton.dev
+                plural: taskruns
+            serviceLocatorMethod:
+              type: multiTenant
+    {{- end}}
+  {{- end}}
+      - disabled: false
+        package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-quay
+      - disabled: false
+        package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-tekton
+        pluginConfig:
+          dynamicPlugins:
+            frontend:
+              janus-idp.backstage-plugin-tekton:
+                mountPoints:
+                  - config:
+                      if:
+                        allOf:
+                          - isTektonCIAvailable
+                      layout:
+                        gridColumn: 1 / -1
+                        gridRowStart: 1
+                    importName: TektonCI
+                    mountPoint: entity.page.ci/cards
+      - disabled: false
+        package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-topology

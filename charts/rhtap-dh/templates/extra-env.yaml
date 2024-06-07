@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+    name: developer-hub-rhtap-env
+    namespace: {{.Release.Namespace}}
+type: Opaque
+data:
+    BACKEND_SECRET: {{ randAlphaNum 16 | b64enc }}
+    BACKEND_URL: {{ print "https://backstage-developer-hub-rhtap." .Values.developerHub.ingressDomain | b64enc }}
+{{- $argocdSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-argocd-integration") }}
+{{- $argocdSecretData := ($argocdSecretObj.data | default dict) }}
+{{- if $argocdSecretData }}
+    ARGOCD__API_TOKEN: {{ $argocdSecretData.ARGOCD_API_TOKEN }}
+    ARGOCD__PASSWORD: {{ $argocdSecretData.ARGOCD_PASSWORD }}
+    ARGOCD__URL: {{ print "https://" ($argocdSecretData.ARGOCD_HOSTNAME | b64dec) | b64enc }}
+    ARGOCD__USER: {{ $argocdSecretData.ARGOCD_USER }}
+{{- end }}
+    DEVELOPER_HUB__CATALOG__URL: {{ .Values.developerHub.catalogUrl | b64enc }}
+{{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
+{{- $ghSecretData := ($ghSecretObj.data | default dict) }}
+{{- if $ghSecretData }}
+    GITHUB__APP__ID: {{ $ghSecretData.ID }}
+    GITHUB__APP__CLIENT__ID: {{ $ghSecretData.ClientID }}
+    GITHUB__APP__CLIENT__SECRET: {{ $ghSecretData.ClientSecret }}
+    GITHUB__APP__PRIVATE_KEY: {{ $ghSecretData.PEM }}
+    GITHUB__APP__WEBHOOK__SECRET: {{ $ghSecretData.WebhookSecret }}
+{{end}}
+{{- $pacRoute := (lookup "route.openshift.io/v1" "Route" "openshift-pipelines" "pipelines-as-code-controller") }}
+{{- if $pacRoute }}
+    GITHUB__APP__WEBHOOK__URL: {{ print "https://" $pacRoute.spec.host | b64enc }}
+{{end}}
+{{- $glSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") -}}
+{{- $glSecretData := ($glSecretObj.data | default dict) -}}
+{{- if $glSecretData }}
+    GITLAB__APP__CLIENT__ID: "{{ $glSecretData.ClientID }}"
+    GITLAB__APP__CLIENT__SECRET: "{{ $glSecretData.ClientSecret }}"
+    GITLAB__TOKEN: "{{ $glSecretData.Token }}"
+{{end}}
+{{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
+{{- $quaySecretData := ($quaySecretObj.data | default dict) }}
+{{- if $quaySecretData.token }}
+    QUAY__API_TOKEN: {{ $quaySecretData.token | b64enc }}
+{{- end }}

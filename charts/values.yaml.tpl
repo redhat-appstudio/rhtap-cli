@@ -40,7 +40,7 @@ subscriptions:
   openshiftGitOps:
     enabled: {{ $rhdh.Enabled }}
     config:
-      argoCDClusterNamespace: {{ default "empty" $rhdh.Namespace }}
+      argoCDClusterNamespace: {{ .Installer.Namespace }}
   openshiftKeycloak:
     enabled: {{ $keycloak.Enabled }}
     operatorGroup:

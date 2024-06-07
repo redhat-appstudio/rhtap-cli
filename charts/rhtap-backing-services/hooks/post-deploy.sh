@@ -44,7 +44,8 @@ openshift_gitops() {
     ### Workaround
     ### The ArgoCD token cannot be created via a manifest.
     echo -n "* Configure ArgoCD admin user: "
-    if [ "$(kubectl get secret "$RHTAP_ARGOCD_INSTANCE-secret" -n "$NAMESPACE" -o name --ignore-not-found | wc -l)" = "0" ]; then
+    RHTAP_ARGOCD_SECRET="rhtap-argocd-integration"
+    if [ "$(kubectl get secret "$RHTAP_ARGOCD_SECRET" -n "$NAMESPACE" -o name --ignore-not-found | wc -l)" = "0" ]; then
         ARGOCD_HOSTNAME="$(kubectl get route -n "$NAMESPACE" "$RHTAP_ARGOCD_INSTANCE-server" --ignore-not-found -o jsonpath="{.spec.host}")"
         echo -n "."
         ARGOCD_PASSWORD="$(kubectl get secret -n "$NAMESPACE" "$RHTAP_ARGOCD_INSTANCE-cluster" -o jsonpath="{.data.admin\.password}" | base64 --decode)"
@@ -64,7 +65,7 @@ openshift_gitops() {
         echo -n "."
         ARGOCD_API_TOKEN="$(./argocd account generate-token --http-retry-max 5 --account "admin")"
         echo -n "."
-        kubectl create secret generic "$RHTAP_ARGOCD_INSTANCE-secret" \
+        kubectl create secret generic "$RHTAP_ARGOCD_SECRET" \
             --namespace="$NAMESPACE" \
             --from-literal="ARGOCD_API_TOKEN=$ARGOCD_API_TOKEN" \
             --from-literal="ARGOCD_HOSTNAME=$ARGOCD_HOSTNAME" \

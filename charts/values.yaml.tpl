@@ -126,6 +126,26 @@ backingServices:
     service:
       annotations:
         service.beta.openshift.io/serving-cert-secret-name: {{ $keycloakRouteTLSSecretName }}
+  # integration:
+  #   acs:
+  #     endpoint: ""
+  #     token: ""
+  #   github:
+  #     clientId: ""
+  #     clientSecret: ""
+  #     id: ""
+  #     publicKey: |
+  #       -----BEGIN RSA PRIVATE KEY-----   # notsecret
+  #       -----END RSA PRIVATE KEY-----     # notsecret
+  #     token: ""
+  #     webhookSecret: ""
+  #   gitlab:
+  #     token: ""
+  #   quay:
+  #     dockerconfigjson: |
+  #       {
+  #       }
+  #     token: ""
 
 #
 # rhtap-tpa

@@ -3,28 +3,6 @@
 shopt -s inherit_errexit
 set -Eeu -o pipefail
 
-app_namespaces() {
-    ### Workaround
-    ### Helm does not support the patching of resources.
-    echo -n "* Patching ServiceAccounts in rhtap-app-*: "
-    for env in "development" "prod" "stage"; do
-        for SA in "default" "pipeline"; do
-            until kubectl get serviceaccounts --namespace "rhtap-app-$env" "$SA" >/dev/null 2>&1; do
-                echo -n "_"
-                sleep 2
-            done
-            echo -n "."
-            kubectl patch serviceaccounts --namespace "rhtap-app-$env" "$SA" --patch "
-secrets:
-    - name: quay-auth
-imagePullSecrets:
-    - name: quay-auth
-" >/dev/null
-        done
-    done
-    echo "OK"
-}
-
 openshift_gitops() {
     NAMESPACE="rhtap"
     RHTAP_ARGOCD_INSTANCE="$NAMESPACE-argocd"
@@ -44,7 +22,8 @@ openshift_gitops() {
     ### Workaround
     ### The ArgoCD token cannot be created via a manifest.
     echo -n "* Configure ArgoCD admin user: "
-    if [ "$(kubectl get secret "$RHTAP_ARGOCD_INSTANCE-secret" -n "$NAMESPACE" -o name --ignore-not-found | wc -l)" = "0" ]; then
+    RHTAP_ARGOCD_SECRET="rhtap-argocd-integration"
+    if [ "$(kubectl get secret "$RHTAP_ARGOCD_SECRET" -n "$NAMESPACE" -o name --ignore-not-found | wc -l)" = "0" ]; then
         ARGOCD_HOSTNAME="$(kubectl get route -n "$NAMESPACE" "$RHTAP_ARGOCD_INSTANCE-server" --ignore-not-found -o jsonpath="{.spec.host}")"
         echo -n "."
         ARGOCD_PASSWORD="$(kubectl get secret -n "$NAMESPACE" "$RHTAP_ARGOCD_INSTANCE-cluster" -o jsonpath="{.data.admin\.password}" | base64 --decode)"
@@ -64,7 +43,7 @@ openshift_gitops() {
         echo -n "."
         ARGOCD_API_TOKEN="$(./argocd account generate-token --http-retry-max 5 --account "admin")"
         echo -n "."
-        kubectl create secret generic "$RHTAP_ARGOCD_INSTANCE-secret" \
+        kubectl create secret generic "$RHTAP_ARGOCD_SECRET" \
             --namespace="$NAMESPACE" \
             --from-literal="ARGOCD_API_TOKEN=$ARGOCD_API_TOKEN" \
             --from-literal="ARGOCD_HOSTNAME=$ARGOCD_HOSTNAME" \
@@ -81,7 +60,6 @@ openshift_gitops() {
 main() {
     TEMP_DIR="$(mktemp -d)"
     cd "$TEMP_DIR"
-    app_namespaces
     openshift_gitops
     cd - >/dev/null
     rm -rf "$TEMP_DIR"

@@ -2,6 +2,7 @@
 {{- $tas := required "TAS settings" .Installer.Features.TrustedArtifactSigner -}}
 {{- $tpa := required "TPA settings" .Installer.Features.TrustedProfileAnalyzer -}}
 {{- $keycloak := required "Keycloak settings" .Installer.Features.Keycloak -}}
+{{- $quay := required "Quay settings" .Installer.Features.RedHatQuay -}}
 {{- $rhdh := required "RHDH settings" .Installer.Features.RedHatDeveloperHub -}}
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 ---
@@ -13,6 +14,9 @@ openshift:
   projects:
 {{- if $keycloak.Enabled }}
     - {{ $keycloak.Namespace }}
+{{- end }}
+{{- if $quay.Enabled }}
+    - {{ $quay.Namespace }}
 {{- end }}
 {{- if $tas.Enabled }}
     - {{ $tas.Namespace }}
@@ -52,6 +56,8 @@ subscriptions:
     enabled: {{ $tas.Enabled }}
   redHatDeveloperHub:
     enabled: {{ $rhdh.Enabled }}
+  redHatQuay:
+    enabled: {{ $quay.Enabled }}
 
 #
 # rhtap-infrastructure

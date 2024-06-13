@@ -1,20 +1,10 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.21.9-1.1717085562 AS builder
-
-WORKDIR /go/src/github.com/redhat-appstudio/rhtap-cli
-USER root
-
-COPY . .
-RUN make build
-
-FROM registry.access.redhat.com/ubi9/nodejs-20:latest
+FROM registry.access.redhat.com/ubi9/go-toolset:1.21.9-1.1717085562
 
 ENV SHELLCHECK_VERSION=0.7.1
 ENV YQ_VERSION=v4.25.2
 ENV TEKTONCD_CLI_VERSION="v0.37.0"
 
 USER root
-
-COPY --from=builder /go/src/github.com/redhat-appstudio/rhtap-cli/bin/rhtap-cli /bin/rhtap-cli
 
 # hadolint ignore=DL3041
 RUN dnf install -y -q --allowerasing --nobest nodejs-devel nodejs-libs python3-pip jq diffutils \

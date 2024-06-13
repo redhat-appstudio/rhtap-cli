@@ -6,6 +6,14 @@ metadata:
   namespace: {{.Release.Namespace}}
 spec:
   application:
+    appConfig:
+      mountPath: /opt/app-root/src
+      configMaps:
+        - name: developer-hub-rhtap-app-config
+    dynamicPluginsConfigMapName: developer-hub-rhtap-dynamic-plugins
+    extraEnvs:
+      secrets:
+        - name: developer-hub-rhtap-env
     replicas: 1
     route:
       enabled: true

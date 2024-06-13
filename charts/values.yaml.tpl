@@ -6,6 +6,9 @@
 {{- $rhdh := required "RHDH settings" .Installer.Features.RedHatDeveloperHub -}}
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 ---
+debug:
+  ci: false
+
 #
 # rhtap-openshift
 #
@@ -152,6 +155,13 @@ backingServices:
   #       {
   #       }
   #     token: ""
+
+#
+# rhtap-dh
+#
+developerHub:
+  catalogUrl: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
+  ingressDomain: "{{ $ingressDomain }}"
 
 #
 # rhtap-tpa

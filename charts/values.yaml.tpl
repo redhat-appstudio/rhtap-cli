@@ -69,7 +69,7 @@ infrastructure:
           cpu: "2"
           memory: 6Gi
         requests:
-          cpu: "1"
+          cpu: "250m"
           memory: 3Gi
   kafkas:
     tpa:

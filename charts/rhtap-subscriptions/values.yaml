@@ -70,6 +70,15 @@ subscriptions:
     channel: stable
     source: redhat-operators
     sourceNamespace: openshift-marketplace
+  redHatQuay:
+    enabled: false
+    description: Red Hat Quay Operator
+    apiResource: quayregistries.quay.redhat.com
+    namespace: openshift-operators
+    name: quay-operator
+    channel: stable-3.11
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
   redHatDeveloperHub:
     enabled: false
     description: Red Hat Developer Hub Operator

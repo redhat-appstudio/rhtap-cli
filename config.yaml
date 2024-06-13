@@ -16,6 +16,9 @@ rhtapInstallerCLI:
     redHatDeveloperHub:
       enabled: &rhdhEnabled true
       namespace: rhdh-operator
+    redHatQuay:
+      enabled: true
+      namespace: rhtap-quay
     openShiftPipelines:
       enabled: *rhdhEnabled
       namespace: openshift-pipelines

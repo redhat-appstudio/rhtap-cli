@@ -31,6 +31,8 @@ rhtapInstallerCLI:
       namespace: *installerNamespace
     - chart: charts/rhtap-backing-services
       namespace: *installerNamespace
+    - chart: charts/rhtap-integrations
+      namespace: *installerNamespace
     - chart: charts/rhtap-tpa
       namespace: *trustedProfileAnalyzerNamespace
     - chart: charts/rhtap-dh

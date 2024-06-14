@@ -31,6 +31,8 @@ type GithubIntegration struct {
 	callbackURL string // github app callback URL
 	homepageURL string // github app homepage URL
 	webhookURL  string // github app webhook URL
+
+	token string // github personal access token
 }
 
 // ErrSecretAlreadyExists is returned when the integration secret already exists.
@@ -49,6 +51,8 @@ func (g *GithubIntegration) PersistentFlags(p *pflag.FlagSet) {
 		"GitHub App homepage URL")
 	p.StringVar(&g.webhookURL, "webhook-url", g.webhookURL,
 		"GitHub App webhook URL")
+	p.StringVar(&g.token, "token", g.token,
+		"GitHub personal access token")
 }
 
 // log logger with contextual information.
@@ -58,6 +62,26 @@ func (g *GithubIntegration) log() *slog.Logger {
 		"webhook-url", g.webhookURL,
 		"homepage-url", g.homepageURL,
 		"force", g.force,
+		"token-len", len(g.token),
+	)
+}
+
+// Validate checks if the required configuration is set.
+func (g *GithubIntegration) Validate() error {
+	if g.token == "" {
+		return fmt.Errorf("github token is required")
+	}
+	return nil
+}
+
+// EnsureNamespace ensures the namespace needed for the GitHub integration secret
+// is created on the cluster.
+func (g *GithubIntegration) EnsureNamespace(ctx context.Context) error {
+	return k8s.EnsureOpenShiftProject(
+		ctx,
+		g.log(),
+		g.kube,
+		g.cfg.Installer.Features.RedHatDeveloperHub.Namespace,
 	)
 }
 
@@ -140,19 +164,21 @@ func (g *GithubIntegration) store(
 		},
 		Type: corev1.SecretTypeOpaque,
 		Data: map[string][]byte{
-			"clientID":      []byte(*appConfig.ClientID),
-			"clientSecret":  []byte(*appConfig.ClientSecret),
-			"createdAt":     []byte(github.Stringify(*appConfig.CreatedAt)),
-			"externalURL":   []byte(*appConfig.ExternalURL),
-			"htmlURL":       []byte(*appConfig.HTMLURL),
-			"id":            []byte(github.Stringify(*appConfig.ID)),
-			"name":          []byte(*appConfig.Name),
-			"nodeID":        []byte(*appConfig.NodeID),
-			"owner":         []byte(github.Stringify(*appConfig.Owner)),
-			"pem":           []byte(*appConfig.PEM),
-			"slug":          []byte(*appConfig.Slug),
-			"updatedAt":     []byte(github.Stringify(*appConfig.UpdatedAt)),
-			"webhookSecret": []byte(*appConfig.WebhookSecret),
+			"clientID":      []byte(appConfig.GetClientID()),
+			"clientSecret":  []byte(appConfig.GetClientSecret()),
+			"createdAt":     []byte(appConfig.CreatedAt.String()),
+			"externalURL":   []byte(appConfig.GetExternalURL()),
+			"htmlURL":       []byte(appConfig.GetHTMLURL()),
+			"id":            []byte(github.Stringify(appConfig.GetID())),
+			"name":          []byte(appConfig.GetName()),
+			"nodeID":        []byte(appConfig.GetNodeID()),
+			"ownerLogin":    []byte(appConfig.Owner.GetLogin()),
+			"ownerID":       []byte(github.Stringify(appConfig.Owner.GetID())),
+			"pem":           []byte(appConfig.GetPEM()),
+			"slug":          []byte(appConfig.GetSlug()),
+			"updatedAt":     []byte(appConfig.UpdatedAt.String()),
+			"webhookSecret": []byte(appConfig.GetWebhookSecret()),
+			"token":         []byte(g.token),
 		},
 	}
 	logger := g.log().With(
@@ -246,5 +272,6 @@ func NewGithubIntegration(
 		callbackURL: "",
 		webhookURL:  "",
 		homepageURL: "",
+		token:       "",
 	}
 }

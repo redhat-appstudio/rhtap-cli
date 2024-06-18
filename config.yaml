@@ -33,6 +33,8 @@ rhtapInstallerCLI:
       namespace: *installerNamespace
     - chart: charts/rhtap-integrations
       namespace: *installerNamespace
+    - chart: charts/rhtap-tas
+      namespace: *trustedArtifactSignerNamespace
     - chart: charts/rhtap-tpa
       namespace: *trustedProfileAnalyzerNamespace
     - chart: charts/rhtap-dh

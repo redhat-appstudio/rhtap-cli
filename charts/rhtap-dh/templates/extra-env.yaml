@@ -16,7 +16,7 @@ data:
     ARGOCD__URL: {{ print "https://" ($argocdSecretData.ARGOCD_HOSTNAME | b64dec) | b64enc }}
     ARGOCD__USER: {{ $argocdSecretData.ARGOCD_USER }}
 {{- end }}
-    DEVELOPER_HUB__CATALOG__URL: {{ .Values.developerHub.catalogUrl | b64enc }}
+    DEVELOPER_HUB__CATALOG__URL: {{ .Values.integrations.developerHub.catalogUrl | b64enc }}
 {{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
 {{- $ghSecretData := ($ghSecretObj.data | default dict) }}
 {{- if $ghSecretData }}

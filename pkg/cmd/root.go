@@ -29,7 +29,7 @@ func (r *RootCmd) Cmd() *cobra.Command {
 	r.cmd.AddCommand(subcmd.NewDeveloperHub(logger, r.cfg, r.kube))
 
 	for _, sub := range []subcmd.Interface{
-		subcmd.NewDeploy(logger, r.flags, &r.cfg.Installer, r.kube),
+		subcmd.NewDeploy(logger, r.flags, r.cfg, r.kube),
 		subcmd.NewTemplate(logger, r.flags, &r.cfg.Installer, r.kube),
 	} {
 		r.cmd.AddCommand(subcmd.NewRunner(sub).Cmd())

@@ -283,11 +283,13 @@ trustedArtifactSigner:
     namespace: {{ $tas.Namespace }}
     fulcio:
       oidc:
+        clientID: trusted-artifact-signer
 {{- if $crc.Enabled }}
         issuerURL: {{ printf "http://%s/%s" $keycloakRouteHost $tasRealmPath }}
 {{- else }}
         issuerURL: {{ printf "https://%s/%s" $keycloakRouteHost $tasRealmPath }}
 {{- end }}
       certificate:
-        # TODO: promopt the user for organizatio name input!
+        # TODO: promopt the user for organization email/name input!
+        organizationEmail: trusted-artifact-signer@company.dev
         organizationName: RHTAP

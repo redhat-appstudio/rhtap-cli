@@ -3,7 +3,7 @@ subscriptions:
   amqStreams:
     enabled: false
     description: Red Hat AMQ Streams
-    apiResource: kafkas.kafka.strimzi.io 
+    apiResource: kafkas.kafka.strimzi.io
     namespace: openshift-operators
     name: amq-streams
     channel: stable
@@ -17,7 +17,7 @@ subscriptions:
     name: crunchy-postgres-operator-rhmp
     channel: v5
     source: redhat-marketplace
-    sourceNamespace: openshift-marketplace            
+    sourceNamespace: openshift-marketplace
   minIO:
     enabled: false
     description: MinIO Operator
@@ -79,6 +79,18 @@ subscriptions:
     channel: stable-3.11
     source: redhat-operators
     sourceNamespace: openshift-marketplace
+  redHatAdvancedClusterSecurity:
+    enabled: false
+    description: Red Hat Advanced Cluster Security Operator
+    apiResource: centrals.platform.stackrox.io
+    channel: stable 
+    namespace: rhacs-operator
+    name: rhacs-operator
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    startingCSV: rhacs-operator.v4.4.3 
+    operatorGroup:
+      upgradeStrategy: Default
   redHatDeveloperHub:
     enabled: false
     description: Red Hat Developer Hub Operator

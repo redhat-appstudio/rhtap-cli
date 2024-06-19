@@ -1,7 +1,5 @@
 ---
 trustedArtifactSigner:
-  # Enable the Trusted Artifact Signer.
-  enabled: true
   # OpenShift cluster's ingress domain, e.g. apps.cluster.example.com. The domain
   # is used to generate the "trusted-artifact-signer" Fulcio's email.
   ingressDomain: __OVERWRITE_ME__

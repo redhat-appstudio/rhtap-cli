@@ -11,7 +11,7 @@ rhtapInstallerCLI:
       enabled: *tpaEnabled
       namespace: rhtap-keycloak
     trustedArtifactSigner:
-      enabled: false
+      enabled: &tasEnabled false
       namespace: &trustedArtifactSignerNamespace rhtap-tas
     redHatDeveloperHub:
       enabled: &rhdhEnabled true
@@ -28,17 +28,25 @@ rhtapInstallerCLI:
   dependencies:
     - chart: charts/rhtap-openshift
       namespace: *installerNamespace
+      enabled: true
     - chart: charts/rhtap-subscriptions
       namespace: *installerNamespace
+      enabled: true
     - chart: charts/rhtap-infrastructure
       namespace: *installerNamespace
+      enabled: true
     - chart: charts/rhtap-backing-services
       namespace: *installerNamespace
+      enabled: true
     - chart: charts/rhtap-integrations
       namespace: *installerNamespace
+      enabled: true
     - chart: charts/rhtap-tas
       namespace: *trustedArtifactSignerNamespace
+      enabled: *tasEnabled
     - chart: charts/rhtap-tpa
       namespace: *trustedProfileAnalyzerNamespace
+      enabled: *tpaEnabled
     - chart: charts/rhtap-dh
       namespace: *installerNamespace
+      enabled: *rhdhEnabled

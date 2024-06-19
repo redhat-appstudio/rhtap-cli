@@ -1,0 +1,70 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: static-code-analysis
+spec:
+  description: |-
+    This pipeline automates the process of running a few static code analysis for rhtap-cli repository.
+  params:
+    - name: SNAPSHOT
+      description: 'The JSON string representing the snapshot of the application under test.'
+      default: '{"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}'
+      type: string
+    - name: oras-container
+      default: 'quay.io/konflux-qe-incubator/konflux-qe-oci-storage'
+      description: The ORAS container used to store all test artifacts.
+  tasks:
+    - name: test-metadata
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-qe-incubator/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/test-metadata/test-metadata.yaml
+      params:
+        - name: SNAPSHOT
+          value: $(params.SNAPSHOT)
+        - name: oras-container
+          value: $(params.oras-container)
+        - name: test-name
+          value: $(context.pipelineRun.name)
+    - name: yamllint
+      runAfter:
+        - test-metadata
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-qe-incubator/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/linters/yamllint/yaml-lint.yaml
+      params:
+        - name: git-url
+          value: "$(tasks.test-metadata.results.git-url)"
+        - name: git-revision
+          value: "$(tasks.test-metadata.results.git-revision)"
+        - name: remote-config-file
+          value: "yamllint.yaml"
+    - name: shellcheck
+      runAfter:
+        - test-metadata
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-qe-incubator/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/linters/shellcheck/shellcheck.yaml
+      params:
+        - name: git-url
+          value: "$(tasks.test-metadata.results.git-url)"
+        - name: git-revision
+          value: "$(tasks.test-metadata.results.git-revision)"

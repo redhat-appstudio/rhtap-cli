@@ -1,0 +1,39 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: rhtap-install
+spec:
+  params:
+    - name: ocp-login-command
+      type: string
+      description: ""
+    - name: git-repo
+      type: string
+      default: "rhtap-installer"
+    - name: git-url
+      type: string
+      default: "https://github.com/redhat-appstudio/rhtap-cli.git"
+    - name: git-revision
+      type: string
+      default: "main"
+    - name: image-url
+      type: string
+      description: "Image URL to be used for launching rhtap-cli for rhtap installation"
+  steps:
+    - name: install
+      image: $(params.image-url)
+      script: |
+        #!/bin/sh
+
+        export KUBECONFIG=$(pwd)/kubeconfig
+        echo $(params.ocp-login-command)
+        $(params.ocp-login-command)
+
+        cd "$(mktemp -d)"
+        echo -e "INFO: cloning repo name '$(params.git-repo)' with revision '$(params.git-revision)' from url '$(params.git-url)'"
+        git clone "$(params.git-url)" .
+        git checkout "$(params.git-revision)"
+
+        make build
+        ./bin/rhtap-cli deploy --config ./config.yaml --kube-config "$KUBECONFIG" --debug

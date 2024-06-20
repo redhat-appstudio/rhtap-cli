@@ -4,6 +4,8 @@ yaml-files:
   - '*.yml'
 ignore:
   - 'charts/**'
+  - 'vendor/**'
+  - '.tekton/**'
 rules:
   braces: enable
   brackets: enable

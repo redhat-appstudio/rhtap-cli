@@ -1,4 +1,4 @@
-{{- $name := printf "%s-test-%s" .Chart.Name .Release.Revision -}}
+{{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
 {{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport -}}
 ---
 apiVersion: v1

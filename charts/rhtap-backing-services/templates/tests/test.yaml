@@ -1,7 +1,7 @@
 {{- if .Values.backingServices.keycloak.enabled }}
   {{- $keycloak := .Values.backingServices.keycloak -}}
   {{- $keycloakName := include "backingServices.keycloak.name" . -}}
-  {{- $name := printf "%s-test" .Chart.Name -}}
+  {{- $name := printf "%s-test-%s" .Chart.Name .Release.Revision -}}
 ---
 apiVersion: v1
 kind: Pod

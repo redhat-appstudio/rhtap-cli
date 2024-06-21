@@ -1,7 +1,7 @@
 {{- $secureSign := .Values.trustedArtifactSigner.secureSign -}}
 {{- if $secureSign.enabled }}
   {{- $keycloak := .Values.trustedArtifactSigner.keycloakRealmImport -}}
-  {{- $name := printf "%s-test-%s" .Chart.Name .Release.Revision -}}
+  {{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
 ---
 apiVersion: v1
 kind: Pod

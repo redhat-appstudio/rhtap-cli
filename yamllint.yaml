@@ -6,6 +6,7 @@ ignore:
   - 'charts/**'
   - 'vendor/**'
   - '.tekton/**'
+  - 'test/**'
 rules:
   braces: enable
   brackets: enable

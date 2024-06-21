@@ -1,5 +1,5 @@
+{{- $name := printf "%s-test-%s" .Chart.Name .Release.Revision -}}
 {{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport -}}
-{{- $name := printf "%s-test" .Chart.Name -}}
 ---
 apiVersion: v1
 kind: Pod

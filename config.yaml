@@ -1,5 +1,5 @@
 ---
-rhtapInstallerCLI:
+rhtapCLI:
   namespace: &installerNamespace rhtap
   features:
     crc:

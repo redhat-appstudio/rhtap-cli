@@ -4,14 +4,13 @@ import (
 	"os"
 
 	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
+	"github.com/redhat-appstudio/rhtap-cli/pkg/constants"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/flags"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/k8s"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/subcmd"
 
 	"github.com/spf13/cobra"
 )
-
-const AppName = "rhtap-installer-cli"
 
 // RootCmd is the root command.
 type RootCmd struct {
@@ -44,7 +43,7 @@ func NewRootCmd() *RootCmd {
 	r := &RootCmd{
 		flags: f,
 		cmd: &cobra.Command{
-			Use:   AppName,
+			Use:   constants.AppName,
 			Short: "RHTAP Installer CLI",
 			PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 				return cfg.UnmarshalYAML()

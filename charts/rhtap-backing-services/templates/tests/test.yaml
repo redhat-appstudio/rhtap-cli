@@ -1,7 +1,4 @@
-{{- if .Values.backingServices.keycloak.enabled }}
-  {{- $keycloak := .Values.backingServices.keycloak -}}
-  {{- $keycloakName := include "backingServices.keycloak.name" . -}}
-  {{- $name := printf "%s-test-%s" .Chart.Name .Release.Revision -}}
+{{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
 ---
 apiVersion: v1
 kind: Pod
@@ -16,25 +13,18 @@ spec:
   restartPolicy: Never
   serviceAccountName: {{ .Release.Name }}
   containers:
-    - name: copy-scripts
-      image: registry.access.redhat.com/ubi8/ubi-minimal:latest
-      workingDir: /scripts
-      command:
-        - /bin/bash
-        - -c
-        - |
-          set -x -e
-  {{- range $path, $content := .Files.Glob "scripts/*.sh" -}}
-   {{- $name := trimPrefix "scripts/" $path }}
-          printf '%s' "{{ $content | toString | b64enc }}" | base64 -d >{{ $name }}
-          chmod +x {{ $name }}
-  {{- end }}
-      volumeMounts:
-        - name: scripts
-          mountPath: /scripts
-      securityContext:
-        allowPrivilegeEscalation: false
-    - name: {{ $name }}
+    #
+    # Copying the scripts that will be used on the subsequent containers, the
+    # scripts are shared via the "/scripts" volume.
+    #
+{{- include "backingServices.copyScripts" . | nindent 4 }}
+{{- if .Values.backingServices.keycloak.enabled }}
+    #
+    # Tests the Keycloak rollout status.
+    #
+  {{- $keycloak := .Values.backingServices.keycloak }}
+  {{- $keycloakName := include "backingServices.keycloak.name" . }}
+    - name: {{ printf "keycloak-%s" $keycloakName }}
       image: quay.io/codeready-toolchain/oc-client-base:latest
       env:
         - name: NAMESPACE
@@ -53,7 +43,36 @@ spec:
           mountPath: /scripts
       securityContext:
         allowPrivilegeEscalation: false
+{{- end }}
+{{- if .Values.backingServices.argoCD.enabled }}
+  {{- $argoCD := .Values.backingServices.argoCD }}
+    #
+    # Test the ArgoCD rollout status.
+    #
+    - name: {{ printf "argocd-%s" $argoCD.name }}
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      env:
+        - name: NAMESPACE
+          value: {{ $argoCD.namespace }}
+        - name: RESOURCE_TYPE
+          value: "statefulset"
+      command:
+        - /scripts/test-rollout-status.sh
+      args:
+        - {{
+            printf "app=argocd,app.kubernetes.io/managed-by=%s"
+              $argoCD.name | quote
+          }}
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+    #
+    # Tests the ArgoCD instance login.
+    #
+  {{- include "backingServices.argoCD.testArgoCDLogin" . | nindent 4 }}
+{{- end }}
   volumes:
     - name: scripts
       emptyDir: {}
-{{- end }}

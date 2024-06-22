@@ -41,6 +41,8 @@ openshift:
 # rhtap-subscriptions
 #
 
+{{- $argoCDNamespace := .Installer.Namespace }}
+
 subscriptions:
   amqStreams:
     enabled: {{ $tpa.Enabled }}
@@ -51,7 +53,7 @@ subscriptions:
   openshiftGitOps:
     enabled: {{ $rhdh.Enabled }}
     config:
-      argoCDClusterNamespace: {{ .Installer.Namespace }}
+      argoCDClusterNamespace: {{ $argoCDNamespace }}
   openshiftKeycloak:
     enabled: {{ $keycloak.Enabled }}
     operatorGroup:
@@ -77,15 +79,6 @@ subscriptions:
 {{- $tpaMinIORootSecretName := "tpa-minio-root-env" }}
 
 infrastructure:
-  argoCD:
-    controller:
-      resources:
-        limits:
-          cpu: "2"
-          memory: 6Gi
-        requests:
-          cpu: "250m"
-          memory: 3Gi
   kafkas:
     tpa:
       enabled: {{ $tpa.Enabled }}
@@ -118,6 +111,7 @@ infrastructure:
 
 {{- $keycloakRouteTLSSecretName := "keycloak-tls" }}
 {{- $keycloakRouteHost := printf "sso.%s" $ingressDomain }}
+{{- $argoCDName := "argocd" }}
 
 backingServices:
   keycloak:
@@ -141,6 +135,13 @@ backingServices:
     service:
       annotations:
         service.beta.openshift.io/serving-cert-secret-name: {{ $keycloakRouteTLSSecretName }}
+  argoCD:
+    enabled: {{ $rhdh.Enabled }}
+    name: {{ $argoCDName }}
+    namespace: {{ $argoCDNamespace }}
+    # TODO: link this secret name with RHDH configuration.
+    secretName: rhtap-argocd-integration
+    ingressDomain: {{ $ingressDomain }}
 
 integrations:
 #   acs:
@@ -168,6 +169,7 @@ integrations:
 #
 # rhtap-dh
 #
+
 developerHub:
   catalogUrl: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
   ingressDomain: "{{ $ingressDomain }}"

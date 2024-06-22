@@ -2,8 +2,8 @@
 #
 # Tests if the ArgoCD instance is available on the cluster by logging in.
 #
-# Uses the ArgoCD session, created by previsoly running "argocd login", to
-# generate a acccount token. The informaton is then stored on the ARGOCD_ENV_FILE
+# Uses the ArgoCD session, created by previously running "argocd login", to
+# generate an acccount token. The informaton is then stored in the ARGOCD_ENV_FILE
 # variable.
 #
 
@@ -18,7 +18,7 @@ declare -r ARGOCD_HOSTNAME="${ARGOCD_HOSTNAME:-}"
 declare -r ARGOCD_USER="${ARGOCD_USER:-admin}"
 # ArgoCD password to use for login.
 declare -r ARGOCD_PASSWORD="${ARGOCD_PASSWORD:-}"
-# Environment file to store the ArgoCD crednetials.
+# Environment file to store the ArgoCD credentials.
 declare -r ARGOCD_ENV_FILE="${ARGOCD_ENV_FILE:-/rhtap/argocd/env}"
 
 fail() {

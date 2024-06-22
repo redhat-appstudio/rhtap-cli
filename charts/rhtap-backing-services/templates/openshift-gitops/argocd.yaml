@@ -1,11 +1,67 @@
-
+{{- if .Values.backingServices.argoCD.enabled }}
+  {{- $argoCD := .Values.backingServices.argoCD -}}
 ---
 apiVersion: argoproj.io/v1beta1
 kind: ArgoCD
 metadata:
-  name: {{ .Release.Namespace }}-argocd
+  labels:
+    app: argocd
+  namespace: {{
+    required ".backingServices.argoCD.namespace is required" $argoCD.namespace
+  }}
+  name: {{
+    required ".backingServices.argoCD.name is required" $argoCD.name
+  }} 
 spec:
+  #
+  # ApplicationSet
+  #
+  applicationSet:
+    enabled: {{ default "false" $argoCD.components.applicationSet.enabled }}
+  {{- if $argoCD.components.applicationSet.enabled }}
+    {{- with $argoCD.components.applicationSet.resources }}
+    resources:
+      {{- . | toYaml | nindent 6 }}
+    {{- end }}
+    webhookServer:
+      ingress:
+        enabled: false
+      route:
+        enabled: false
+  {{- end }}
+  #
+  # Controller
+  #
+  controller:
+    enabled: {{ default "false" $argoCD.components.controller.enabled }}
+  {{- with $argoCD.components.controller.resources }}
+    resources:
+    {{- . | toYaml | nindent 6 }}
+  {{- end }}
+  #
+  # Redis
+  #
+  redis:
+    enabled: {{ default "false" $argoCD.components.redis.enabled }}
+  {{- with $argoCD.components.redis.resources }}
+    resources:
+    {{- . | toYaml | nindent 6 }}
+  {{- end }}
+  #
+  # Repo
+  #
+  repo:
+    enabled: {{ default "false" $argoCD.components.repo.enabled }}
+  {{- with $argoCD.components.repo.resources }}
+    resources:
+    {{- . | toYaml | nindent 6 }}
+  {{- end }}
+  #
+  # Server
+  #
   server:
+    enabled: {{ default "false" $argoCD.components.server.enabled }}
+  {{- if $argoCD.components.server.enabled }}
     autoscale:
       enabled: false
     grpc:
@@ -13,82 +69,37 @@ spec:
         enabled: false
     ingress:
       enabled: false
+    {{- with $argoCD.components.server.resources }}
     resources:
-      limits:
-        cpu: 500m
-        memory: 256Mi
-      requests:
-        cpu: 125m
-        memory: 128Mi
+      {{- . | toYaml | nindent 6 }}
+    {{- end }}
     route:
-      enabled: true
+      enabled: {{ default "false" $argoCD.route.enabled }}
+      {{- if $argoCD.route.enabled }}
       tls:
-        insecureEdgeTerminationPolicy: Redirect
-        termination: reencrypt
-    service:
-      type: ''
-  grafana:
-    enabled: false
-    ingress:
-      enabled: false
-    resources:
-      limits:
-        cpu: 500m
-        memory: 256Mi
-      requests:
-        cpu: 250m
-        memory: 128Mi
-    route:
-      enabled: false
-  monitoring:
-    enabled: false
-  notifications:
-    enabled: false
-  prometheus:
-    enabled: false
-    ingress:
-      enabled: false
-    route:
-      enabled: false
-  initialSSHKnownHosts: {}
+        {{- $argoCD.route.tls | toYaml | nindent 8 }}
+      {{- end }}
+  {{- end }}
+  #
+  # SSO
+  #
+  {{- with $argoCD.components.sso }}
   sso:
-    dex:
-      openShiftOAuth: true
-      resources:
-        limits:
-          cpu: 500m
-          memory: 256Mi
-        requests:
-          cpu: 250m
-          memory: 128Mi
-    provider: dex
-  applicationSet:
-    resources:
-      limits:
-        cpu: '2'
-        memory: 1Gi
-      requests:
-        cpu: 250m
-        memory: 512Mi
-    webhookServer:
-      ingress:
-        enabled: false
-      route:
-        enabled: false
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+
+  #
+  # Unmanaged Settings
+  #
+
+  extraConfig:
+    accounts.admin: apiKey, login
   rbac:
     defaultPolicy: ''
     policy: |
       g, system:cluster-admins, role:admin
       g, cluster-admins, role:admin
     scopes: '[groups]'
-  repo:
-    resources:
-      limits:
-        cpu: '1'
-        memory: 1Gi
-      requests:
-        cpu: 250m
-        memory: 256Mi
   resourceExclusions: |
     - apiGroups:
       - tekton.dev
@@ -97,28 +108,14 @@ spec:
       kinds:
       - TaskRun
       - PipelineRun
+  grafana:
+    enabled: false
   ha:
     enabled: false
-    resources:
-      limits:
-        cpu: 500m
-        memory: 256Mi
-      requests:
-        cpu: 250m
-        memory: 128Mi
-  tls:
-    ca: {}
-  redis:
-    resources:
-      limits:
-        cpu: 500m
-        memory: 256Mi
-      requests:
-        cpu: 250m
-        memory: 128Mi
-  controller:
-    processors: {}
-    resources:
-{{ index .Values "infrastructure" "argoCD" "controller" "resources" | toYaml | indent 6 }}
-  extraConfig:
-    accounts.admin: apiKey, login
+  monitoring:
+    enabled: false
+  notifications:
+    enabled: false
+  prometheus:
+    enabled: false
+{{- end }}

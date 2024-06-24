@@ -1,0 +1,52 @@
+{{- if .Values.infrastructure.openShiftPipelines.enabled }}
+  {{- $osp := .Values.infrastructure.openShiftPipelines -}}
+  {{- $signingSecretName := required
+        ".infrastructure.openShiftPipelines.tektonChains.signingSecretName"
+        $osp.tektonChains.signingSecretName
+  -}}
+  {{- $secretObj := (
+        lookup "v1" "Secret" $osp.namespace $signingSecretName
+      ) | default dict 
+  -}}
+  {{- $secretData := (get $secretObj "data") | default dict -}}
+  {{- $cosignKey := (get $secretData "cosign.key") | default "" -}}
+  {{- if eq $cosignKey "" }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded
+    helm.sh/hook-weight: "2"
+  labels:
+    {{- include "rhtap-infrastructure.labels" . | nindent 4 }}
+  namespace: {{ $osp.namespace }}
+  name: {{ printf "cosign-%s-%d" $osp.name .Release.Revision }}
+spec:
+  template:
+    spec:
+      serviceAccountName: {{ printf "patch-%s" $osp.name }}
+      restartPolicy: Never
+      containers:
+        - name: tekton-chains-cosign
+          image: ghcr.io/sigstore/cosign/cosign:latest
+          env:
+            - name: COSIGN_PASSWORD
+              value: {{ randAlphaNum 32 }}
+          workingDir: /workspace
+          command:
+            - cosign
+          args:
+            - generate-key-pair
+            - {{ printf "k8s://%s/%s" $osp.namespace $signingSecretName }}
+          volumeMounts:
+            - name: workspace
+              mountPath: /workspace
+          securityContext:
+            allowPrivilegeEscalation: false
+      volumes:
+        - name: workspace
+          emppyDir: {}
+  {{- end }}
+{{- end }}

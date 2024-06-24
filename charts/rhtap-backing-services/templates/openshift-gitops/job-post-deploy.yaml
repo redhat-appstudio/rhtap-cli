@@ -1,6 +1,6 @@
 {{- if .Values.backingServices.argoCD.enabled }}
   {{- $argoCD := .Values.backingServices.argoCD }}
-  {{- $name := printf "%s-post-deploy" $argoCD.name }}
+  {{- $name := printf "%s-post-deploy-%d" $argoCD.name .Release.Revision }}
   {{- $argoCDEnvFile := "/rhtap/argocd/env" -}}
 #
 # Generates the ArgoCD API token and stores it on a Kubernetes secret. The steps

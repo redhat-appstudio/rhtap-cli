@@ -142,12 +142,12 @@ backingServices:
       annotations:
         service.beta.openshift.io/serving-cert-secret-name: {{ $keycloakRouteTLSSecretName }}
 
-integrations:
+# integrations:
 #   acs:
 #     endpoint: ""
 #     token: ""
-  developerHub:
-    catalogUrl: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
+#   developerHub:
+#     catalogUrl: ""
 #   github:
 #     clientId: ""
 #     clientSecret: ""
@@ -169,7 +169,6 @@ integrations:
 # rhtap-dh
 #
 developerHub:
-  catalogUrl: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
   ingressDomain: "{{ $ingressDomain }}"
 
 #

@@ -151,12 +151,12 @@ backingServices:
     secretName: rhtap-argocd-integration
     ingressDomain: {{ $ingressDomain }}
 
-integrations:
+# integrations:
 #   acs:
 #     endpoint: ""
 #     token: ""
-  developerHub:
-    catalogUrl: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
+#   developerHub:
+#     catalogUrl: ""
 #   github:
 #     clientId: ""
 #     clientSecret: ""
@@ -179,7 +179,6 @@ integrations:
 #
 
 developerHub:
-  catalogUrl: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
   ingressDomain: "{{ $ingressDomain }}"
 
 #

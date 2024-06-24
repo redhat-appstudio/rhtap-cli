@@ -11,7 +11,7 @@ rhtapCLI:
       enabled: *tpaEnabled
       namespace: rhtap-keycloak
     trustedArtifactSigner:
-      enabled: &tasEnabled false
+      enabled: &tasEnabled true
       namespace: &trustedArtifactSignerNamespace rhtap-tas
     redHatDeveloperHub:
       enabled: &rhdhEnabled true

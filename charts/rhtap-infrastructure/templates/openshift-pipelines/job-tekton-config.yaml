@@ -1,0 +1,82 @@
+{{- if .Values.infrastructure.openShiftPipelines.enabled }}
+  {{- $osp := .Values.infrastructure.openShiftPipelines -}}
+  {{- if or
+        $osp.patchClusterTektonConfig.annotations
+        $osp.patchClusterTektonConfig.labels
+  }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded
+    helm.sh/hook-weight: "1"
+  labels:
+    {{- include "rhtap-infrastructure.labels" . | nindent 4 }}
+  namespace: {{ $osp.namespace }}
+  name: {{ printf "patch-tekton-%s-%d" $osp.name .Release.Revision }}
+spec:
+  template:
+    spec:
+      serviceAccountName: {{ printf "patch-%s" $osp.name }}
+      restartPolicy: Never
+      containers:
+        #
+        # Copying the scripts that will be used on the subsequent containers, the
+        # scripts are shared via the "/scripts" volume.
+        #
+    {{- include "infrastructure.copyScripts" . | nindent 8 }}
+    {{- if $osp.patchClusterTektonConfig.annotations }}
+        #
+        # Patch the Tekton Config with the provided annotations.
+        #
+        - name: patch-annotations
+          image: quay.io/codeready-toolchain/oc-client-base:latest
+          env:
+            - name: KIND
+              value: tektonconfig
+            - name: RESOURCE_NAME
+              value: {{ $osp.patchClusterTektonConfig.resourceName }}
+          command:
+            - /scripts/oc-amend.sh
+          args:
+            - annotate
+      {{- range $k, $v := $osp.patchClusterTektonConfig.annotations }}
+            - {{ printf "%s=%s" $k $v | quote }}
+      {{- end }}
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+          securityContext:
+            allowPrivilegeEscalation: false
+    {{- end }}
+    {{- if $osp.patchClusterTektonConfig.labels }}
+        #
+        # Patch the Tekton Config with the provided labels.
+        #
+        - name: patch-labels
+          image: quay.io/codeready-toolchain/oc-client-base:latest
+          env:
+            - name: KIND
+              value: tektonconfig
+            - name: RESOURCE_NAME
+              value: {{ $osp.patchClusterTektonConfig.resourceName }}
+          command:
+            - /scripts/oc-amend.sh
+          args:
+            - label
+     {{- range $k, $v := $osp.patchClusterTektonConfig.labels }}
+            - {{ printf "%s=%s" $k $v | quote }}
+     {{- end }}
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+          securityContext:
+            allowPrivilegeEscalation: false
+    {{- end }}
+      volumes:
+        - name: scripts
+          emppyDir: {}
+  {{- end }}
+{{- end }}

@@ -104,6 +104,14 @@ infrastructure:
     guac:
       enabled: {{ $tpa.Enabled }}
       namespace: {{ $tpa.Namespace }}
+  openShiftPipelines:
+    enabled: {{ $rhdh.Enabled }}
+    patchClusterTektonConfig:
+      annotations:
+        meta.helm.sh/release-name: rhtap-backing-services
+        meta.helm.sh/release-namespace: {{ $argoCDNamespace }}
+      labels:
+        app.kubernetes.io/managed-by: Helm
 
 #
 # rhtap-backing-services

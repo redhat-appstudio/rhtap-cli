@@ -16,6 +16,8 @@ rhtapCLI:
     redHatDeveloperHub:
       enabled: &rhdhEnabled true
       namespace: rhdh-operator
+      properties:
+        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
     redHatAdvancedClusterSecurity:
       enabled: *rhdhEnabled
       namespace: rhacs-operator

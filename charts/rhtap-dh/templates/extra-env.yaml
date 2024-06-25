@@ -16,7 +16,9 @@ data:
     ARGOCD__URL: {{ print "https://" ($argocdSecretData.ARGOCD_HOSTNAME | b64dec) | b64enc }}
     ARGOCD__USER: {{ $argocdSecretData.ARGOCD_USER }}
 {{- end }}
-    DEVELOPER_HUB__CATALOG__URL: {{ default dict .Values.integrations | default dict .developerHub | default "https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml" .catalogUrl | b64enc }}
+    DEVELOPER_HUB__CATALOG__URL: {{
+        required ".developerHub.catalogURL is required" .Values.developerHub.catalogURL | b64enc
+    }}
 {{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
 {{- $ghSecretData := ($ghSecretObj.data | default dict) }}
 {{- if $ghSecretData }}

@@ -151,6 +151,10 @@ backingServices:
     secretName: rhtap-argocd-integration
     ingressDomain: {{ $ingressDomain }}
 
+#
+# rhtap-integrations
+#
+
 # integrations:
 #   acs:
 #     endpoint: ""
@@ -178,8 +182,12 @@ backingServices:
 # rhtap-dh
 #
 
+{{- $catalogURL := required "Red Hat Developer Hub Catalog URL is required"
+    .Installer.Features.RedHatDeveloperHub.Properties.catalogURL -}}
+
 developerHub:
-  ingressDomain: "{{ $ingressDomain }}"
+  ingressDomain: {{ $ingressDomain }}
+  catalogURL: {{ $catalogURL }}
 
 #
 # rhtap-tpa

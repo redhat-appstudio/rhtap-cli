@@ -81,7 +81,7 @@ func (g *GithubIntegration) EnsureNamespace(ctx context.Context) error {
 		ctx,
 		g.log(),
 		g.kube,
-		g.cfg.Installer.Features.RedHatDeveloperHub.Namespace,
+		g.cfg.Installer.Features.RedHatDeveloperHub.GetNamespace(),
 	)
 }
 
@@ -98,7 +98,7 @@ func (g *GithubIntegration) setOpenShiftURLs(ctx context.Context) error {
 	if g.callbackURL == "" {
 		g.callbackURL = fmt.Sprintf(
 			"https://developer-hub-%s.%s/api/auth/github/handler/frame",
-			g.cfg.Installer.Features.RedHatDeveloperHub.Namespace,
+			g.cfg.Installer.Features.RedHatDeveloperHub.GetNamespace(),
 			ingressDomain,
 		)
 		g.log().Debug("Using OpenShift cluster for GitHub App callback URL")
@@ -106,7 +106,7 @@ func (g *GithubIntegration) setOpenShiftURLs(ctx context.Context) error {
 	if g.webhookURL == "" {
 		g.webhookURL = fmt.Sprintf(
 			"https://pipelines-as-code-controller-%s.%s",
-			g.cfg.Installer.Features.OpenShiftPipelines.Namespace,
+			g.cfg.Installer.Features.OpenShiftPipelines.GetNamespace(),
 			ingressDomain,
 		)
 		g.log().Debug("Using OpenShift cluster for GitHub App webhook URL")
@@ -114,7 +114,7 @@ func (g *GithubIntegration) setOpenShiftURLs(ctx context.Context) error {
 	if g.homepageURL == "" {
 		g.homepageURL = fmt.Sprintf(
 			"https://developer-hub-%s.%s",
-			g.cfg.Installer.Features.RedHatDeveloperHub.Namespace,
+			g.cfg.Installer.Features.RedHatDeveloperHub.GetNamespace(),
 			ingressDomain,
 		)
 		g.log().Debug("Using OpenShift cluster for GitHub App homepage URL")
@@ -126,7 +126,7 @@ func (g *GithubIntegration) setOpenShiftURLs(ctx context.Context) error {
 // generated to make sure configuration is already loaded.
 func (g *GithubIntegration) secretName() types.NamespacedName {
 	return types.NamespacedName{
-		Namespace: g.cfg.Installer.Features.RedHatDeveloperHub.Namespace,
+		Namespace: g.cfg.Installer.Features.RedHatDeveloperHub.GetNamespace(),
 		Name:      "rhtap-github-integration",
 	}
 }

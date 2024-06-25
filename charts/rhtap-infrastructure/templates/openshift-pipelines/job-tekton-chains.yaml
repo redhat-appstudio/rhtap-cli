@@ -47,6 +47,6 @@ spec:
             allowPrivilegeEscalation: false
       volumes:
         - name: workspace
-          emppyDir: {}
+          emptyDir: {}
   {{- end }}
 {{- end }}

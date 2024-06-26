@@ -69,11 +69,8 @@ argocd_generate_token() {
             --insecure \
             --http-retry-max="5" \
             --account="${ARGOCD_USER}"
-    )"
-    if [[ ${?} -ne 0 ]]; then
-        fail "ArgoCD API token could not be generated!"
-    fi
-    if [[ -z "${ARGOCD_API_TOKEN}" ]]; then
+    )" || fail "ArgoCD API token could not be generated!"
+    if [[ "${?}" -ne 0 || -z "${ARGOCD_API_TOKEN}" ]]; then
         fail "ArgoCD API token could not be generated!"
     fi
 

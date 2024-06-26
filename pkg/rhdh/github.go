@@ -77,11 +77,15 @@ func (g *GithubIntegration) Validate() error {
 // EnsureNamespace ensures the namespace needed for the GitHub integration secret
 // is created on the cluster.
 func (g *GithubIntegration) EnsureNamespace(ctx context.Context) error {
+	feature, err := g.cfg.GetFeature(config.RedHatDeveloperHub)
+	if err != nil {
+		return err
+	}
 	return k8s.EnsureOpenShiftProject(
 		ctx,
 		g.log(),
 		g.kube,
-		g.cfg.Installer.Features.RedHatDeveloperHub.GetNamespace(),
+		feature.GetNamespace(),
 	)
 }
 
@@ -95,18 +99,27 @@ func (g *GithubIntegration) setOpenShiftURLs(ctx context.Context) error {
 	}
 	g.log().Debug("OpenShift ingress domain", "domain", ingressDomain)
 
+	featureRHDH, err := g.cfg.GetFeature(config.RedHatDeveloperHub)
+	if err != nil {
+		return err
+	}
+
 	if g.callbackURL == "" {
 		g.callbackURL = fmt.Sprintf(
 			"https://developer-hub-%s.%s/api/auth/github/handler/frame",
-			g.cfg.Installer.Features.RedHatDeveloperHub.GetNamespace(),
+			featureRHDH.GetNamespace(),
 			ingressDomain,
 		)
 		g.log().Debug("Using OpenShift cluster for GitHub App callback URL")
 	}
 	if g.webhookURL == "" {
+		feature, err := g.cfg.GetFeature(config.OpenShiftPipelines)
+		if err != nil {
+			return err
+		}
 		g.webhookURL = fmt.Sprintf(
 			"https://pipelines-as-code-controller-%s.%s",
-			g.cfg.Installer.Features.OpenShiftPipelines.GetNamespace(),
+			feature.GetNamespace(),
 			ingressDomain,
 		)
 		g.log().Debug("Using OpenShift cluster for GitHub App webhook URL")
@@ -114,7 +127,7 @@ func (g *GithubIntegration) setOpenShiftURLs(ctx context.Context) error {
 	if g.homepageURL == "" {
 		g.homepageURL = fmt.Sprintf(
 			"https://developer-hub-%s.%s",
-			g.cfg.Installer.Features.RedHatDeveloperHub.GetNamespace(),
+			featureRHDH.GetNamespace(),
 			ingressDomain,
 		)
 		g.log().Debug("Using OpenShift cluster for GitHub App homepage URL")
@@ -125,8 +138,9 @@ func (g *GithubIntegration) setOpenShiftURLs(ctx context.Context) error {
 // secretName returns the secret name for the integration. The name is "lazy"
 // generated to make sure configuration is already loaded.
 func (g *GithubIntegration) secretName() types.NamespacedName {
+	feature, _ := g.cfg.GetFeature(config.RedHatDeveloperHub)
 	return types.NamespacedName{
-		Namespace: g.cfg.Installer.Features.RedHatDeveloperHub.GetNamespace(),
+		Namespace: feature.GetNamespace(),
 		Name:      "rhtap-github-integration",
 	}
 }

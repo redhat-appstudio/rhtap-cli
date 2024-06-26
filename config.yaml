@@ -3,7 +3,7 @@ rhtapCLI:
   namespace: &installerNamespace rhtap
   features:
     crc:
-      enabled: true
+      enabled: false
     trustedProfileAnalyzer:
       enabled: &tpaEnabled true
       namespace: &trustedProfileAnalyzerNamespace rhtap-tpa

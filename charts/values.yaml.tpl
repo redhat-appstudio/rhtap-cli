@@ -1,10 +1,10 @@
-{{- $crc := required "CRC settings" .Installer.Features.CRC -}}
-{{- $tas := required "TAS settings" .Installer.Features.TrustedArtifactSigner -}}
-{{- $tpa := required "TPA settings" .Installer.Features.TrustedProfileAnalyzer -}}
-{{- $keycloak := required "Keycloak settings" .Installer.Features.Keycloak -}}
-{{- $acs := required "Red Hat ACS settings" .Installer.Features.RedHatAdvancedClusterSecurity -}}
-{{- $quay := required "Quay settings" .Installer.Features.RedHatQuay -}}
-{{- $rhdh := required "RHDH settings" .Installer.Features.RedHatDeveloperHub -}}
+{{- $crc := required "CRC settings" .Installer.Features.crc -}}
+{{- $tas := required "TAS settings" .Installer.Features.trustedArtifactSigner -}}
+{{- $tpa := required "TPA settings" .Installer.Features.trustedProfileAnalyzer -}}
+{{- $keycloak := required "Keycloak settings" .Installer.Features.keycloak -}}
+{{- $acs := required "Red Hat ACS settings" .Installer.Features.redHatAdvancedClusterSecurity -}}
+{{- $quay := required "Quay settings" .Installer.Features.redHatQuay -}}
+{{- $rhdh := required "RHDH settings" .Installer.Features.redHatDeveloperHub -}}
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 ---
 debug:
@@ -183,7 +183,7 @@ backingServices:
 #
 
 {{- $catalogURL := required "Red Hat Developer Hub Catalog URL is required"
-    .Installer.Features.RedHatDeveloperHub.Properties.catalogURL -}}
+    .Installer.Features.redHatDeveloperHub.Properties.catalogURL }}
 
 developerHub:
   ingressDomain: {{ $ingressDomain }}

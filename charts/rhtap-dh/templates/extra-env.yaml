@@ -8,6 +8,7 @@ type: Opaque
 data:
     BACKEND_SECRET: {{ randAlphaNum 16 | b64enc }}
     BACKEND_URL: {{ print "https://backstage-developer-hub-rhtap." .Values.developerHub.ingressDomain | b64enc }}
+    NODE_TLS_REJECT_UNAUTHORIZED:  {{ "0" | b64enc }}
 {{- $argocdSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-argocd-integration") }}
 {{- $argocdSecretData := ($argocdSecretObj.data | default dict) }}
 {{- if $argocdSecretData }}

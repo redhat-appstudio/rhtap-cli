@@ -65,21 +65,21 @@ data:
             clusterLocatorMethods:
               - clusters:
                   - authProvider: serviceAccount
+                    customResources:
+                      - apiVersion: v1
+                        group: route.openshift.io
+                        plural: routes
+                      - apiVersion: v1
+                        group: tekton.dev
+                        plural: pipelineruns
+                      - apiVersion: v1
+                        group: tekton.dev
+                        plural: taskruns
                     name: rhdh-kubernetes-plugin
                     serviceAccountToken: {{ $secret.data.token | b64dec }}
                     skipTLSVerify: true
                     url: https://kubernetes.default.svc
                 type: config
-            customResources:
-              - apiVersion: v1
-                group: route.openshift.io
-                plural: routes
-              - apiVersion: v1
-                group: tekton.dev
-                plural: pipelineruns
-              - apiVersion: v1
-                group: tekton.dev
-                plural: taskruns
             serviceLocatorMethod:
               type: multiTenant
     {{- end}}

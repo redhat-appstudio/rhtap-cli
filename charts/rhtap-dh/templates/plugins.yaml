@@ -11,30 +11,7 @@ data:
       # https://DH_HOSTNAME/api/dynamic-plugins-info/loaded-plugins
     {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-argocd-integration") }}
       - disabled: false
-        package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              roadiehq.backstage-plugin-argo-cd:
-                mountPoints:
-                  - config:
-                      if:
-                        allOf:
-                          - isArgocdAvailable
-                      layout:
-                        gridColumnEnd:
-                          lg: span 8
-                          xs: span 12
-                    importName: EntityArgoCDOverviewCard
-                    mountPoint: entity.page.overview/cards
-                  - config:
-                      if:
-                        allOf:
-                          - isArgocdAvailable
-                      layout:
-                        gridColumn: 1 / -1
-                    importName: EntityArgoCDHistoryCard
-                    mountPoint: entity.page.cd/cards
+        package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-argocd
       - disabled: false
         package: ./dynamic-plugins/dist/roadiehq-backstage-plugin-argo-cd-backend-dynamic
         pluginConfig:
@@ -65,21 +42,21 @@ data:
             clusterLocatorMethods:
               - clusters:
                   - authProvider: serviceAccount
+                    customResources:
+                      - apiVersion: v1
+                        group: route.openshift.io
+                        plural: routes
+                      - apiVersion: v1
+                        group: tekton.dev
+                        plural: pipelineruns
+                      - apiVersion: v1
+                        group: tekton.dev
+                        plural: taskruns
                     name: rhdh-kubernetes-plugin
                     serviceAccountToken: {{ $secret.data.token | b64dec }}
                     skipTLSVerify: true
                     url: https://kubernetes.default.svc
                 type: config
-            customResources:
-              - apiVersion: v1
-                group: route.openshift.io
-                plural: routes
-              - apiVersion: v1
-                group: tekton.dev
-                plural: pipelineruns
-              - apiVersion: v1
-                group: tekton.dev
-                plural: taskruns
             serviceLocatorMethod:
               type: multiTenant
     {{- end}}

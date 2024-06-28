@@ -4,7 +4,7 @@ Keycloak Realm Import:
   - Namespace: {{ $keycloak.keycloakCR.namespace }}
     Name:      {{ $keycloak.keycloakCR.name }}
 
-Keycloak "chicken" Realm Creadentails:
+Keycloak "chicken" Realm Credentials:
   - Namespace:    {{ .Release.Namespace }}
     Username:     chicken-admin 
     Admin Secret: {{ $keycloak.adminSecretName }}

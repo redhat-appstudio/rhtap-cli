@@ -36,6 +36,10 @@ openshift:
 {{- if $rhdh.Enabled }}
     - {{ $rhdh.Namespace }}
 {{- end }}
+{{- if $acs.Enabled }}
+    - rhacs-operator
+    - {{ $acs.Namespace }}
+{{- end }}
 
 #
 # rhtap-subscriptions
@@ -149,6 +153,11 @@ backingServices:
     namespace: {{ $argoCDNamespace }}
     # TODO: link this secret name with RHDH configuration.
     secretName: rhtap-argocd-integration
+    ingressDomain: {{ $ingressDomain }}
+  acs:
+    enabled: {{ $acs.Enabled }}
+    namespace: {{ $acs.Namespace }}
+    name: stackrox-central-services
     ingressDomain: {{ $ingressDomain }}
 
 #

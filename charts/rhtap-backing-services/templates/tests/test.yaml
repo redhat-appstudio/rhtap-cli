@@ -73,6 +73,53 @@ spec:
     #
   {{- include "backingServices.argoCD.testArgoCDLogin" . | nindent 4 }}
 {{- end }}
+{{- if .Values.backingServices.acs.enabled -}}
+  {{- $acs := .Values.backingServices.acs }}
+    #
+    # Test the ACS Central rollout status.
+    #
+    - name: {{ printf "acs-central-%s" $acs.name }}
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      env:
+        - name: NAMESPACE
+          value: {{ $acs.namespace }}
+        - name: RESOURCE_TYPE
+          value: "deployment"
+      command:
+        - /scripts/test-rollout-status.sh
+      args:
+        - {{
+            printf "app=central,app.kubernetes.io/instance=%s"
+              $acs.name | quote
+          }}
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+    #
+    # Test the ACS Scanners rollout status.
+    #
+    - name: {{ printf "acs-scanners-%s" $acs.name }}
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      env:
+        - name: NAMESPACE
+          value: {{ $acs.namespace }}
+        - name: RESOURCE_TYPE
+          value: "deployment"
+      command:
+        - /scripts/test-rollout-status.sh
+      args:
+        - {{
+            printf "app=scanner,app.kubernetes.io/instance=%s"
+              $acs.name | quote
+          }}
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+{{- end }}
   volumes:
     - name: scripts
       emptyDir: {}

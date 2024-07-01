@@ -10,12 +10,11 @@ kind: Job
 metadata:
   annotations:
     helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: hook-succeeded
     helm.sh/hook-weight: "1"
   labels:
     {{- include "rhtap-infrastructure.labels" . | nindent 4 }}
   namespace: {{ $osp.namespace }}
-  name: {{ printf "patch-tekton-%s-%d" $osp.name .Release.Revision }}
+  name: {{ printf "patch-tekton-%s" $osp.name }}
 spec:
   template:
     spec:

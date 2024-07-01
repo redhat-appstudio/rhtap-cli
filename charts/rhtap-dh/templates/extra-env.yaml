@@ -40,6 +40,11 @@ data:
     GITLAB__APP__CLIENT__SECRET: "{{ $glSecretData.ClientSecret }}"
     GITLAB__TOKEN: "{{ $glSecretData.Token }}"
 {{end}}
+{{- range $index, $secret := (lookup "v1" "Secret" .Release.Namespace "").items }}
+{{- if regexMatch "rhdh-kubernetes-plugin-token-.*" $secret.metadata.name }}
+    K8S_SERVICEACCOUNT_TOKEN: {{ $secret.data.token }}
+{{- end}}
+{{- end}}
 {{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
 {{- $quaySecretData := ($quaySecretObj.data | default dict) }}
 {{- if $quaySecretData.token }}

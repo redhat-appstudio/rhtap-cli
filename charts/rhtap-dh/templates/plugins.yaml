@@ -35,8 +35,6 @@ data:
         package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
       - disabled: false
         package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
-  {{- range $index, $secret := (lookup "v1" "Secret" .Release.Namespace "").items }}
-    {{- if regexMatch "rhdh-kubernetes-plugin-token-.*" $secret.metadata.name }}
         pluginConfig:
           kubernetes:
             clusterLocatorMethods:
@@ -53,14 +51,12 @@ data:
                         group: tekton.dev
                         plural: taskruns
                     name: rhdh-kubernetes-plugin
-                    serviceAccountToken: {{ $secret.data.token | b64dec }}
+                    serviceAccountToken: ${K8S_SERVICEACCOUNT_TOKEN}
                     skipTLSVerify: true
                     url: https://kubernetes.default.svc
                 type: config
             serviceLocatorMethod:
               type: multiTenant
-    {{- end}}
-  {{- end}}
       - disabled: false
         package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-quay
       - disabled: false

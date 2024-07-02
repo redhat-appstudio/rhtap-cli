@@ -27,8 +27,6 @@ ArgoCD:
 Red Hat Advanced Cluster Security (ACS):
   - Name: {{ $acs.name }}
     Namspace: {{ $acs.namespace }}
-    Central URL: {{
-      printf "https://central-%s.%s" $acs.namespace $acs.ingressDomain
-    }}
+    Central URL: {{ include "backingServices.acs.centralURL" . }}
     Secret: central-htpasswd
 {{- end }}

@@ -13,7 +13,7 @@ declare -r SECRET_NAME="${SECRET_NAME:-rhtap-argocd-integration}"
 # Secret's namespace.
 declare -r NAMESPACE="${NAMESPACE:-}"
 
-# Environment file to store the ArgoCD crednetials.
+# Environment file to store the ArgoCD credentials.
 declare -r ARGOCD_ENV_FILE="${ARGOCD_ENV_FILE:-/rhtap/argocd/env}"
 
 fail() {

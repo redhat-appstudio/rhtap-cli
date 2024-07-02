@@ -20,7 +20,7 @@ rhtapCLI:
         catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
     redHatAdvancedClusterSecurity:
       enabled: *rhdhEnabled
-      namespace: rhtap-stackrox
+      namespace: rhtap-acs
     redHatQuay:
       enabled: true
       namespace: rhtap-quay

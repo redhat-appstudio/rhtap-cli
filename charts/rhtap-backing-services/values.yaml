@@ -127,6 +127,10 @@ backingServices:
     name: stackrox-central-services
     # ACS instances ingress domain.
     ingressDomain: __OVERWRITE_ME__
+    # StackRox API token secret namespace and name.
+    integrationSecret:
+      namespace: __OVERWRITE_ME__
+      name:  rhtap-acs-integration
     # ACS Central instance configuration.
     central:
       # Central instance resources configuration.

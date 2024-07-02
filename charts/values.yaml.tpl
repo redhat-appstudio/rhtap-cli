@@ -161,6 +161,8 @@ backingServices:
     namespace: {{ $acs.Namespace }}
     name: stackrox-central-services
     ingressDomain: {{ $ingressDomain }}
+    integrationSecret:
+      namespace: {{ .Installer.Namespace }}
 
 #
 # rhtap-integrations

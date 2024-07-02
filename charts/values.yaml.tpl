@@ -3,6 +3,8 @@
 {{- $tpa := required "TPA settings" .Installer.Features.trustedProfileAnalyzer -}}
 {{- $keycloak := required "Keycloak settings" .Installer.Features.keycloak -}}
 {{- $acs := required "Red Hat ACS settings" .Installer.Features.redHatAdvancedClusterSecurity -}}
+{{- $gitops := required "GitOps settings" .Installer.Features.openShiftGitOps -}}
+{{- $pipelines := required "Pipelines settings" .Installer.Features.openShiftPipelines -}}
 {{- $quay := required "Quay settings" .Installer.Features.redHatQuay -}}
 {{- $rhdh := required "RHDH settings" .Installer.Features.redHatDeveloperHub -}}
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
@@ -55,7 +57,7 @@ subscriptions:
   minIO:
     enabled: {{ $tpa.Enabled }}
   openshiftGitOps:
-    enabled: {{ $rhdh.Enabled }}
+    enabled: {{ $gitops.Enabled }}
     config:
       argoCDClusterNamespace: {{ $argoCDNamespace }}
   openshiftKeycloak:
@@ -64,7 +66,7 @@ subscriptions:
       targetNamespaces:
         - {{ default "empty" $keycloak.Namespace }}
   openshiftPipelines:
-    enabled: {{ $rhdh.Enabled }}
+    enabled: {{ $pipelines.Enabled }}
   openshiftTrustedArtifactSigner:
     enabled: {{ $tas.Enabled }}
   redHatAdvancedClusterSecurity:

@@ -24,6 +24,9 @@ rhtapCLI:
     redHatQuay:
       enabled: true
       namespace: rhtap-quay
+    openShiftGitOps:
+      enabled: *rhdhEnabled
+      namespace: openshift-gitops-operator
     openShiftPipelines:
       enabled: *rhdhEnabled
       namespace: openshift-pipelines

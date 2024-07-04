@@ -42,21 +42,27 @@ trustedProfileAnalyzer:
       - "http://sbom-rhtap-tpa.apps-crc.testing/*"
       - "http://vex-rhtap-tpa.apps-crc.testing"
       - "http://vex-rhtap-tpa.apps-crc.testing/*"
+
 #
-# Trustification
-#   https://github.com/trustification/trustification
+# Red Hat Trusted Profile Analyzer
 #
-trustification:
+#  https://access.redhat.com/products/red-hat-trusted-profile-analyzer
+#  https://github.com/openshift-helm-charts/charts/tree/main/charts/redhat/redhat/redhat-trusted-profile-analyzer
+#
+redhat-trusted-profile-analyzer:
   appDomain: __OVERWRITE_ME__
   replicas: 1
   rust:
     logFilter: debug
     backtrace: true
-  openshift:
-    useServiceCa: false
-  ingress:
+  openshift: &tpaOpenShift
+    # The "useServiceCa" attribute is used to enable the OpenShift service CA,
+    # when false it use "http" communication for internal services, something only
+    # advisable for CRC, testing, etc.
+    useServiceCa: true
+  ingress: &tpaIngress
     className: openshift-default
-  guac:
+  guac: &tpaGUAC
     database:
       sslMode: disable
       name:
@@ -111,7 +117,7 @@ trustification:
           secretKeyRef:
             name: __OVERWRITE_ME__
             key: password
-  storage:
+  storage: &tpaStorage
     endpoint: __OVERWRITE_ME__
     accessKey:
       valueFrom:
@@ -123,6 +129,9 @@ trustification:
         secretKeyRef:
           name: __OVERWRITE_ME__
           key: password
+  # The event bus in the Trustification project exchanges system events, data
+  # events, user actions, and integration events to facilitate communication
+  # between components.
   eventBus:
     type: kafka
     bootstrapServers: tpa-kafka-bootstrap
@@ -135,28 +144,44 @@ trustification:
           secretKeyRef:
             name: __OVERWRITE_ME__
             key: password
-  oidc:
+  # OIDC client configuration for the TPA and Keycloak realm import.
+  oidc: &tpaOIDC
     issuerUrl: __OVERWRITE_ME__
     clients:
+      # The "frontend" client is used by the TPA application, it must always be
+      # enabled for the dependencies to work.
+      frontend:
+        clientId: frontend
+      # A specialized crawler to interact with external data sources, this client
+      # is used by other TPA modules.
       walker:
+        clientId: walker
         clientSecret:
           valueFrom:
             secretKeyRef:
               name: *oidcClientsSecretName
               key: walker
+      # Testing clients, disabled by default. These clients are used for testing
+      # TPA by injecting data in the system and analyzing the results, as a
+      # regular user and a privileged manager.
       # testingUser:
+      #   clientId: testing-user
       #   clientSecret:
       #     valueFrom:
       #       secretKeyRef:
       #         name: *oidcClientsSecretName
       #         key: testingUser
       # testingManager:
+      #   clientId: testing-manager
       #   clientSecret:
       #     valueFrom:
       #       secretKeyRef:
       #         name: *oidcClientsSecretName
       #         key: testingManager
   modules:
+    # The Bombastic API walker is a component designed to crawl and process
+    # security data, specifically Software Bill of Materials (SBOM) from external
+    # sources
     bombasticWalker:
       sources:
         redhat:
@@ -166,6 +191,8 @@ trustification:
           fixLicenses: true
           job:
             schedule: "0 * * * *"
+    # The "vexination walker" is a component designed for processing Vulnerability
+    # EXchange (VEX) files within the Vexination service. 
     vexinationWalker:
       sources:
         redhat:
@@ -175,3 +202,28 @@ trustification:
             - https://access.redhat.com/security/data/csaf/v2/advisories/
           job:
             schedule: "0 * * * *"
+  # Authentication method for the TPA application, by default "keycloak".
+  authenticator:
+    type: keycloak
+  # TLS configuration.
+  tls: &tpaTLS
+    serviceEnabled: true
+    # Additional CA certificates to trust, which is fundamental to support
+    # OpenShift internal TLS communication.
+    additionalTrustAnchor: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt 
+
+#
+# Trustification Helm chart values, linking its configuration with Red Hat's
+# Trusted Profile Analyzer chart sections.
+#
+#   https://github.com/trustification/trustification
+#
+trustification:
+  appDomain: __OVERWRITE_ME__
+  # openshift: *tpaOpenShift
+  # storage: *tpaStorage
+  # oidc: *tpaOIDC
+  # guac: *tpaGUAC
+  # ingress: *tpaIngress
+  # tls: *tpaTLS
+    

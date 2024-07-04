@@ -211,6 +211,10 @@ developerHub:
 {{- $tpaOIDCClientsSecretName := "tpa-realm-chicken-clients" }}
 {{- $tpaTestingUsersEnabled := false }}
 {{- $tpaRealmPath := "realms/chicken" }}
+{{- $protocol := "https" -}}
+{{- if $crc.Enabled }}
+  {{- $protocol = "http" }}
+{{- end }}
 
 trustedProfileAnalyzer:
   enabled: {{ $tpa.Enabled }}
@@ -228,10 +232,22 @@ trustedProfileAnalyzer:
         enabled: {{ $tpaTestingUsersEnabled }}
       testingUser:
         enabled: {{ $tpaTestingUsersEnabled }}
+    frontendRedirectUris:
+      - "http://localhost:8080"
+{{- range list "console" "sbom" "vex" }}
+      - "{{ printf "%s://%s-%s.%s" $protocol . $tpa.Namespace $ingressDomain }}"
+      - "{{ printf "%s://%s-%s.%s/*" $protocol . $tpa.Namespace $ingressDomain }}"
+{{- end }}
 
-trustification:
+redhat-trusted-profile-analyzer:
   appDomain: "{{ $tpaAppDomain }}"
-  guac:
+  ingress: &tpaIngress
+    className: openshift-default
+  openshift: &tpaOpenShift
+    # In practice it toggles "https" vs. "http" for TPA components, for CRC it's
+    # easier to focus on "http" communication only.
+    useServiceCa: {{ not $crc.Enabled }}
+  guac: &tpaGUAC
     database: &guacDatabase
       name:
         valueFrom:
@@ -254,7 +270,7 @@ trustification:
           secretKeyRef:
             name: {{ $tpaGUACDatabaseSecretName }}
     initDatabase: *guacDatabase
-  storage:
+  storage: &tpaStorage
     endpoint: {{ printf "http://minio.%s.svc.cluster.local:80" $tpa.Namespace }}
     accessKey:
       valueFrom:
@@ -272,7 +288,7 @@ trustification:
         valueFrom:
           secretKeyRef:
             name: {{ $tpaKafkaSecretName }}
-  oidc:
+  oidc: &tpaOIDC
 {{- if $crc.Enabled }}
     issuerUrl: {{ printf "http://%s/%s" $keycloakRouteHost $tpaRealmPath }}
 {{- else }}
@@ -299,6 +315,16 @@ trustification:
               name: {{ $tpaOIDCClientsSecretName }}
               key: testingManager
 {{- end }}
+
+trustification:
+  appDomain: "{{ $tpaAppDomain }}"
+  openshift: *tpaOpenShift
+  storage: *tpaStorage
+  oidc: *tpaOIDC
+  guac: *tpaGUAC
+  ingress: *tpaIngress
+  tls:
+    serviceEnabled: "{{ not $crc.Enabled }}"
 
 #
 # rhtap-tas

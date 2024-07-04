@@ -10,9 +10,11 @@ set -Eeu -o pipefail
 declare -r NAMESPACE="${NAMESPACE:-}"
 # Resource type for "rollout status", as in "statefulset" or "deployment".
 declare -r RESOURCE_TYPE="${RESOURCE_TYPE:-statefulset}"
+# Number of retries to attempt before giving up.
+declare -r RETRIES=${RETRIES:-5}
 
 # The "rollout status" selectors, to find the actual resource to check for
-# successul rollout.
+# successful rollout.
 declare -r -a RESOURCE_SELECTORS=("${@}")
 
 rollout_status() {
@@ -50,12 +52,12 @@ test_rollout_status() {
     [[ -z "${RESOURCE_TYPE}" ]] && usage
     [[ ${#RESOURCE_SELECTORS[@]} -eq 0 ]] && usage
 
-    for i in {1..5}; do
+    for i in $(seq 1 "${RETRIES}"); do
         wait_for_resource &&
             return 0
 
         wait=$((i * 30))
-        echo "### [${i}/5] Waiting for ${wait} seconds before retrying..."
+        echo "### [${i}/${RETRIES}] Waiting for ${wait} seconds before retrying..."
         sleep ${wait}
     done
 

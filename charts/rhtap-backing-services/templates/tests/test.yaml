@@ -107,6 +107,8 @@ spec:
           value: {{ $acs.namespace }}
         - name: RESOURCE_TYPE
           value: "deployment"
+        - name: RETRIES
+          value: "10"
       command:
         - /scripts/test-rollout-status.sh
       args:

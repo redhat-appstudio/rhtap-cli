@@ -25,9 +25,34 @@ rollout_status() {
         --selector="${1}"
 }
 
+assert_resource_exists() {
+    local selector="${1}"
+    local output
+    output=$(
+        oc get "${RESOURCE_TYPE}" \
+            --namespace="${NAMESPACE}" \
+            --selector="${selector}" 2>&1
+    )
+    local status=${?}
+    if [[ $status -eq 0 && $output != "No resources found"* ]]; then
+        echo "# Resource of type '${RESOURCE_TYPE}' with selector" \
+            "'${selector}' exists in namespace '${NAMESPACE}'!"
+        return 0
+    fi
+
+    echo "# ERROR: Resource of type '${RESOURCE_TYPE}' with selector" \
+        "'${selector}' does not exist in namespace '${NAMESPACE}'."
+    return 1
+}
+
 wait_for_resource() {
     for s in "${RESOURCE_SELECTORS[@]}"; do
-        echo "# Checking if ${RESOURCE_TYPE} '${s}' is ready..."
+        echo "# Checking if ${RESOURCE_TYPE} with selector '${s}' exists..."
+        if ! assert_resource_exists "${s}"; then
+            return 1
+        fi
+
+        echo "# Checking if ${RESOURCE_TYPE} with selector '${s}' is ready..."
         if ! rollout_status "${s}"; then
             echo -en "#\n# WARNING: ${RESOURCE_TYPE} '${s}' is not ready!\n#\n"
             return 1

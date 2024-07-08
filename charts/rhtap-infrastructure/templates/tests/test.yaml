@@ -92,7 +92,7 @@ spec:
       command:
         - /scripts/test-rollout-status.sh
       args:
-        - {{ printf "app.kubernetes.io/part-of=%s" $osp.name | quote }}
+        - "app.kubernetes.io/part-of=tekton-pipelines"
       volumeMounts:
         - name: scripts
           mountPath: /scripts

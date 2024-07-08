@@ -172,8 +172,6 @@ backingServices:
 #   acs:
 #     endpoint: ""
 #     token: ""
-#   developerHub:
-#     catalogUrl: ""
 #   github:
 #     clientId: ""
 #     clientSecret: ""

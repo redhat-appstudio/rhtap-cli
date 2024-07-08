@@ -50,7 +50,7 @@ infrastructure:
         - name: v11y-indexed
           config: *kafkaTopicConfig
   #
-  # MinIO Tentants
+  # MinIO Tenants
   #
   minIOTentants:
     # Trusted Profile Analyzer (TPA) needs an S3 compatible storage to store
@@ -60,14 +60,14 @@ infrastructure:
       enabled: false
       # Target namespace for the MinIO Tenant and related resources.
       namespace: __OVERWRITE_ME__
-      # Secret name to store MinIO's root passord, the password is genearted when
-      # then secret is empty.
+      # Secret name to store MinIO's root password, the password is generated when
+      # the secret is empty.
       rootSecretName: tpa-minio-root-env
       # Secret name to store the access and secret keys for API access.
       storageUserSecretName: tpa-minio-storage-user
       # Secret name for the service TLS settings, should be mounted on the MinIO
       # pods to enable TLS communication between internal services.
-      # TODO: enable internal TLS communication;
+      # TODO: enable internal TLS communication.
       # tlsSecretName: &minioTLSSecretName tpa-minio-svc-tls
       # service:
       #   annotations:
@@ -191,6 +191,6 @@ infrastructure:
       labels: {}
     # Tekton Chains settings.
     tektonChains:
-      # Secret name where the signing key is stored, the password randomly
+      # Secret name where the signing key is stored, the password is randomly
       # generated and stored on the same secret.
       signingSecretName: signing-secrets

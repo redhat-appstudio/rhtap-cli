@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Tests if the informed CRDs are available on the cluster.
+# Tests if the requested CRDs are available on the cluster.
 #
 
 shopt -s inherit_errexit
@@ -10,17 +10,18 @@ set -Eeu -o pipefail
 declare -r -a CRDS=("${@}")
 
 # Tests if the CRDs are available on the cluster, returns true when all CRDs are
-# found, ottherwise false.
+# found, otherwise false.
 api_resources_available() {
+    SUCCESS=0
     for crd in "${CRDS[@]}"; do
         echo "# Checking if CRD '${crd}' is present on the cluster..."
         if (! oc get customresourcedefinitions "${crd}"); then
-            echo -en "#\n# WARNING: Kubernetes CRD '${crd}' is not found!\n#\n"
-            return 1
+            echo -e "# ERROR: CRD '${crd}' not found."
+            SUCCESS=1
         fi
-        echo "# CRD '${crd}' is installed!"
+        echo "# CRD '${crd}' is installed."
     done
-    return 0
+    return "$SUCCESS"
 }
 
 # Verifies the availability of the CRDs, retrying a few times.

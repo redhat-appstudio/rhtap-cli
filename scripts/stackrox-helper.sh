@@ -43,32 +43,25 @@ assert_variables() {
         fail "NAMESPACE is not set!"
 }
 
-# Before creating a new secret, delete the existing one if it exists
-delete_secret_if_exists() {
-    if oc get secret "${SECRET_NAME}" --namespace="${NAMESPACE}" &>/dev/null; then
-        echo "# Deleting existing secret '${NAMESPACE}/${SECRET_NAME}'..."
-        oc delete secret "${SECRET_NAME}" --namespace="${NAMESPACE}" ||
-            fail "Failed to delete existing secret."
-    fi
-}
-
-# Stores the informed token on a secret, also the API endpoint.
-store_api_token_on_secret() {
+# Stores the new token and API endpoint in a secret.
+store_api_token_in_secret() {
     declare -r token="${1:-}"
     [[ -z "${token}" ]] &&
         fail "Token is not informed!"
 
     echo "# Storing StackRox API token on secret '${NAMESPACE}/${SECRET_NAME}'..."
-    delete_secret_if_exists && {
-        oc create secret generic "${SECRET_NAME}" \
+    if ! oc create secret generic "${SECRET_NAME}" \
             --namespace="${NAMESPACE}" \
             --from-literal="endpoint=${ROX_ENDPOINT}" \
-            --from-literal="token=${token}" ||
-            fail "Failed to store StackRox API token on secret."
-    }
+            --from-literal="token=${token}" \
+            --dry-run="client" \
+            --output="yaml" |
+            kubectl apply -f -; then
+        fail "Failed to store StackRox API token in a secret."
+    fi
 }
 
-# Generates a StackRox API token and stores the Kubernetes secret configured.
+# Generates a StackRox API token and stores it as a Kubernetes secret.
 stackrox_generate_api_token() {
     api_url="${ROX_ENDPOINT}${ROX_ENDPOINT_PATH}"
     echo "# Generating StackRox API token on ${api_url}" \
@@ -87,8 +80,6 @@ stackrox_generate_api_token() {
     token="$(echo "${output}" | jq -r '.token')"
     [[ -z "${token}" ]] &&
         fail "Failed to extract StackRox API token."
-
-    store_api_token_on_secret "${token}"
 }
 
 #
@@ -98,6 +89,7 @@ stackrox_generate_api_token() {
 stackrox_helper() {
     assert_variables
     stackrox_generate_api_token
+    store_api_token_in_secret "${token}"
 }
 
 if stackrox_helper; then

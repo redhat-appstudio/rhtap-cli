@@ -3,7 +3,7 @@
 # Trusted Profile Analyzer (Trustification)
 #
 trustedProfileAnalyzer:
-  # Controls whether the Trusted Profile Analyzer (Trustification) is enabled,
+  # Controls whether Trusted Profile Analyzer (Trustification) is enabled,
   # which includes the deployment of the application components, and the Keycloak
   # Realm import.
   enabled: true
@@ -57,7 +57,7 @@ redhat-trusted-profile-analyzer:
     backtrace: true
   openshift: &tpaOpenShift
     # The "useServiceCa" attribute is used to enable the OpenShift service CA,
-    # when false it use "http" communication for internal services, something only
+    # when false it uses "http" communication for internal services, something only
     # advisable for CRC, testing, etc.
     useServiceCa: true
   ingress: &tpaIngress

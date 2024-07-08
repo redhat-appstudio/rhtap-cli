@@ -1,6 +1,6 @@
 """
 Prepares a Keycloak realm export for import into the KeycloakRealmImport CRD, by
-cleaning up the JSON export file and converting it the Kubernetes YAML resource.
+cleaning up the JSON export file and converting it to a Kubernetes YAML resource.
 """
 
 import json
@@ -10,8 +10,8 @@ import argparse
 def clean_dict(d, is_client=False):
     """
     Recursively cleans up the Keycloak realm export dictionary removing items that
-    will prevent the later import. It also removes the sensitive information and
-    replaces with placeholders.
+    will prevent the later import. It also removes sensitive information and
+    replaces it with placeholders.
     """
     for key in [ \
         'id', \

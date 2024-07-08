@@ -3,7 +3,7 @@ apiVersion: v2
 name: rhtap-tpa
 description: RHTAP Trusted Profile Analyzer
 type: application
-version: 0.1.0
+version: 1.1.0
 
 dependencies:
   - name: redhat-trusted-profile-analyzer

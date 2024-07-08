@@ -11,7 +11,7 @@ declare -r NAMESPACE="${NAMESPACE:-}"
 # Resource type for "rollout status", as in "statefulset" or "deployment".
 declare -r RESOURCE_TYPE="${RESOURCE_TYPE:-statefulset}"
 # Number of retries to attempt before giving up.
-declare -r RETRIES=${RETRIES:-5}
+declare -r RETRIES=${RETRIES:-11}
 
 # The "rollout status" selectors, to find the actual resource to check for
 # successful rollout.
@@ -53,12 +53,12 @@ test_rollout_status() {
     [[ ${#RESOURCE_SELECTORS[@]} -eq 0 ]] && usage
 
     for i in $(seq 1 "${RETRIES}"); do
-        wait_for_resource &&
-            return 0
-
-        wait=$((i * 30))
+        wait=$((i * 5))
         echo "### [${i}/${RETRIES}] Waiting for ${wait} seconds before retrying..."
         sleep ${wait}
+
+        wait_for_resource &&
+            return 0
     done
 
     echo "# ERROR: '${RESOURCE_TYPE}' are not ready!"

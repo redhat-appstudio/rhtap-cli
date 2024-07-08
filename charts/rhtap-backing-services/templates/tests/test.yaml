@@ -59,10 +59,7 @@ spec:
       command:
         - /scripts/test-rollout-status.sh
       args:
-        - {{
-            printf "app=argocd,app.kubernetes.io/managed-by=%s"
-              $argoCD.name | quote
-          }}
+        - {{ printf "app.kubernetes.io/managed-by=%s" $argoCD.name | quote }}
       volumeMounts:
         - name: scripts
           mountPath: /scripts

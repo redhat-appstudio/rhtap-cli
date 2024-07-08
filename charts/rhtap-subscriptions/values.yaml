@@ -58,7 +58,7 @@ subscriptions:
     apiResource: pipelines.tekton.dev
     namespace: openshift-operators
     name: openshift-pipelines-operator-rh
-    channel: pipelines-1.14
+    channel: pipelines-1.15
     source: redhat-operators
     sourceNamespace: openshift-marketplace
   openshiftTrustedArtifactSigner:

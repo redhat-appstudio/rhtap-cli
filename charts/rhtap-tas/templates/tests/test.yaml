@@ -40,7 +40,7 @@ spec:
         - name: NAMESPACE
           value: {{ $secureSign.namespace }}
         - name: RESOURCE_TYPE
-          value: "statefulset"
+          value: "deployment"
       command:
         - /scripts/test-rollout-status.sh
       args:

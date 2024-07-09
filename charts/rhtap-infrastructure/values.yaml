@@ -112,14 +112,14 @@ infrastructure:
                 requests:
                   storage: 500Mi
     #
-    # Quay.io Tentant, stores the container image artifacts.
+    # Quay.io Tenant, stores the container image artifacts.
     #
     quay:
       enabled: false
       # Target namespace for the MinIO Tenant and related resources.
       namespace: __OVERWRITE_ME__
-      # Secret name to store MinIO's root passord, the password is genearted when
-      # then secret is empty.
+      # Secret name to store MinIO's root password, the password is generated when
+      # the secret is empty, otherwise the existing attributes are used.
       rootSecretName: quay-minio-root-env
       # The list of buckets to be created on the MinIO Tenant.
       buckets:

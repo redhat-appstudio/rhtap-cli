@@ -23,6 +23,7 @@ openshift:
 {{- end }}
 {{- if $acs.Enabled }}
     - {{ $acs.Namespace }}
+    - rhacs-operator
 {{- end }}
 {{- if $quay.Enabled }}
     - {{ $quay.Namespace }}
@@ -37,10 +38,6 @@ openshift:
 {{- end }}
 {{- if $rhdh.Enabled }}
     - {{ $rhdh.Namespace }}
-{{- end }}
-{{- if $acs.Enabled }}
-    - rhacs-operator
-    - {{ $acs.Namespace }}
 {{- end }}
 
 #
@@ -84,6 +81,8 @@ subscriptions:
 {{- $tpaKafkaBootstrapServers := "tpa-kafka-bootstrap:9092" }}
 {{- $tpaMinIORootSecretName := "tpa-minio-root-env" }}
 
+{{- $quayMinIOSecretName := "quay-minio-root-user"  }}
+
 infrastructure:
   kafkas:
     tpa:
@@ -103,6 +102,12 @@ infrastructure:
             secretKeyRef:
               name: {{ $tpaKafkaSecretName }}
               key: password
+    quay:
+      enabled: {{ $quay.Enabled }}
+      namespace: {{ $quay.Namespace }}
+      rootSecretName: {{ $quayMinIOSecretName }}
+      kafkaNotify:
+        enabled: false
   postgresClusters:
     keycloak:
       enabled: {{ $keycloak.Enabled }}
@@ -126,6 +131,7 @@ infrastructure:
 {{- $keycloakRouteTLSSecretName := "keycloak-tls" }}
 {{- $keycloakRouteHost := printf "sso.%s" $ingressDomain }}
 {{- $argoCDName := "argocd" }}
+{{- $quayMinIOHost := printf "minio.%s.svc.cluster.local" $quay.Namespace }}
 
 backingServices:
   keycloak:
@@ -163,7 +169,18 @@ backingServices:
     ingressDomain: {{ $ingressDomain }}
     integrationSecret:
       namespace: {{ .Installer.Namespace }}
-
+  quay:
+    enabled: {{ $quay.Enabled }}
+    namespace: {{ $quay.Namespace }}
+    config:
+      radosGWStorage:
+        enabled: true
+        hostname: {{ $quayMinIOHost }}
+        credentials:
+          secretName: {{ $quayMinIOSecretName }}
+    replicas:
+      quay: 1
+      clair: 1
 #
 # rhtap-integrations
 #

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Uses the ArgoCD credentials to create a secret in the cluster. The credentials
-# are stored in a "env file" format sourced by this script, and later on using
+# are stored in an "env file" format sourced by this script, and later on using
 # "kubectl" to create the secret.
 #
 
@@ -25,12 +25,12 @@ fail() {
 wait_for_env_file() {
     echo "# Waiting for '${ARGOCD_ENV_FILE}' to be available..."
     for i in {1..30}; do
-        [[ -r "${ARGOCD_ENV_FILE}" ]] &&
-            return 0
-
-        wait=$((i * 15))
+        wait=$((i * 5))
         echo "### [${i}/30] Waiting for '${ARGOCD_ENV_FILE}' to be available..."
         sleep ${wait}
+
+        [[ -r "${ARGOCD_ENV_FILE}" ]] &&
+            return 0
     done
     return 1
 }

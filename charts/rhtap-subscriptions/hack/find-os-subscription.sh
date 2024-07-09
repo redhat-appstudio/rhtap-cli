@@ -13,7 +13,7 @@ if [[ -z "${CATALOG_NAME}" ]]; then
 fi
 
 # Inspecting the manifests installed on the cluster, looking for the catalog name
-# informed. The availability of the operators depends on the OpenShift cluster
+# given in parameter. The availability of the operators depends on the OpenShift cluster
 # version.
 if ! oc get packagemanifests "${CATALOG_NAME}" >/dev/null; then
     echo "# ERROR: No subscription found for '${CATALOG_NAME}'!"

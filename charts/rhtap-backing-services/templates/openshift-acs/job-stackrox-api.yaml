@@ -1,6 +1,6 @@
 {{- if .Values.backingServices.acs.enabled -}}
   {{- $acs := .Values.backingServices.acs -}}
-  {{- $name := printf "%s-post-deploy-%d" $acs.name .Release.Revision }}
+  {{- $name := printf "%s-post-deploy" $acs.name }}
 #
 # Generates a token for StackRox API.
 #
@@ -10,7 +10,6 @@ kind: Job
 metadata:
   annotations:
     helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: hook-succeeded
   labels:
     {{- include "rhtap-backing-services.labels" . | nindent 4 }}
   namespace: {{ $acs.namespace }}

@@ -118,7 +118,7 @@ backingServices:
   # Advanced Cluster Security (ACS)
   #
   acs:
-    # Toggle the Advanced Cluster Security (ACS) backing service. The service
+    # Toggles the Advanced Cluster Security (ACS) backing service. The service
     # consists of a "Central" instance running on the cluster.
     enabled: false
     # ACS Central instance namespace.

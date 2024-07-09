@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Tests if the informed KeycloakRealmImports are imported without errors.
+# Tests if the given KeycloakRealmImports are imported without errors.
 # 
 
 shopt -s inherit_errexit
@@ -15,7 +15,7 @@ keycloakrealmimport_available() {
         echo "# Checking if KeycloakRealmImport '${r}' has errors..."
         if ! oc get keycloakrealmimports "${r}" \
                 --namespace="${NAMESPACE}" &>/dev/null; then
-            echo "# KeycloakRealmImport '${r}' not found!"
+            echo "# [ERROR] KeycloakRealmImport '${r}' not found!"
             return 1
         fi
 
@@ -59,6 +59,6 @@ if test_keycloakrealmimport; then
     echo "# KeycloakRealmImports are available: '${KEYCLOAKREALMIMPORT_NAMES[*]}'"
     exit 0
 else
-    echo "# ERROR: KeycloakRealmImports not available!"
+    echo "# [ERROR] KeycloakRealmImports not available!"
     exit 1
 fi

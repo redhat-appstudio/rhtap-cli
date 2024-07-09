@@ -3,7 +3,7 @@
 # Tests if the ArgoCD instance is available on the cluster by logging in.
 #
 # Uses the ArgoCD session, created by previously running "argocd login", to
-# generate an acccount token. The informaton is then stored in the ARGOCD_ENV_FILE
+# generate an account token. The information is then stored in the ARGOCD_ENV_FILE
 # variable.
 #
 
@@ -49,13 +49,13 @@ argocd_login() {
 # Retries a few times until the ArgoCD instance is available.
 test_argocd_login() {
     for i in {1..30}; do
-        echo "# [${i}/30] Testing ArgoCD login on '${ARGOCD_HOSTNAME}'..."
-        argocd_login &&
-            return 0
-
         wait=$((i * 5))
         echo "### [${i}/30] Waiting for ${wait} seconds before retrying..."
         sleep ${wait}
+
+        echo "# [${i}/30] Testing ArgoCD login on '${ARGOCD_HOSTNAME}'..."
+        argocd_login &&
+            return 0
     done
     return 1
 }

@@ -3,12 +3,12 @@
 shopt -s inherit_errexit
 set -Eeu -o pipefail
 
-# Subcommand to be use in combination with "oc" (or "kubectl").
+# Subcommand to be used in combination with "oc" (or "kubectl").
 declare -r SUBCOMMAND="${1:-}"
 # Remove the first argument from the list.
 shift
-# Storing the remaining arguments in an array, they represent the final arguments
-# to be informed to the "oc" command and subcommand.
+# Store the remaining arguments in an array, they represent the final arguments
+# to be passed to the "oc" command and subcommand.
 declare -r ARGS=("${@}")
 
 # Kubernetes kind to be used in the "oc" command.
@@ -54,12 +54,12 @@ oc_amend() {
 retry_oc_amend() {
     echo "# Kubernetes namespace: '${NAMESPACE}'"
     for i in {1..30}; do
-        oc_amend &&
-            return 0
-
         wait=$((i * 5))
         echo "### [${i}/30] Waiting for ${wait} seconds before retrying..."
         sleep ${wait}
+
+        oc_amend &&
+            return 0
     done
     return 1
 }

@@ -63,7 +63,7 @@ spec:
             allowPrivilegeEscalation: false
         #
         # Stores the generated token on a secret, the secret data is shared via
-        # the "/rhapt/argocd" volume, the previous step stored the API credentials
+        # the "/rhtap/argocd" volume, the previous step stored the API credentials
         # on a environment file.
         #
         - name: argocd-store-token

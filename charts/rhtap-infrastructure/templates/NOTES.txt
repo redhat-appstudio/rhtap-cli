@@ -3,7 +3,6 @@ MinIO Tenants:
   - Name: {{ $k }}
     Namespace: {{ $v.namespace }}
     Root Credentials: {{ $v.rootSecretName }} (Secret)
-    Storage User Credentials: {{ $v.storageUserSecretName }} (Secret)
 {{- end }}
 
 Kafka Brokers:

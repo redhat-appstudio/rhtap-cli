@@ -63,8 +63,6 @@ infrastructure:
       # Secret name to store MinIO's root password, the password is generated when
       # the secret is empty.
       rootSecretName: tpa-minio-root-env
-      # Secret name to store the access and secret keys for API access.
-      storageUserSecretName: tpa-minio-storage-user
       # Secret name for the service TLS settings, should be mounted on the MinIO
       # pods to enable TLS communication between internal services.
       # TODO: enable internal TLS communication.
@@ -107,6 +105,40 @@ infrastructure:
             kind: persistentvolumeclaims
             metadata:
               name: tpa-minio-pvc
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 500Mi
+    #
+    # Quay.io Tentant, stores the container image artifacts.
+    #
+    quay:
+      enabled: false
+      # Target namespace for the MinIO Tenant and related resources.
+      namespace: __OVERWRITE_ME__
+      # Secret name to store MinIO's root passord, the password is genearted when
+      # then secret is empty.
+      rootSecretName: quay-minio-root-env
+      # The list of buckets to be created on the MinIO Tenant.
+      buckets:
+        - name: quay
+      # Quay doesn't rely on Kafka integration.
+      kafkaNotify:
+        enabled: false
+      # MinIO storage pools
+      pools:
+        - name: pool-0
+          servers: 1
+          containerSecurityContext:
+            runAsNonRoot: true
+          volumesPerServer: 1
+          volumeClaimTemplate:
+            apiVersion: v1
+            kind: persistentvolumeclaims
+            metadata:
+              name: quay-minio-pvc
             spec:
               accessModes:
                 - ReadWriteOnce

@@ -1,20 +1,24 @@
-{{- $sa := "minio-tenant" -}}
-{{- $saAdmin := printf "%s-admin" $sa -}}
-{{- range include "infrastructure.minIOTentants.namespaces.enabled" . | fromJsonArray }}
+{{ $root := . }}
+{{- range $k, $v := include "infrastructure.minIOTentants.enabled" . | fromYaml }}
+  {{- $sa := printf "minio-tenant-%s" $k -}}
+  {{- $namespace := $v.namespace -}}
+  {{- $saAdmin := printf "%s-admin" $sa -}}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
     app: minio
+    {{- include "rhtap-infrastructure.labels" $root | nindent 4 }}
   name: {{ $sa }}
-  namespace: {{ . }}
+  namespace: {{ $namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
     app: minio
+    {{- include "rhtap-infrastructure.labels" $root | nindent 4 }}
   name: {{ $saAdmin }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -23,14 +27,15 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ $sa }}
-    namespace: {{ . }}
+    namespace: {{ $namespace }}
 ---
 apiVersion: security.openshift.io/v1
 kind: SecurityContextConstraints
 metadata:
   labels:
     app: minio
-  name: {{ $sa}}
+    {{- include "rhtap-infrastructure.labels" $root | nindent 4 }}
+  name: {{ $sa }}
 allowPrivilegedContainer: false
 runAsUser:
   type: MustRunAs
@@ -43,5 +48,5 @@ fsGroup:
 seLinuxContext:
   type: MustRunAs
 users:
-  - {{ printf "system:serviceaccount:%s:%s" . $sa }}
+  - {{ printf "system:serviceaccount:%s:%s" $namespace $sa }}
 {{- end }}

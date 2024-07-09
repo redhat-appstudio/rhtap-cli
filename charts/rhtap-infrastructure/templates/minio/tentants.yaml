@@ -12,11 +12,9 @@ metadata:
   namespace: {{ $v.namespace }}
   name: {{ $k }}
 spec:
-  serviceAccountName: minio-tenant
+  serviceAccountName: {{ printf "minio-tenant-%s" $k }}
   configuration:
     name: {{ $v.rootSecretName }}
-  credSecret:
-    name: {{ $v.storageUserSecretName }}
   buckets:
     {{- $v.buckets | toYaml | nindent 4 }}
   {{- if $v.kafkaNotify.enabled }}

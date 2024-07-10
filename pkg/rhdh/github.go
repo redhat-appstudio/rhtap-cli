@@ -106,7 +106,7 @@ func (g *GithubIntegration) setOpenShiftURLs(ctx context.Context) error {
 
 	if g.callbackURL == "" {
 		g.callbackURL = fmt.Sprintf(
-			"https://developer-hub-%s.%s/api/auth/github/handler/frame",
+			"https://backstage-developer-hub-%s.%s/api/auth/github/handler/frame",
 			featureRHDH.GetNamespace(),
 			ingressDomain,
 		)
@@ -126,7 +126,7 @@ func (g *GithubIntegration) setOpenShiftURLs(ctx context.Context) error {
 	}
 	if g.homepageURL == "" {
 		g.homepageURL = fmt.Sprintf(
-			"https://developer-hub-%s.%s",
+			"https://backstage-developer-hub-%s.%s",
 			featureRHDH.GetNamespace(),
 			ingressDomain,
 		)
@@ -216,8 +216,11 @@ func (g *GithubIntegration) store(
 // generateAppManifest creates the application manifest for the RHDH GitHub App
 func (g *GithubIntegration) generateAppManifest(name string) scrape.AppManifest {
 	return scrape.AppManifest{
-		Name:           github.String(name),
-		URL:            github.String(g.homepageURL),
+		Name: github.String(name),
+		URL:  github.String(g.homepageURL),
+		CallbackURLs: []string{
+			g.callbackURL,
+		},
 		Description:    github.String(g.description),
 		HookAttributes: map[string]string{"url": g.webhookURL},
 		Public:         github.Bool(true),

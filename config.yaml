@@ -15,7 +15,7 @@ rhtapCLI:
       namespace: &trustedArtifactSignerNamespace rhtap-tas
     redHatDeveloperHub:
       enabled: &rhdhEnabled true
-      namespace: rhdh-operator
+      namespace: *installerNamespace
       properties:
         catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
     redHatAdvancedClusterSecurity:
@@ -26,9 +26,10 @@ rhtapCLI:
       namespace: rhtap-quay
     openShiftGitOps:
       enabled: *rhdhEnabled
-      namespace: openshift-gitops-operator
+      namespace: *installerNamespace
     openShiftPipelines:
       enabled: *rhdhEnabled
+      # No new resources will be created in the namespace
       namespace: openshift-pipelines
   dependencies:
     - chart: charts/rhtap-openshift

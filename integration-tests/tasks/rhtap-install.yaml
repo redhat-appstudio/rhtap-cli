@@ -20,11 +20,21 @@ spec:
     - name: image-url
       type: string
       description: "Image URL to be used for launching rhtap-cli for rhtap installation"
+  volumes:
+    - name: secret-volume
+      secret:
+        secretName: rhtap-installer-configuration
   steps:
     - name: install
-      image: $(params.image-url)
+      image: quay.io/rhtap/rhtap-e2e:latest
+      volumeMounts:
+        - name: secret-volume
+          mountPath: /workspace
       script: |
         #!/bin/sh
+        set -o errexit
+        set -o nounset
+        set -o pipefail
 
         export KUBECONFIG=$(pwd)/kubeconfig
         echo $(params.ocp-login-command)
@@ -35,5 +45,37 @@ spec:
         git clone "$(params.git-url)" .
         git checkout "$(params.git-revision)"
 
+        # Export the environment variables from the secret
+        cat /workspace/config.env > config.sh
+        chmod +x config.sh
+        source ./config.sh
+
+        # Path to your values.yaml.tpl file
+        tpl_file="charts/values.yaml.tpl"
+
+        # Create the new integrations section
+        cat <<EOF >> "$tpl_file"
+        integrations:
+          github:
+            id: "${GITHUB__APP__ID}"
+            clientId: "${GITHUB__APP__CLIENT__ID}"
+            clientSecret: "${GITHUB__APP__CLIENT__SECRET}"
+            publicKey: |-
+        $(echo "${GITHUB__APP__PRIVATE_KEY}" | sed 's/^/      /')
+            token: "${GITOPS__GIT_TOKEN}"
+            webhookSecret: "${GITHUB__APP__WEBHOOK__SECRET}"
+        EOF
+
+        echo "make build"
         make build
-        ./bin/rhtap-cli deploy --config ./config.yaml --kube-config "$KUBECONFIG" --debug
+
+        echo "install"
+        ./bin/rhtap-cli deploy --timeout 25m --config ./config.yaml --kube-config "$KUBECONFIG"
+
+        homepage_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')
+        callback_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')/api/auth/github/handler/frame
+        webhook_url=https://$(kubectl -n openshift-pipelines get route pipelines-as-code-controller -o 'jsonpath={.spec.host}')
+
+        echo "homepage_url=$homepage_url"
+        echo "callback_url=$callback_url"
+        echo "webhook_url=$webhook_url"

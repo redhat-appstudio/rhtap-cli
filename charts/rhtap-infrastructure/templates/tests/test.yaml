@@ -36,7 +36,7 @@ spec:
       securityContext:
         allowPrivilegeEscalation: false
 {{- end }}
-{{- range $k, $v := include "infrastructure.minIOTentants.enabled" . | fromYaml }}
+{{- range $k, $v := include "infrastructure.minIOTenants.enabled" . | fromYaml }}
     - name: {{ printf "%s-minio-tentant-%s" $name $k }}
       image: quay.io/codeready-toolchain/oc-client-base:latest
       env:

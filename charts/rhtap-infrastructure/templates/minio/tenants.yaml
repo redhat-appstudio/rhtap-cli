@@ -1,4 +1,4 @@
-{{- range $k, $v := include "infrastructure.minIOTentants.enabled" . | fromYaml }}
+{{- range $k, $v := include "infrastructure.minIOTenants.enabled" . | fromYaml }}
 ---
 apiVersion: minio.min.io/v2
 kind: Tenant

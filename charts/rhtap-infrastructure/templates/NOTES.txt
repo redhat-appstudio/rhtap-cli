@@ -1,5 +1,5 @@
 MinIO Tenants:
-{{- range $k, $v := include "infrastructure.minIOTentants.enabled" . | fromYaml }}
+{{- range $k, $v := include "infrastructure.minIOTenants.enabled" . | fromYaml }}
   - Name: {{ $k }}
     Namespace: {{ $v.namespace }}
     Root Credentials: {{ $v.rootSecretName }} (Secret)

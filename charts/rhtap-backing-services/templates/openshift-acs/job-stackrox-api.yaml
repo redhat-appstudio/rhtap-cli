@@ -32,7 +32,7 @@ spec:
           image: quay.io/codeready-toolchain/oc-client-base:latest
           env:
             - name: ROX_ENDPOINT
-              value: {{ include "backingServices.acs.centralURL" . }}
+              value: {{ include "backingServices.acs.centralEndPoint" . }}
             - name: ROX_USERNAME
               value: admin
             - name: ROX_PASSWORD

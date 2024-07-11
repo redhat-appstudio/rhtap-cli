@@ -3,7 +3,7 @@
   Returns the ACS URL for the given environment.
 
 */}}
-{{- define "backingServices.acs.centralURL" -}}
+{{- define "backingServices.acs.centralEndPoint" -}}
   {{- $acs := .Values.backingServices.acs -}}
-  {{- printf "https://central-%s.%s" $acs.namespace $acs.ingressDomain -}}
+  {{- printf "central-%s.%s" $acs.namespace $acs.ingressDomain -}}
 {{- end -}}

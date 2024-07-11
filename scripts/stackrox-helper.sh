@@ -52,7 +52,7 @@ store_api_token_in_secret() {
     echo "# Storing StackRox API token on secret '${NAMESPACE}/${SECRET_NAME}'..."
     if ! oc create secret generic "${SECRET_NAME}" \
             --namespace="${NAMESPACE}" \
-            --from-literal="endpoint=${ROX_ENDPOINT}" \
+            --from-literal="endpoint=${ROX_ENDPOINT}:443" \
             --from-literal="token=${token}" \
             --dry-run="client" \
             --output="yaml" |
@@ -63,7 +63,7 @@ store_api_token_in_secret() {
 
 # Generates a StackRox API token and stores it as a Kubernetes secret.
 stackrox_generate_api_token() {
-    api_url="${ROX_ENDPOINT}${ROX_ENDPOINT_PATH}"
+    api_url="https://${ROX_ENDPOINT}${ROX_ENDPOINT_PATH}"
     echo "# Generating StackRox API token on ${api_url}" \
         "for user '${ROX_USERNAME}'..."
     output="$(

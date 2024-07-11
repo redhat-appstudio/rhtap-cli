@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.21.10-1.1719562237
+FROM registry.access.redhat.com/ubi9/go-toolset:1.21.11-2
 
 ENV SHELLCHECK_VERSION=0.7.1
 ENV YQ_VERSION=v4.25.2

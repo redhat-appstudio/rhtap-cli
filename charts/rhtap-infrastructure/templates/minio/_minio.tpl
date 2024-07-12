@@ -1,6 +1,6 @@
-{{- define "infrastructure.minIOTentants.namespaces.enabled" -}}
+{{- define "infrastructure.minIOTenants.namespaces.enabled" -}}
   {{- $namespaces := list }}
-  {{- range $v := .Values.infrastructure.minIOTentants -}}
+  {{- range $v := .Values.infrastructure.minIOTenants -}}
     {{- if and $v.enabled (not (has $v.namespace $namespaces)) -}}
       {{- $namespaces = append $namespaces $v.namespace -}}
     {{- end -}}
@@ -8,9 +8,9 @@
   {{- $namespaces | toJson -}}
 {{- end -}}
 
-{{- define "infrastructure.minIOTentants.enabled" -}}
+{{- define "infrastructure.minIOTenants.enabled" -}}
   {{- $enabled := dict -}}
-  {{- range $k, $v := .Values.infrastructure.minIOTentants -}}
+  {{- range $k, $v := .Values.infrastructure.minIOTenants -}}
     {{- if $v.enabled -}}
       {{- $enabled = merge $enabled (dict $k $v) -}}
     {{- end -}}

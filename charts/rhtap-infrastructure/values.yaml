@@ -52,7 +52,7 @@ infrastructure:
   #
   # MinIO Tenants
   #
-  minIOTentants:
+  minIOTenants:
     # Trusted Profile Analyzer (TPA) needs an S3 compatible storage to store
     # documents and to create integration with Kafka, a message is issued upon
     # document creation.

@@ -1,5 +1,5 @@
 {{ $root := . }}
-{{- range $k, $v := include "infrastructure.minIOTentants.enabled" . | fromYaml }}
+{{- range $k, $v := include "infrastructure.minIOTenants.enabled" . | fromYaml }}
   {{- $sa := printf "minio-tenant-%s" $k -}}
   {{- $namespace := $v.namespace -}}
   {{- $saAdmin := printf "%s-admin" $sa -}}

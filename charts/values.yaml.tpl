@@ -19,11 +19,12 @@ debug:
 openshift:
   projects:
 {{- if $keycloak.Enabled }}
+    - rhbk-operator
     - {{ $keycloak.Namespace }}
 {{- end }}
 {{- if $acs.Enabled }}
-    - {{ $acs.Namespace }}
     - rhacs-operator
+    - {{ $acs.Namespace }}
 {{- end }}
 {{- if $quay.Enabled }}
     - {{ $quay.Namespace }}
@@ -32,12 +33,13 @@ openshift:
     - {{ $tas.Namespace }}
 {{- end }}
 {{- if $tpa.Enabled }}
-    - rhbk-operator
-    - minio-operator
     - {{ $tpa.Namespace }}
 {{- end }}
 {{- if $rhdh.Enabled }}
     - {{ $rhdh.Namespace }}
+{{- end }}
+{{- if (or $tpa.Enabled $quay.Enabled) }}
+    - minio-operator
 {{- end }}
 
 #
@@ -52,7 +54,7 @@ subscriptions:
   crunchyData:
     enabled: {{ or $tpa.Enabled $rhdh.Enabled }}
   minIO:
-    enabled: {{ $tpa.Enabled }}
+    enabled: {{ or $tpa.Enabled $quay.Enabled }}
   openshiftGitOps:
     enabled: {{ $gitops.Enabled }}
     config:
@@ -89,7 +91,7 @@ infrastructure:
       enabled: {{ $tpa.Enabled }}
       namespace: {{ $tpa.Namespace }}
       username: {{ $tpaKafkaSecretName }}
-  minIOTentants:
+  minIOTenants:
     tpa:
       enabled: {{ $tpa.Enabled }}
       namespace: {{ $tpa.Namespace }}

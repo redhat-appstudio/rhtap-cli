@@ -207,6 +207,10 @@ backingServices:
 #       {
 #       }
 #     token: ""
+#  jenkins:
+#    baseUrl: ""
+#    username: ""
+#    token: ""
 
 #
 # rhtap-dh

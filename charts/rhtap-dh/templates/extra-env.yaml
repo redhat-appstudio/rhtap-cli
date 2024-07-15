@@ -51,3 +51,10 @@ data:
     QUAY__API_TOKEN: {{ $quaySecretData.token }}
 {{- end }}
     QUAY__URL: {{ $quaySecretData.url }}
+{{- $jenkinsSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
+{{- $jenkinsSecretData := ($jenkinsSecretObj.data | default dict) }}
+{{- if $jenkinsSecretData.token }}
+    JENKINS__BASE__URL: {{ $jenkinsSecretData.baseUrl }}
+    JENKINS__USERNAME: {{ $jenkinsSecretData.username }}
+    JENKINS__TOKEN: {{ $jenkinsSecretData.token }}
+{{- end }}

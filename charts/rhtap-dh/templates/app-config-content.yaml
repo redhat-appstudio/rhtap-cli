@@ -54,6 +54,12 @@ catalog:
       - Location
       - Template
       - API
+jenkins:
+  instances:
+    - name: default
+      baseUrl: ${JENKINS__BASE__URL}
+      username: ${JENKINS__USERNAME}
+      apiKey: ${JENKINS__TOKEN}
 integrations:
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
   github:

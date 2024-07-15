@@ -48,5 +48,6 @@ data:
 {{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
 {{- $quaySecretData := ($quaySecretObj.data | default dict) }}
 {{- if $quaySecretData.token }}
-    QUAY__API_TOKEN: {{ $quaySecretData.token | b64enc }}
+    QUAY__API_TOKEN: {{ $quaySecretData.token }}
 {{- end }}
+    QUAY__URL: {{ $quaySecretData.url }}

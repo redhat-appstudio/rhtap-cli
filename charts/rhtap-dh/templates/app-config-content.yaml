@@ -74,7 +74,7 @@ integrations:
 proxy:
   endpoints:
     '/quay/api':
-      target: 'https://quay.io'
+      target: ${QUAY__URL}
       headers:
         X-Requested-With: 'XMLHttpRequest'
       {{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
@@ -87,7 +87,7 @@ proxy:
       secure: true
 quay:
   # The UI url for Quay, used to generate the link to Quay
-  uiUrl: 'https://quay.io'
+  uiUrl: ${QUAY__URL}
 techdocs:
   builder: 'local'
   generator:

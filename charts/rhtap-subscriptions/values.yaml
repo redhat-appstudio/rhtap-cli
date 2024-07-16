@@ -83,12 +83,11 @@ subscriptions:
     enabled: false
     description: Red Hat Advanced Cluster Security Operator
     apiResource: centrals.platform.stackrox.io
-    channel: stable 
+    channel: rhacs-4.4 
     namespace: rhacs-operator
     name: rhacs-operator
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-    startingCSV: rhacs-operator.v4.4.3 
     operatorGroup:
       upgradeStrategy: Default
   redHatDeveloperHub:

@@ -1,4 +1,4 @@
-package rhdh
+package integrations
 
 import (
 	"context"

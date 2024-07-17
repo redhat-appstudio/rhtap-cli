@@ -174,15 +174,24 @@ backingServices:
   quay:
     enabled: {{ $quay.Enabled }}
     namespace: {{ $quay.Namespace }}
+    ingressDomain: {{ $ingressDomain }}
+    organization:
+      email: {{ printf "rhtap@%s" $ingressDomain }}
+    secret:
+      namespace: {{ .Installer.Namespace }}
+      name: rhtap-quay-integration
     config:
       radosGWStorage:
         enabled: true
         hostname: {{ $quayMinIOHost }}
         credentials:
           secretName: {{ $quayMinIOSecretName }}
+      superUser:
+        email: {{ printf "admin@%s" $ingressDomain }}
     replicas:
       quay: 1
       clair: 1
+
 #
 # rhtap-integrations
 #

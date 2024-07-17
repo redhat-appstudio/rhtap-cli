@@ -30,3 +30,20 @@ Red Hat Advanced Cluster Security (ACS):
     Central URL: https://{{ include "backingServices.acs.centralEndPoint" . }}
     Secret: central-htpasswd
 {{- end }}
+
+{{- if .Values.backingServices.quay.enabled }}
+  {{- $quay := .Values.backingServices.quay }}
+Red Hat Quay Registry:
+  - Name: {{ $quay.name }}
+    Namespace: {{ $quay.namespace }}
+    Super User: 
+      Name: {{ $quay.config.superUser.name }}
+      Email: {{ $quay.config.superUser.email }}
+      Secret: {{ include "backingServices.quay.superUserSecretName" . }}
+    Organization:
+      Name: {{ $quay.organization.name }}
+      Emai: {{ $quay.organization.email }}
+    Integration Secret:
+      Namespace: {{ $quay.secret.namespace }}
+      Name: {{ $quay.secret.name }}
+{{- end }}

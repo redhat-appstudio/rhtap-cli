@@ -1,0 +1,78 @@
+{{- if .Values.backingServices.quay.enabled -}}
+  {{- $quay := .Values.backingServices.quay }}
+  {{- $name := printf "%s-post-deploy" $quay.name }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+  labels:
+    {{- include "rhtap-backing-services.labels" . | nindent 4 }}
+  namespace: {{ $quay.namespace }}
+  name: {{ $name }}
+spec:
+  template:
+    spec:
+      serviceAccountName: {{ printf "%s-quay" .Release.Name }}
+      restartPolicy: Never
+      containers:
+        #
+        # Copying the scripts that will be used on the subsequent containers, the
+        # scripts are shared via the "/scripts" volume.
+        #
+  {{- include "backingServices.copyScripts" . | nindent 8 }}
+        #
+        # Initializing the Quay integration.
+        #
+        - name: quay-integration
+          image: quay.io/codeready-toolchain/oc-client-base:latest
+          env:
+            - name: QUAY_HOSTNAME
+              value: {{ include "backingServices.quay.registryHostname" . }}
+            - name: QUAY_USERNAME
+              value: {{
+                required ".backingServices.quay.config.superUser.name is required"
+                  $quay.config.superUser.name
+              }}
+            - name: QUAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "backingServices.quay.superUserSecretName" . }}
+                  key: password
+            - name: QUAY_EMAIL
+              value: {{
+                required ".backingServices.quay.config.superUser.email is required"
+                  $quay.config.superUser.email
+              }}
+            - name: QUAY_ORGANIZATION
+              value: {{
+                required ".backingServices.quay.organization.name is required"
+                  $quay.organization.name
+              }}
+            - name: QUAY_ORGANIZATION_EMAIL
+              value: {{
+                required ".backingServices.quay.organization.email is required"
+                  $quay.organization.email
+              }}
+            - name: NAMESPACE
+              value: {{
+                required ".backingServices.quay.secret.namespace is required"
+                  $quay.secret.namespace
+              }}
+            - name: SECRET_NAME
+              value: {{
+                required ".backingServices.quay.secret.name is required"
+                  $quay.secret.name
+              }}
+          command:
+            - /scripts/quay-helper.sh
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+          securityContext:
+            allowPrivilegeEscalation: false
+      volumes:
+        - name: scripts
+          emptyDir: {}
+{{- end }}

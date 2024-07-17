@@ -25,7 +25,7 @@ type RootCmd struct {
 func (r *RootCmd) Cmd() *cobra.Command {
 	logger := r.flags.GetLogger(os.Stdout)
 
-	r.cmd.AddCommand(subcmd.NewDeveloperHub(logger, r.cfg, r.kube))
+	r.cmd.AddCommand(subcmd.NewIntegration(logger, r.cfg, r.kube))
 
 	for _, sub := range []subcmd.Interface{
 		subcmd.NewDeploy(logger, r.flags, r.cfg, r.kube),

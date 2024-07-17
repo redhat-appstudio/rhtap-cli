@@ -1,5 +1,32 @@
+{{/*
+
+  Returns the name of the Quay Registry instance's config secret.
+
+*/}}
 {{- define "backingServices.quay.configSecretName" -}}
   {{- printf "%s-config" .Values.backingServices.quay.name }}
+{{- end -}}
+
+{{/*
+
+  Returns the name of the Quay Registry instance's super user secret.
+
+*/}}
+{{- define "backingServices.quay.superUserSecretName" -}}
+  {{- printf "%s-super-user" .Values.backingServices.quay.name }}
+{{- end -}}
+
+{{/*
+
+  Returns the FQDN for the Quay Registry instance deployed.
+
+*/}}
+{{- define "backingServices.quay.registryHostname" -}}
+  {{- printf "%s-quay-%s.%s"
+        .Values.backingServices.quay.name
+        .Values.backingServices.quay.namespace
+        .Values.backingServices.quay.ingressDomain
+  -}}
 {{- end -}}
 
 {{/*
@@ -28,4 +55,14 @@ DISTRIBUTED_STORAGE_CONFIG:
     port: "{{ $cfg.port | default 443 }}"
     is_secure: {{ $cfg.isSecure }}
     storage_path: {{ $cfg.storagePath | default "" | quote }}
+DISTRIBUTED_STORAGE_DEFAULT_LOCATIONS: []
+DISTRIBUTED_STORAGE_PREFERENCE:
+  - default
+BROWSER_API_CALLS_XHR_ONLY: false
+FEATURE_USER_CREATION: false
+  {{- with $quay.config.superUser }}
+FEATURE_USER_INITIALIZE: true
+SUPER_USERS:
+  - {{ .name }}
+  {{- end }}
 {{- end -}}

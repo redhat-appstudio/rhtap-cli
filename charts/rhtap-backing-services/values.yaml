@@ -183,7 +183,19 @@ backingServices:
     namespace: __OVERWRITE_ME__
     # Quay registry name.
     name: rhtap-quay
-    # Quay storage configuration.
+    # Quay's registry ingress domain.
+    ingressDomain: __OVERWRITE_ME__
+    # Quay's organization configuration.
+    organization:
+      # Organization's name.
+      name: rhtap
+      # Organization's email.
+      email: __OVERWRITE_ME__
+    # Quay admin "docker-registry" secret namespace and name.
+    secret:
+      namespace: __OVERWRITE_ME__
+      name: __OVERWRITE_ME__
+    # Quay configuration bundle.
     config:
       # To support MinIO S3 instance, the RADOS Gateway (RGW) storage is used
       # (https://github.com/quay/quay-operator/issues/380).
@@ -206,6 +218,12 @@ backingServices:
           secretKey: password
         # Internal S3 storage path.
         storagePath: "/datastorage/registry"
+      # Quay's instance adminstration user.
+      superUser:
+        # Admin (super-user) username.
+        name: admin
+        # Admin's email.
+        email: __OVERWRITE_ME__
     # Enable managed HPA for Quay components, when enabled the
     # `components.*.replicas` won't be used.
     horizontalPodAutoScaler: false
@@ -216,9 +234,9 @@ backingServices:
         replicas: 2
         resources: &quayResources
           limits:
-            memory: 4096Mi
+            memory: 4480Mi
           requests:
-            memory: 128Mi
+            memory: 256Mi
       # Quay registry application database.
       postgres:
         resources: &postgresResources

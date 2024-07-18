@@ -188,9 +188,6 @@ backingServices:
 #
 
 # integrations:
-#   acs:
-#     endpoint: ""
-#     token: ""
 #   github:
 #     clientId: ""
 #     clientSecret: ""

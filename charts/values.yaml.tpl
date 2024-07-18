@@ -199,10 +199,6 @@ backingServices:
 #     webhookSecret: ""
 #   gitlab:
 #     token: ""
-#  jenkins:
-#    baseUrl: ""
-#    username: ""
-#    token: ""
 
 #
 # rhtap-dh

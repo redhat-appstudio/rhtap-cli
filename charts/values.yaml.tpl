@@ -202,11 +202,6 @@ backingServices:
 #     webhookSecret: ""
 #   gitlab:
 #     token: ""
-#   quay:
-#     dockerconfigjson: |
-#       {
-#       }
-#     token: ""
 #  jenkins:
 #    baseUrl: ""
 #    username: ""

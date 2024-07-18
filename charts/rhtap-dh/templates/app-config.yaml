@@ -2,6 +2,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  annotations:
+    rhdh.redhat.com/backstage-name: {{ .Values.developerHub.instanceName | quote }}
+  labels:
+    rhdh.redhat.com/ext-config-sync: "true"
   name: developer-hub-rhtap-app-config
 data:
   app-config.rhtap.yaml: |

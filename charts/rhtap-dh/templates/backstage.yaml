@@ -2,7 +2,7 @@
 apiVersion: rhdh.redhat.com/v1alpha1
 kind: Backstage
 metadata:
-  name: developer-hub
+  name: {{ .Values.developerHub.instanceName | quote }}
   namespace: {{.Release.Namespace}}
 spec:
   application:

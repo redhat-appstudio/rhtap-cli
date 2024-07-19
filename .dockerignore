@@ -1,0 +1,11 @@
+.git
+.gitignore
+.golangci.yaml
+.tekton/
+.vscode/
+*.md
+bin/
+CONTRIBUTING.md
+OWNERS
+tmp/
+yamllint.yaml

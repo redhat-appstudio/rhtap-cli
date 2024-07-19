@@ -188,9 +188,6 @@ backingServices:
 #
 
 # integrations:
-#   acs:
-#     endpoint: ""
-#     token: ""
 #   github:
 #     clientId: ""
 #     clientSecret: ""
@@ -202,10 +199,6 @@ backingServices:
 #     webhookSecret: ""
 #   gitlab:
 #     token: ""
-#  jenkins:
-#    baseUrl: ""
-#    username: ""
-#    token: ""
 
 #
 # rhtap-dh

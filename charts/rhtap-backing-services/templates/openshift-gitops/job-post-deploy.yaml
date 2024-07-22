@@ -76,7 +76,9 @@ spec:
             - name: ARGOCD_ENV_FILE
               value: {{ $argoCDEnvFile }}
           command:
-            - /scripts/argocd-store-token.sh
+            - /scripts/argocd-helper.sh
+          args:
+            - store
           volumeMounts:
             - name: scripts
               mountPath: /scripts

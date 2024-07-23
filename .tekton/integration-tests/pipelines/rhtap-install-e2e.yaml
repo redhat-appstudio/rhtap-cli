@@ -19,7 +19,7 @@ spec:
       default: ''
     - name: ocp-version
       description: 'The OpenShift version to use for the ephemeral cluster deployment.'
-      default: '4.15.9'
+      default: '4.15'
       type: string
     - name: test-event-type
       description: 'Indicates if the test is triggered by a Pull Request or Push event.'

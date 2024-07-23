@@ -45,7 +45,7 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/konflux-qe-incubator/konflux-qe-definitions.git
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
           - name: revision
             value: main
           - name: pathInRepo
@@ -55,7 +55,7 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/konflux-qe-incubator/konflux-qe-definitions.git
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
           - name: revision
             value: main
           - name: pathInRepo
@@ -79,7 +79,7 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/konflux-qe-incubator/konflux-qe-definitions.git
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
           - name: revision
             value: main
           - name: pathInRepo
@@ -133,7 +133,7 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/konflux-qe-incubator/konflux-qe-definitions.git
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
           - name: revision
             value: main
           - name: pathInRepo
@@ -151,7 +151,7 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/konflux-qe-incubator/konflux-qe-definitions.git
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
           - name: revision
             value: main
           - name: pathInRepo
@@ -188,7 +188,7 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/konflux-qe-incubator/konflux-qe-definitions.git
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
           - name: revision
             value: main
           - name: pathInRepo

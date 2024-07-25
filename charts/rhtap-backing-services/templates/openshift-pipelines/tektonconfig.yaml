@@ -22,7 +22,7 @@ spec:
     options:
       disabled: false
     transparency.enabled: "true"
-    transparency.url: http://rekor-server.rhtap.svc
+    transparency.url: http://rekor-server.rhtap-tas.svc
   config: {}
   dashboard:
     options:

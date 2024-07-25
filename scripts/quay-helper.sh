@@ -32,7 +32,7 @@ declare -r SECRET_NAME="${SECRET_NAME:-}"
 
 # After initialization of the super-user, or login, the global variable will be
 # set with the user's access token obtained from Quay.
-declare ACCESS_TOKEN
+declare ACCESS_TOKEN=""
 
 #
 # Functions
@@ -216,7 +216,8 @@ quay_helper() {
     # to get recreated, the acccess token is only obtained during initialization
     if oc get secret "${SECRET_NAME}" --namespace="${NAMESPACE}" &>/dev/null &&
         [[ -z "${ACCESS_TOKEN}" ]]; then
-        fail "Secret already exists, Quay has already been initialized!"
+        warn "Secret already exists, Quay has already been initialized!"
+        return 0
     fi
 
     quay_create_secret || {

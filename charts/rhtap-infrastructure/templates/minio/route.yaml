@@ -1,0 +1,24 @@
+{{- range $k, $v := include "infrastructure.minIOTenants.enabled" . | fromYaml }}
+  {{- if $v.ingress.enabled }}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: minio
+  namespace: {{ $v.namespace }}
+  name: {{ printf "minio-%s" $k }}
+spec:
+  host: {{ printf "minio-%s.%s" $v.namespace $v.ingress.domain }}
+  port:
+    targetPort: http-minio
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: edge
+  to:
+    kind: Service
+    name: minio
+    weight: 100
+  wildcardPolicy: None
+  {{- end }}
+{{- end }}

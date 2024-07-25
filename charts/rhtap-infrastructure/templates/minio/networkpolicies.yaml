@@ -40,4 +40,9 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: {{ $v.namespace }}
+  {{- if $v.ingress.enabled }}
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: ingress 
+  {{- end }}
 {{- end }}

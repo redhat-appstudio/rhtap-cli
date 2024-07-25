@@ -107,6 +107,9 @@ infrastructure:
     quay:
       enabled: {{ $quay.Enabled }}
       namespace: {{ $quay.Namespace }}
+      ingress:
+        enabled: true
+        domain: {{ $ingressDomain }}
       rootSecretName: {{ $quayMinIOSecretName }}
       kafkaNotify:
         enabled: false
@@ -133,7 +136,8 @@ infrastructure:
 {{- $keycloakRouteTLSSecretName := "keycloak-tls" }}
 {{- $keycloakRouteHost := printf "sso.%s" $ingressDomain }}
 {{- $argoCDName := "argocd" }}
-{{- $quayMinIOHost := printf "minio.%s.svc.cluster.local" $quay.Namespace }}
+{{- $quayMinIOHost := printf "minio-%s.%s" $quay.Namespace $ingressDomain }}
+
 
 backingServices:
   keycloak:
@@ -184,6 +188,8 @@ backingServices:
       radosGWStorage:
         enabled: true
         hostname: {{ $quayMinIOHost }}
+        port: 443
+        isSecure: true
         credentials:
           secretName: {{ $quayMinIOSecretName }}
       superUser:

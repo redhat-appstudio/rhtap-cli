@@ -60,6 +60,12 @@ infrastructure:
       enabled: false
       # Target namespace for the MinIO Tenant and related resources.
       namespace: __OVERWRITE_ME__
+      # Enable the Ingress resource to expose the MinIO Tenant.
+      ingress:
+        # Toggle the route resource creation.
+        enabled: false
+        # The Ingress domain.
+        domain: __OVERWRITE_ME__
       # Secret name to store MinIO's root password, the password is generated when
       # the secret is empty.
       rootSecretName: tpa-minio-root-env
@@ -118,6 +124,12 @@ infrastructure:
       enabled: false
       # Target namespace for the MinIO Tenant and related resources.
       namespace: __OVERWRITE_ME__
+      # Enable the Ingress resource to expose the MinIO Tenant.
+      ingress:
+        # Toggle the route resource creation.
+        enabled: false
+        # The Ingress domain.
+        domain: __OVERWRITE_ME__
       # Secret name to store MinIO's root password, the password is generated when
       # the secret is empty, otherwise the existing attributes are used.
       rootSecretName: quay-minio-root-env

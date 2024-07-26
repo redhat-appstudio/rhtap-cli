@@ -25,11 +25,15 @@ auth:
         clientId: ${GITHUB__APP__CLIENT__ID}
         clientSecret: ${GITHUB__APP__CLIENT__SECRET}
   {{- end }}
-  {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
+  {{- $glSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
+  {{- $glSecretData := ($glSecretObj.data | default dict) }}
+  {{- if $glSecretData }}
+    {{- if and $glSecretData.id $glSecretData.clientSecret }}
     gitlab:
       production:
         clientId: ${GITLAB__APP__CLIENT__ID}
         clientSecret: ${GITLAB__APP__CLIENT__SECRET}
+    {{- end }}
   {{- end }}
 backend:
   auth:
@@ -76,7 +80,8 @@ integrations:
 {{- end }}
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
   gitlab:
-    - host: gitlab.com
+    - host: ${GITLAB__HOST}
+      apiBaseUrl: https://${GITLAB__HOST}/api/v4
       token: ${GITLAB__TOKEN}
 {{- end }}
 proxy:

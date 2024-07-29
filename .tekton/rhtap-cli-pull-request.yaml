@@ -23,7 +23,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtap-shared-tenant/rhtap-cli/rhtap-cli:on-pr-{{revision}}
+    value: quay.io/rhtap/rhtap-cli:on-pr-{{revision}}
   - name: image-expires-after
     value: 5d
   - name: dockerfile
@@ -472,6 +472,9 @@ spec:
           requests:
             storage: 1Gi
       status: {}
+  - name: rhtap-quay-credentials
+    secret:
+      secretName: rhtap-builder
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'

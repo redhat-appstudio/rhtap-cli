@@ -22,7 +22,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/rhtap-shared-tenant/rhtap-cli/rhtap-cli:{{revision}}
+    value: quay.io/rhtap/rhtap-cli:{{revision}}
   - name: dockerfile
     value: Dockerfile
   pipelineSpec:
@@ -421,6 +421,9 @@ spec:
         params:
         - name: name
           value: apply-tags
+        - name: ADDITIONAL_TAGS
+          value:
+            - latest
         - name: bundle
           value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.1@sha256:516875845f2988848ebde5f3e9c717d6077af7bf9b3cb2b34a3c3f86b2609a14
         - name: kind
@@ -469,6 +472,9 @@ spec:
           requests:
             storage: 1Gi
       status: {}
+  - name: rhtap-quay-credentials
+    secret:
+      secretName: rhtap-builder
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'

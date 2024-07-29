@@ -251,8 +251,6 @@ spec:
       params:
       - name: BINARY_IMAGE
         value: $(params.output-image)
-      - name: BASE_IMAGES
-        value: $(tasks.build-container.results.BASE_IMAGES_DIGESTS)
       runAfter:
       - build-container
       taskRef:
@@ -278,8 +276,6 @@ spec:
         workspace: workspace
     - name: deprecated-base-image-check
       params:
-      - name: BASE_IMAGES_DIGESTS
-        value: $(tasks.build-container.results.BASE_IMAGES_DIGESTS)
       - name: IMAGE_URL
         value: $(tasks.build-container.results.IMAGE_URL)
       - name: IMAGE_DIGEST
@@ -422,8 +418,7 @@ spec:
         - name: name
           value: apply-tags
         - name: ADDITIONAL_TAGS
-          value:
-            - latest
+          value: ["latest"]
         - name: bundle
           value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.1@sha256:516875845f2988848ebde5f3e9c717d6077af7bf9b3cb2b34a3c3f86b2609a14
         - name: kind

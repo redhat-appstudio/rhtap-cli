@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: rhtap-install-e2e 
+  name: rhtap-install-e2e
 spec:
   description: |-
     This pipeline automates the process of running end-to-end tests for RHTAP

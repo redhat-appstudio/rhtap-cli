@@ -411,14 +411,14 @@ spec:
       params:
       - name: IMAGE
         value: $(tasks.build-container.results.IMAGE_URL)
+      - name: ADDITIONAL_TAGS
+        value: ["latest"]
       runAfter:
       - build-container
       taskRef:
         params:
         - name: name
           value: apply-tags
-        - name: ADDITIONAL_TAGS
-          value: ["latest"]
         - name: bundle
           value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.1@sha256:8a8c1342bfa0b263361cbbc28036750ebc3d7c2460230b14d641170b812dddcc
         - name: kind

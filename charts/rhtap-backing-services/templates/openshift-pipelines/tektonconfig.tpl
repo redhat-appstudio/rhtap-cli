@@ -1,17 +1,20 @@
+{{- define "backingServices.tektonconfig" -}}
 ---
 apiVersion: operator.tekton.dev/v1alpha1
 kind: TektonConfig
 metadata:
+  labels:
+    {{- include "rhtap-backing-services.labels" . | nindent 4 }}
   name: config
 spec:
   addon:
     params:
-    - name: clusterTasks
-      value: "true"
-    - name: communityClusterTasks
-      value: "true"
-    - name: pipelineTemplates
-      value: "true"
+      - name: clusterTasks
+        value: 'true'
+      - name: communityClusterTasks
+        value: 'true'
+      - name: pipelineTemplates
+        value: 'true'
   chain:
     artifacts.oci.storage: oci
     artifacts.pipelinerun.format: in-toto
@@ -19,9 +22,7 @@ spec:
     artifacts.taskrun.format: in-toto
     artifacts.taskrun.storage: oci
     disabled: false
-    options:
-      disabled: false
-    transparency.enabled: "true"
+    transparency.enabled: 'true'
     transparency.url: http://rekor-server.rhtap-tas.svc
   config: {}
   dashboard:
@@ -32,8 +33,8 @@ spec:
     options:
       disabled: false
   params:
-  - name: createRbacResource
-    value: "true"
+    - name: createRbacResource
+      value: 'true'
   pipeline:
     await-sidecar-readiness: true
     coschedule: workspaces
@@ -62,8 +63,8 @@ spec:
     options:
       disabled: false
     params:
-    - name: enableMetrics
-      value: "true"
+      - name: enableMetrics
+        value: 'true'
     performance:
       disable-ha: false
     require-git-ssh-secret-known-hosts: false
@@ -79,22 +80,21 @@ spec:
         options:
           disabled: false
         settings:
-          application-name: Pipelines as Code CI
-          auto-configure-new-github-repo: "false"
-          bitbucket-cloud-check-source-ip: "true"
-          custom-console-name: ""
-          custom-console-url: ""
-          custom-console-url-pr-details: ""
-          custom-console-url-pr-tasklog: ""
-          error-detection-from-container-logs: "true"
-          error-detection-max-number-of-lines: "50"
-          error-detection-simple-regexp: ^(?P<filename>[^:]*):(?P<line>[0-9]+):(?P<column>[0-9]+):([
-            ]*)?(?P<error>.*)
-          error-log-snippet: "true"
-          remember-ok-to-test: "false"
-          remote-tasks: "true"
-          secret-auto-create: "true"
-          secret-github-app-token-scoped: "true"
+          application-name: RHTAP CI
+          auto-configure-new-github-repo: 'false'
+          bitbucket-cloud-check-source-ip: 'true'
+          custom-console-name: ''
+          custom-console-url: ''
+          custom-console-url-pr-details: ''
+          custom-console-url-pr-tasklog: ''
+          error-detection-from-container-logs: 'true'
+          error-detection-max-number-of-lines: '50'
+          error-detection-simple-regexp: '^(?P<filename>[^:]*):(?P<line>[0-9]+):(?P<column>[0-9]+):([ ]*)?(?P<error>.*)'
+          error-log-snippet: 'true'
+          remember-ok-to-test: 'false'
+          remote-tasks: 'true'
+          secret-auto-create: 'true'
+          secret-github-app-token-scoped: 'true'
       scc:
         default: pipelines-scc
   profile: all
@@ -102,7 +102,7 @@ spec:
     disabled: false
     keep: 100
     resources:
-    - pipelinerun
+      - pipelinerun
     schedule: 0 8 * * *
   targetNamespace: openshift-pipelines
   trigger:
@@ -110,3 +110,4 @@ spec:
     enable-api-fields: stable
     options:
       disabled: false
+{{- end -}}

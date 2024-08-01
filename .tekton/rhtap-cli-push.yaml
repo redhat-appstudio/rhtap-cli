@@ -395,31 +395,32 @@ spec:
             - "true"
     - name: build-source-image
       params:
-      - name: BINARY_IMAGE
-        value: $(params.output-image)
+        - name: BINARY_IMAGE
+          value: $(params.output-image)
+        - name: SOURCE_ARTIFACT
+          value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
+        - name: CACHI2_ARTIFACT
+          value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
       runAfter:
-      - build-container
+        - build-container
       taskRef:
         params:
-        - name: name
-          value: source-build
-        - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-source-build:0.1@sha256:1cb3423593145e899b784000f6ae90e121763ce98c26f6fc049f5dee2310f805
-        - name: kind
-          value: task
+          - name: name
+            value: source-build-oci-ta
+          - name: bundle
+            value: quay.io/konflux-ci/tekton-catalog/task-source-build-oci-ta:0.1@sha256:99ee22c5e8e8a66da3d68ec5f3334e7cc59f8b8907e9d2a78f7338aa37d952eb
+          - name: kind
+            value: task
         resolver: bundles
       when:
-      - input: $(tasks.init.results.build)
-        operator: in
-        values:
-        - "true"
-      - input: $(params.build-source-image)
-        operator: in
-        values:
-        - "true"
-      workspaces:
-      - name: workspace
-        workspace: workspace
+        - input: $(tasks.init.results.build)
+          operator: in
+          values:
+            - "true"
+        - input: $(params.build-source-image)
+          operator: in
+          values:
+            - "true"
     - name: deprecated-base-image-check
       params:
       - name: IMAGE_URL

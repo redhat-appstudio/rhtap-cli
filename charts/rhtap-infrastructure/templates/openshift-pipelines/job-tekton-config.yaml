@@ -20,12 +20,13 @@ spec:
     spec:
       serviceAccountName: {{ printf "patch-%s" $osp.name }}
       restartPolicy: Never
-      containers:
+      initContainers:
         #
         # Copying the scripts that will be used on the subsequent containers, the
         # scripts are shared via the "/scripts" volume.
         #
     {{- include "infrastructure.copyScripts" . | nindent 8 }}
+      containers:
     {{- if $osp.patchClusterTektonConfig.annotations }}
         #
         # Patch the Tekton Config with the provided annotations.

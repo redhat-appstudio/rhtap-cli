@@ -2,6 +2,11 @@
 {{- if $keycloak.enabled }}
   {{- $appDomain := .Values.trustedProfileAnalyzer.appDomain -}}
   {{- $adminUsername := "admin" -}}
+#
+# Realm Admin
+#
+#   Creates a secret to store admin's credentials.
+#
 ---
   {{- 
     $adminSecretObj := 
@@ -26,6 +31,11 @@ type: Opaque
 data:
   username: {{ $adminUsername | b64enc }}
   password: {{ $adminPassword }}
+#
+# Realm Clients
+#
+#   Creates a secret which contains all enabled clients' credentials.
+#
 ---
   {{- 
     $oidcSecretObj := 
@@ -53,6 +63,51 @@ data:
     {{- $oidcCredentials := mergeOverwrite $oidcCredentials (dict $k $s) }}
   {{ $k }}: {{ $s }}
   {{- end }}
+#
+# Integration Secret
+#
+#   Creates a secret to store integration details.
+#
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app: keycloak
+  namespace: {{
+    required "trustedProfileAnalyzer.integrationSecret.namespace is required"
+      .Values.trustedProfileAnalyzer.integrationSecret.namespace
+  }}
+  name: {{
+    required "trustedProfileAnalyzer.integrationSecret.name is required"
+      .Values.trustedProfileAnalyzer.integrationSecret.name
+  }}
+type: Opaque
+stringData:
+  bombastic_api_url: {{
+    required "trustedProfileAnalyzer.integrationSecret.bombasticAPI is required"
+      .Values.trustedProfileAnalyzer.integrationSecret.bombasticAPI
+  }}
+  oidc_issuer_url: {{
+    required "trustification.oidc.issuerUrl is required"
+      .Values.trustification.oidc.issuerUrl
+  }}
+  oidc_client_id: {{
+    required "trustedProfileAnalyzer.integrationSecret.oidcClientID is required"
+      .Values.trustedProfileAnalyzer.integrationSecret.oidcClientID
+  }}
+  oidc_client_secret: {{
+    get $oidcCredentials
+      .Values.trustedProfileAnalyzer.integrationSecret.oidcClientID |
+        b64dec
+  }}
+  supported_cyclonedx_version: "{{
+    required "trustedProfileAnalyzer.integrationSecret.cycloneDXVersion is required"
+      .Values.trustedProfileAnalyzer.integrationSecret.cycloneDXVersion
+  }}"
+#
+# Keycloak Realm Import
+#
 ---
 apiVersion: k8s.keycloak.org/v2alpha1
 kind: KeycloakRealmImport

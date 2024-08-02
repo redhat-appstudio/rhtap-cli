@@ -1,1 +1,20 @@
 Developer Hub deployed.
+
+    Developer Hub:
+        - homepage: https://backstage-{{ .Values.developerHub.instanceName }}-rhtap.{{ .Values.developerHub.ingressDomain }}
+
+{{- $jenkinsObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") | default dict -}}
+{{- if $jenkinsObj }}
+    {{- $secretObj := (lookup "v1" "Secret" "openshift-pipelines" "signing-secrets") | default dict -}}
+    {{- $secretData := (get $secretObj "data") | default dict -}}
+    {{- if $secretData }}
+
+    Tekton Chains:
+        - cosign private key (encoded): {{ get $secretData "cosign.key" }}
+        - cosign public key (encoded): {{ get $secretData "cosign.pub" }}
+        - cosign password (encoded): {{ get $secretData "cosign.password" }}
+    {{- else }}
+
+    Tekton Chains: not installed
+    {{- end }}
+{{- end }}

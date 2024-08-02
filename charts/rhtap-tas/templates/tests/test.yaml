@@ -15,7 +15,7 @@ metadata:
 spec:
   restartPolicy: Never
   serviceAccountName: {{ .Release.Name }}
-  containers:
+  initContainers:
     - name: copy-scripts
       image: registry.access.redhat.com/ubi8/ubi-minimal:latest
       workingDir: /scripts
@@ -34,6 +34,7 @@ spec:
           mountPath: /scripts
       securityContext:
         allowPrivilegeEscalation: false
+  containers:
     - name: {{ printf "%s-statefulsets" $name }}
       image: quay.io/codeready-toolchain/oc-client-base:latest
       env:

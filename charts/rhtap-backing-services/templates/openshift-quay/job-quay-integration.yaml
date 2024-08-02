@@ -16,12 +16,13 @@ spec:
     spec:
       serviceAccountName: {{ printf "%s-quay" .Release.Name }}
       restartPolicy: Never
-      containers:
+      initContainers:
         #
         # Copying the scripts that will be used on the subsequent containers, the
         # scripts are shared via the "/scripts" volume.
         #
   {{- include "backingServices.copyScripts" . | nindent 8 }}
+      containers:
         #
         # Initializing the Quay integration.
         #

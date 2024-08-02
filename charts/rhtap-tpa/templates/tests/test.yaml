@@ -13,7 +13,7 @@ metadata:
 spec:
   restartPolicy: Never
   serviceAccountName: {{ .Release.Name }}
-  containers:
+  initContainers:
     - name: copy-scripts
       image: registry.access.redhat.com/ubi8/ubi-minimal:latest
       workingDir: /scripts
@@ -33,6 +33,7 @@ spec:
       securityContext:
         allowPrivilegeEscalation: false
 {{- if $keycloak.enabled }}
+  containers:
     - name: {{ $name }}
       image: quay.io/codeready-toolchain/oc-client-base:latest
       env:

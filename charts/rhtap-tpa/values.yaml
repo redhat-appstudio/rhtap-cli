@@ -9,6 +9,18 @@ trustedProfileAnalyzer:
   enabled: true
   # Trustification's "appDomain" attribute.
   appDomain: __OVERWRITE_ME__
+  # Describe details of Trustification installation for integration with other
+  # components.
+  integrationSecret:
+    # Bombastic API URL.
+    bombasticAPI: __OVERWRITE_ME__
+    # OIDC client ID to interact with the Bombastic API endpoint.
+    oidcClientID: walker
+    # Secret namespace and name.
+    namespace: __OVERWRITE_ME__
+    name: __OVERWRITE_ME__
+    # CycloneDX version supported by TPA (Trustification).
+    cycloneDXVersion: 1.4
   # TPA Keycloak Realm import configuration.
   keycloakRealmImport:
     # Enables the Keycloak Realm import.

@@ -243,6 +243,15 @@ developerHub:
 trustedProfileAnalyzer:
   enabled: {{ $tpa.Enabled }}
   appDomain: "{{ $tpaAppDomain }}"
+  integrationSecret:
+    bombasticAPI: {{
+      printf "%s://sbom-%s.%s"
+        $protocol
+        $tpa.Namespace
+        $ingressDomain
+    }}
+    namespace: {{ .Installer.Namespace }}
+    name: rhtap-trustification-integration
   keycloakRealmImport:
     enabled: {{ $keycloak.Enabled }}
     keycloakCR:

@@ -42,3 +42,5 @@ trustedArtifactSigner:
         commonName: fulcio.hostname
         # Fulcio's certificate's organization name.
         organizationName: __OVERWRITE_ME__
+  integrationSecret:
+    namespace: __OVERWRITE_ME__

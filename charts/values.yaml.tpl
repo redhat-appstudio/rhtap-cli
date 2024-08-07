@@ -388,3 +388,5 @@ trustedArtifactSigner:
         # TODO: promopt the user for organization email/name input!
         organizationEmail: trusted-artifact-signer@company.dev
         organizationName: RHTAP
+  integrationSecret:
+    namespace: {{ .Installer.Namespace }}

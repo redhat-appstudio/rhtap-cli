@@ -14,7 +14,7 @@ metadata:
     appstudio.openshift.io/component: rhtap-cli
     pipelines.appstudio.openshift.io/type: build
   name: rhtap-cli-on-push
-  namespace: rhtap-shared-tenant
+  namespace: rhtap-shared-team-tenant
 spec:
   params:
   - name: git-url
@@ -580,20 +580,19 @@ spec:
         value: $(params.dockerfile)
       - name: CONTEXT
         value: $(params.path-context)
+      - name: SOURCE_ARTIFACT
+        value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
       runAfter:
       - build-container
       taskRef:
         params:
         - name: name
-          value: push-dockerfile
+          value: push-dockerfile-oci-ta
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-push-dockerfile:0.1@sha256:81312124d27361cfa2d7ff09fb38a177b27b0e9b43426aa4ea9cec9f640ec42a
+          value: quay.io/konflux-ci/tekton-catalog/task-push-dockerfile-oci-ta:0.1@sha256:cc5d2c4cd2694c835b5ccebb37a8b10b20e9bbb80b7cb0cc81ee96f3181c2966
         - name: kind
           value: task
         resolver: bundles
-      workspaces:
-      - name: workspace
-        workspace: workspace
     workspaces:
     - name: workspace
     - name: git-auth

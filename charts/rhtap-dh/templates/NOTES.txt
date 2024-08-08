@@ -17,4 +17,16 @@ Developer Hub deployed.
 
     Tekton Chains: not installed
     {{- end }}
+
+    {{- $secretObj = (lookup "v1" "Secret" .Release.Namespace "rhtap-tas-integration") | default dict -}}
+    {{- $secretData = (get $secretObj "data") | default dict -}}
+    {{- if $secretData }}
+
+    Trusted Artifact Signer:
+        - rekor URL: {{ $secretData.rekor_url | b64dec }}
+        - tuf URL:  {{ $secretData.tuf_url | b64dec }}
+    {{- else }}
+
+    Trusted Artifact Signer: not installed
+    {{- end }}
 {{- end }}

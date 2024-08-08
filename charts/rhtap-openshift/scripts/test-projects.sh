@@ -1,1 +1,0 @@
-../../../scripts/test-projects.sh

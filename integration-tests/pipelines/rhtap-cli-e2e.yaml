@@ -23,12 +23,12 @@ spec:
     - name: test-event-type
       description: 'Indicates if the test is triggered by a Pull Request or Push event.'
       default: 'none'
-    - name: aws-credential-secret
-      description: The name of the secret that contains the AWS credentials.
+    - name: konflux-test-infra-secret
+      description: The name of secret where testing infrastructures credentials are stored.
       type: string
-    - name: hcp-config-secret
+    - name: cloud-credential-key
       type: string
-      description: The name of the secret that contains configuration data for HCP cluster creation.
+      description: The key secret from konflux-test-infra-secret where all AWS ROSA configurations are stored.
     - name: replicas
       description: 'The number of replicas for the cluster nodes.'
       type: string
@@ -92,10 +92,10 @@ spec:
           value: "$(params.replicas)"
         - name: machine-type
           value: "$(params.machine-type)"
-        - name: aws-credential-secret
-          value: "$(params.aws-credential-secret)"
-        - name: hcp-config-secret
-          value: "$(params.hcp-config-secret)"
+        - name: konflux-test-infra-secret
+          value: "$(params.konflux-test-infra-secret)"
+        - name: cloud-credential-key
+          value: "$(params.cloud-credential-key)"
     - name: rhtap-install
       when:
         - input: "$(tasks.test-metadata.results.test-event-type)"
@@ -174,10 +174,12 @@ spec:
           value: "$(tasks.test-metadata.results.git-org)"
         - name: cluster-name
           value: "$(tasks.rosa-hcp-metadata.results.cluster-name)"
-        - name: aws-credential-secret
-          value: "$(params.aws-credential-secret)"
-        - name: hcp-config-secret
-          value: "$(params.hcp-config-secret)"
+        - name: konflux-test-infra-secret
+          value: "$(params.konflux-test-infra-secret)"
+        - name: cloud-credential-key
+          value: "$(params.cloud-credential-key)"
+        - name: pipeline-aggregate-status
+          value: "$(tasks.status)"
     - name: sprayproxy-deprovision
       when:
         - input: "$(tasks.test-metadata.results.test-event-type)"
@@ -192,3 +194,34 @@ spec:
             value: main
           - name: pathInRepo
             value: common/tasks/sprayproxy/sprayproxy-deprovision/sprayproxy-unregister-server.yaml
+    - name: pull-request-status-message
+      when:
+        - input: "$(tasks.test-metadata.results.test-event-type)"
+          operator: in
+          values: ["pull_request"]
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/pull-request-comment/0.1/pull-request-comment.yaml
+      params:
+        - name: test-name
+          value: "$(context.pipelineRun.name)"
+        - name: oras-container
+          value: "$(tasks.test-metadata.results.oras-container)"
+        - name: pipeline-aggregate-status
+          value: "$(tasks.status)"
+        - name: pull-request-author
+          value: "$(tasks.test-metadata.results.pull-request-author)"
+        - name: pull-request-number
+          value: "$(tasks.test-metadata.results.pull-request-number)"
+        - name: git-repo
+          value: "$(tasks.test-metadata.results.git-repo)"
+        - name: git-org
+          value: "$(tasks.test-metadata.results.git-org)"
+        - name: git-revision
+          value: "$(tasks.test-metadata.results.git-revision)"

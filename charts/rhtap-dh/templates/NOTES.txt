@@ -3,6 +3,27 @@ Developer Hub deployed.
     Developer Hub:
         - homepage: https://backstage-{{ .Values.developerHub.instanceName }}-rhtap.{{ .Values.developerHub.ingressDomain }}
 
+{{- $gitlabObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") | default dict -}}
+{{- if $gitlabObj }}
+
+    Tekton Pipelines as Code:
+    {{- $routeObj := (lookup "route.openshift.io/v1" "Route" "openshift-pipelines" "pipelines-as-code-controller") | default dict -}}
+    {{- if $routeObj }}
+        - URL: https://{{ $routeObj.spec.host }}
+    {{- else }}
+        - URL: unset
+    {{- end }}
+    {{- $secretObj := (lookup "v1" "Secret" "openshift-pipelines" "pipelines-as-code-secret") | default dict -}}
+    {{- $secretData := (get $secretObj "data") | default dict -}}
+    {{- if $secretData }}
+        - Webhook secret: {{ get $secretData "webhook.secret" | b64dec }}
+    {{- else }}
+        - Webhook secret: unset
+    {{- end }}
+{{- else }}
+    rhtap-gitlab-integration: not found
+{{- end }}
+
 {{- $jenkinsObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") | default dict -}}
 {{- if $jenkinsObj }}
     {{- $secretObj := (lookup "v1" "Secret" "openshift-pipelines" "signing-secrets") | default dict -}}

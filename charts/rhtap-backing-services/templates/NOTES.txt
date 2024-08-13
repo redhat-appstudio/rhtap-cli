@@ -17,7 +17,7 @@ Keycloak:
 ArgoCD:
   - Name: {{ $argoCD.name }}
     Namespace: {{ $argoCD.namespace }}
-    Server URL: {{ include "backingServices.argoCD.serverHostname" . }}
+    Server URL: https://{{ include "backingServices.argoCD.serverHostname" . }}
     Admin Secret: {{ include "backingServices.argoCD.secretClusterName" . }}
     Integration Secret: {{ $argoCD.secretName }}
 {{ end }}
@@ -36,13 +36,19 @@ Red Hat Advanced Cluster Security (ACS):
 Red Hat Quay Registry:
   - Name: {{ $quay.name }}
     Namespace: {{ $quay.namespace }}
+  {{- $routeObj := (lookup "route.openshift.io/v1" "Route" $quay.namespace (printf "%s-quay" $quay.name)) | default dict -}}
+  {{- if $routeObj }}
+    URL: https://{{ $routeObj.spec.host }}
+  {{- else }}
+    URL: unset
+  {{- end }}
     Super User: 
       Name: {{ $quay.config.superUser.name }}
       Email: {{ $quay.config.superUser.email }}
       Secret: {{ include "backingServices.quay.superUserSecretName" . }}
     Organization:
       Name: {{ $quay.organization.name }}
-      Emai: {{ $quay.organization.email }}
+      Email: {{ $quay.organization.email }}
     Integration Secret:
       Namespace: {{ $quay.secret.namespace }}
       Name: {{ $quay.secret.name }}

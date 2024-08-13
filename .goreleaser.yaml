@@ -1,0 +1,18 @@
+---
+project_name: rhtap-cli
+dist: bin/dist
+
+builds:
+  - id: rhtap-cli
+    binary: rhtap-cli
+    goos:
+      - darwin
+      - linux
+    env:
+      - GOFLAGS={{ .Env.GOFLAGS }}
+      - CGO_ENABLED={{ .Env.CGO_ENABLED }}
+      - CGO_LDFLAGS={{ .Env.CGO_LDFLAGS }}
+    main: cmd/rhtap-cli/main.go
+    goarch:
+      - arm64
+      - amd64

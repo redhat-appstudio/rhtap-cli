@@ -72,3 +72,16 @@ spec:
           value:
             - "vendor"
             - ".tekton"
+    - name: extract-logs
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/flacatus/konflux-qe-definitions.git
+          - name: revision
+            value: tkn_logs
+          - name: pathInRepo
+            value: common/tasks/konflux-logs/0.1/extract-tasks-logs.yaml
+      params:
+        - name: test-name
+          value: $(context.pipelineRun.name)

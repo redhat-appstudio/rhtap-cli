@@ -20,8 +20,6 @@ Developer Hub deployed.
     {{- else }}
         - Webhook secret: unset
     {{- end }}
-{{- else }}
-    rhtap-gitlab-integration: not found
 {{- end }}
 
 {{- $jenkinsObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") | default dict -}}

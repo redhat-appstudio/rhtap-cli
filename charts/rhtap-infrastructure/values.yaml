@@ -116,7 +116,7 @@ infrastructure:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 500Mi
+                  storage: 8Gi
     #
     # Quay.io Tenant, stores the container image artifacts.
     #
@@ -156,7 +156,7 @@ infrastructure:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 500Mi
+                  storage: 2Gi
   #
   # PostgreSQL Clusters
   #

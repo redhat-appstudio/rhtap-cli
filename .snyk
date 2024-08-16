@@ -1,0 +1,26 @@
+---
+ignore:
+  5ed8b131-b1a4-4c9f-a6b4-75eecf2396b7:
+    - "vendor/github.com/docker/distribution/registry/api/v2/urls.go":
+      reason: |
+        SSRF: The URL is static, coming from the "${DOCKERCONFIG}" file, thus
+        while the URL is configurable it's not dynamic.
+      expires: "2025-01-02"
+  b8bebba4-0f03-4db5-b5cd-0cb36c376680:
+    - "vendor/github.com/docker/distribution/registry/client/auth/session.go":
+      reason: |
+        SSRF: The URL is static, coming from the "${DOCKERCONFIG}" file, thus
+        while the URL is configurable it's not dynamic.
+      expires: "2025-01-02"
+  f0c3770d-313b-4727-8ed3-02fb3fa653ec:
+    - "vendor/github.com/docker/docker/registry/search.go":
+      reason: |
+        SSRF: The URL is static, coming from the "${DOCKERCONFIG}" file, thus
+        while the URL is configurable it's not dynamic.
+      expires: "2025-01-02"
+  9a0b3926-8e1c-4c74-8370-cad3f5991281:
+    - "pkg/githubapp/githubapp.go":
+      reason: |
+        XSS: The URL is configured by the user and should always pointing to the
+        GitHub API, which is protected against XSS attacks
+      expires: "2025-01-02"

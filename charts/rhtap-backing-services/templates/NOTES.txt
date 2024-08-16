@@ -36,12 +36,7 @@ Red Hat Advanced Cluster Security (ACS):
 Red Hat Quay Registry:
   - Name: {{ $quay.name }}
     Namespace: {{ $quay.namespace }}
-  {{- $routeObj := (lookup "route.openshift.io/v1" "Route" $quay.namespace (printf "%s-quay" $quay.name)) | default dict -}}
-  {{- if $routeObj }}
-    URL: https://{{ $routeObj.spec.host }}
-  {{- else }}
-    URL: unset
-  {{- end }}
+    URL: https://{{ $quay.name }}-quay-{{ $quay.namespace }}.{{ $quay.ingressDomain }}
     Super User: 
       Name: {{ $quay.config.superUser.name }}
       Email: {{ $quay.config.superUser.email }}

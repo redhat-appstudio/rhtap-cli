@@ -18,8 +18,9 @@ api_resources_available() {
         if (! oc get customresourcedefinitions "${crd}"); then
             echo -e "# ERROR: CRD '${crd}' not found."
             SUCCESS=1
+        else
+            echo "# CRD '${crd}' is installed."
         fi
-        echo "# CRD '${crd}' is installed."
     done
     return "$SUCCESS"
 }

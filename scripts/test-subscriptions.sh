@@ -14,8 +14,7 @@ declare -r -a CRDS=("${@}")
 api_resources_available() {
     SUCCESS=0
     for crd in "${CRDS[@]}"; do
-        echo "# Checking if CRD '${crd}' is present on the cluster..."
-        if (! oc get customresourcedefinitions "${crd}"); then
+        if (! oc get customresourcedefinitions "${crd}" >/dev/null 2>&1); then
             echo -e "# ERROR: CRD '${crd}' not found."
             SUCCESS=1
         else
@@ -32,12 +31,14 @@ test_subscriptions() {
         exit 1
     fi
 
+    echo "# Waiting for CRDs to be available: '${CRDS[*]}'"
     for i in {1..20}; do
+        echo "# Check ${i}/20"
         api_resources_available &&
             return 0
 
         wait=$((i * 3))
-        echo "### [${i}/20] Waiting for ${wait} seconds before retrying..."
+        echo "# Waiting for ${wait} seconds before retrying..."
         sleep ${wait}
     done
     return 1

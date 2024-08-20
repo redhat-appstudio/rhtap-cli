@@ -140,12 +140,45 @@ spec:
       params:
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
+    - name: rhtap-e2e-tests
+      when:
+        - input: "$(tasks.test-metadata.results.test-event-type)"
+          operator: in
+          values: ["pull_request"]
+      runAfter:
+        - sprayproxy-provision
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/redhat-appstudio/rhtap-e2e.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: integration-tests/tasks/rhtap-e2e.yaml
+      params:
+        - name: test-name
+          value: "$(context.pipelineRun.name)"
+        - name: ocp-login-command
+          value: "$(tasks.provision-rosa.results.ocp-login-command)"
+        - name: oras-container
+          value: "$(tasks.test-metadata.results.oras-container)"
+        - name: git-url
+          value: "https://github.com/xinredhat/rhtap-e2e.git"
+        - name: git-revision
+          value: "main"
   finally:
     - name: deprovision-rosa-collect-artifacts
       when:
         - input: "$(tasks.test-metadata.results.test-event-type)"
           operator: in
           values: ["pull_request"]
+        - input: "$(tasks.rhtap-install.status)"
+          operator: in
+          values: ["Succeeded"]
+        - input: "$(tasks.rhtap-e2e-tests.status)"
+          operator: in
+          values: ["Succeeded"]
       taskRef:
         resolver: git
         params:

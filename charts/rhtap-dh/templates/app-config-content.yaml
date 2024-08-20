@@ -25,16 +25,6 @@ auth:
         clientId: ${GITHUB__APP__CLIENT__ID}
         clientSecret: ${GITHUB__APP__CLIENT__SECRET}
   {{- end }}
-  {{- $glSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
-  {{- $glSecretData := ($glSecretObj.data | default dict) }}
-  {{- if $glSecretData }}
-    {{- if and $glSecretData.id $glSecretData.clientSecret }}
-    gitlab:
-      production:
-        clientId: ${GITLAB__APP__CLIENT__ID}
-        clientSecret: ${GITLAB__APP__CLIENT__SECRET}
-    {{- end }}
-  {{- end }}
 backend:
   auth:
     keys:

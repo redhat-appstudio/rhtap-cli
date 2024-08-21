@@ -150,9 +150,9 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+            value: https://github.com/flacatus/konflux-qe-definitions.git
           - name: revision
-            value: main
+            value: remove_elb
           - name: pathInRepo
             value: common/tasks/rosa/hosted-cp/rosa-hcp-deprovision/rosa-hcp-deprovision.yaml
       params:

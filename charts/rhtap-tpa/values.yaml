@@ -223,6 +223,29 @@ redhat-trusted-profile-analyzer:
     # Additional CA certificates to trust, which is fundamental to support
     # OpenShift internal TLS communication.
     additionalTrustAnchor: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt 
+  # TPA is composed by services, each service needs integration with S3 bucket and
+  # Kafka topics. When the bucket receives a new document, a message is issued to
+  # the "stored" Kafka topic.
+  bombastic:
+    # S3 bucket name, configured to emit events to the "stored" Kafka topic.
+    bucket: bombastic-default
+    # Kafka topics for the "failed", "indexed", and "stored" events.
+    topics:
+      failed: sbom-failed
+      indexed: sbom-indexed
+      stored: sbom-stored
+  vexination:
+    bucket: vexination-default
+    topics:
+      failed: vex-failed
+      indexed: vex-indexed
+      stored: vex-stored
+  v11y:
+    bucket: v11y-default
+    topics:
+      failed: v11y-failed
+      indexed: v11y-indexed
+      stored: v11y-stored  
 
 #
 # Trustification Helm chart values, linking its configuration with Red Hat's
@@ -232,10 +255,3 @@ redhat-trusted-profile-analyzer:
 #
 trustification:
   appDomain: __OVERWRITE_ME__
-  # openshift: *tpaOpenShift
-  # storage: *tpaStorage
-  # oidc: *tpaOIDC
-  # guac: *tpaGUAC
-  # ingress: *tpaIngress
-  # tls: *tpaTLS
-    

@@ -32,27 +32,23 @@ data:
     GITHUB__APP__CLIENT__SECRET: {{ $ghSecretData.clientSecret }}
     GITHUB__APP__PRIVATE_KEY: {{ $ghSecretData.pem }}
     GITHUB__APP__WEBHOOK__SECRET: {{ $ghSecretData.webhookSecret }}
-{{- end }}
-{{- $glSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
-{{- $glSecretData := ($glSecretObj.data | default dict) }}
-{{- if $glSecretData }}
-    GITLAB__HOST: {{ $glSecretData.host }}
-    {{- if and $glSecretData.clientID $glSecretData.clientSecret }}
-    GITLAB__APP__CLIENT__ID: {{ $glSecretData.clientID }}
-    GITLAB__APP__CLIENT__SECRET: {{ $glSecretData.clientSecret }}
-    {{- end }}
-    GITLAB__TOKEN: {{ $glSecretData.token }}
-{{- end }}
-{{- $pacRoute := (lookup "route.openshift.io/v1" "Route" "openshift-pipelines" "pipelines-as-code-controller") }}
-{{- if $pacRoute }}
+    {{- $pacRoute := (lookup "route.openshift.io/v1" "Route" "openshift-pipelines" "pipelines-as-code-controller") }}
+    {{- if $pacRoute }}
     GITHUB__APP__WEBHOOK__URL: {{ print "https://" $pacRoute.spec.host | b64enc }}
+    {{- end }}
 {{- end }}
 {{- $glSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") -}}
 {{- $glSecretData := ($glSecretObj.data | default dict) -}}
 {{- if $glSecretData }}
-    GITLAB__APP__CLIENT__ID: "{{ $glSecretData.clientID }}"
-    GITLAB__APP__CLIENT__SECRET: "{{ $glSecretData.clientSecret }}"
+    GITLAB__HOST: {{ $glSecretData.host }}
     GITLAB__TOKEN: "{{ $glSecretData.token }}"
+{{- end }}
+{{- $jenkinsSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
+{{- $jenkinsSecretData := ($jenkinsSecretObj.data | default dict) }}
+{{- if $jenkinsSecretData }}
+    JENKINS__BASEURL: {{ $jenkinsSecretData.baseUrl }}
+    JENKINS__USERNAME: {{ $jenkinsSecretData.username }}
+    JENKINS__TOKEN: {{ $jenkinsSecretData.token }}
 {{- end }}
 {{- range $index, $secret := (lookup "v1" "Secret" .Release.Namespace "").items }}
     {{- if regexMatch "rhdh-kubernetes-plugin-token-.*" $secret.metadata.name }}
@@ -65,10 +61,3 @@ data:
     QUAY__API_TOKEN: {{ $quaySecretData.token }}
 {{- end }}
     QUAY__URL: {{ $quaySecretData.url }}
-{{- $jenkinsSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
-{{- $jenkinsSecretData := ($jenkinsSecretObj.data | default dict) }}
-{{- if $jenkinsSecretData.token }}
-    JENKINS__BASEURL: {{ $jenkinsSecretData.baseUrl }}
-    JENKINS__USERNAME: {{ $jenkinsSecretData.username }}
-    JENKINS__TOKEN: {{ $jenkinsSecretData.token }}
-{{- end }}

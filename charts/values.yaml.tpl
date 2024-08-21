@@ -220,9 +220,10 @@ backingServices:
 #
 
 {{- $catalogURL := required "Red Hat Developer Hub Catalog URL is required"
-    .Installer.Features.redHatDeveloperHub.Properties.catalogURL }}
+    $rhdh.Properties.catalogURL }}
 
 developerHub:
+  namespace: {{ $rhdh.Namespace }}
   ingressDomain: {{ $ingressDomain }}
   catalogURL: {{ $catalogURL }}
 

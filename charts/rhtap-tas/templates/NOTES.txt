@@ -1,5 +1,5 @@
 {{- $keycloak := .Values.trustedArtifactSigner.keycloakRealmImport }}
-{{- if $keycloak.enabled }}
+{{- if $keycloak.enabled -}}
 Keycloak Realm Import:
   - Namespace: {{ $keycloak.keycloakCR.namespace }}
     Name:      {{ $keycloak.keycloakCR.name }}

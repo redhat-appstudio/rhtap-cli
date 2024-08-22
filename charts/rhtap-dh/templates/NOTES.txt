@@ -1,24 +1,22 @@
-Developer Hub deployed.
-
-    Developer Hub:
-        - homepage: https://backstage-{{ .Values.developerHub.instanceName }}-rhtap.{{ .Values.developerHub.ingressDomain }}
+Developer Hub:
+  - homepage: https://backstage-{{ .Values.developerHub.instanceName }}-rhtap.{{ .Values.developerHub.ingressDomain }}
 
 {{- $gitlabObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") | default dict -}}
 {{- if $gitlabObj }}
 
-    Tekton Pipelines as Code:
+Tekton Pipelines as Code:
     {{- $routeObj := (lookup "route.openshift.io/v1" "Route" "openshift-pipelines" "pipelines-as-code-controller") | default dict -}}
     {{- if $routeObj }}
-        - URL: https://{{ $routeObj.spec.host }}
+  - URL: https://{{ $routeObj.spec.host }}
     {{- else }}
-        - URL: unset
+  - URL: unset
     {{- end }}
     {{- $secretObj := (lookup "v1" "Secret" "openshift-pipelines" "pipelines-as-code-secret") | default dict -}}
     {{- $secretData := (get $secretObj "data") | default dict -}}
     {{- if $secretData }}
-        - Webhook secret: {{ get $secretData "webhook.secret" | b64dec }}
+  - Webhook secret: {{ get $secretData "webhook.secret" | b64dec }}
     {{- else }}
-        - Webhook secret: unset
+  - Webhook secret: unset
     {{- end }}
 {{- end }}
 
@@ -28,24 +26,24 @@ Developer Hub deployed.
     {{- $secretData := (get $secretObj "data") | default dict -}}
     {{- if $secretData }}
 
-    Tekton Chains:
-        - cosign private key (encoded): {{ get $secretData "cosign.key" }}
-        - cosign public key (encoded): {{ get $secretData "cosign.pub" }}
-        - cosign password (encoded): {{ get $secretData "cosign.password" }}
+Tekton Chains:
+  - cosign private key (encoded): {{ get $secretData "cosign.key" }}
+  - cosign public key (encoded): {{ get $secretData "cosign.pub" }}
+  - cosign password (encoded): {{ get $secretData "cosign.password" }}
     {{- else }}
 
-    Tekton Chains: not installed
+Tekton Chains: not installed
     {{- end }}
 
     {{- $secretObj = (lookup "v1" "Secret" .Release.Namespace "rhtap-tas-integration") | default dict -}}
     {{- $secretData = (get $secretObj "data") | default dict -}}
     {{- if $secretData }}
 
-    Trusted Artifact Signer:
-        - rekor URL: {{ $secretData.rekor_url | b64dec }}
-        - tuf URL:  {{ $secretData.tuf_url | b64dec }}
+Trusted Artifact Signer:
+  - rekor URL: {{ $secretData.rekor_url | b64dec }}
+  - tuf URL:  {{ $secretData.tuf_url | b64dec }}
     {{- else }}
 
-    Trusted Artifact Signer: not installed
+Trusted Artifact Signer: not installed
     {{- end }}
 {{- end }}

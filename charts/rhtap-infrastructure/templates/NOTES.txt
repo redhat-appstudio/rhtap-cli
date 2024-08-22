@@ -25,7 +25,8 @@ PostgreSQL Clusters:
 {{- end }}
 
 {{- if .Values.infrastructure.openShiftPipelines.enabled }}
-  {{- $osp := .Values.infrastructure.openShiftPipelines -}}
+  {{- $osp := .Values.infrastructure.openShiftPipelines }}
+
 OpenShift Pipelines:
   {{- if or
         $osp.patchClusterTektonConfig.annotations
@@ -35,11 +36,11 @@ OpenShift Pipelines:
     - Name: {{ $osp.patchClusterTektonConfig.resourceName }}
     {{- with $osp.patchClusterTektonConfig.annotations }}
       Annotations:
-        {{ . | toYaml | indent 8 }}
+{{ . | toYaml | indent 8 }}
     {{- end }}
     {{- with $osp.patchClusterTektonConfig.labels }}
       Labels:
-        {{ . | toYaml | indent 8 }}
+{{ . | toYaml | indent 8 }}
     {{- end }}
   {{- end }}
   Tekton Chains:

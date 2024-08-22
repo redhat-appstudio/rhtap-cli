@@ -29,6 +29,9 @@ infrastructure:
       zookeeperStorage:
         type: persistent-claim
         size: 500Mi
+      # List of topics for TPA, some topics are used by MinIO (S3) for
+      # notifications, therefore the topic name needs to be aligned with the MinIO
+      # configuration.
       topics:
         - name: &topicSbomStored sbom-stored
           config: &kafkaTopicConfig

@@ -1,5 +1,5 @@
 {{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport }}
-{{- if $keycloak.enabled }}
+{{- if $keycloak.enabled -}}
 Keycloak Realm Import:
   - Namespace: {{ $keycloak.keycloakCR.namespace }}
     Name:      {{ $keycloak.keycloakCR.name }}
@@ -9,8 +9,8 @@ Keycloak "chicken" Realm Credentials:
     Username:     chicken-admin 
     Admin Secret: {{ $keycloak.adminSecretName }}
     OIDC Secret:  {{ $keycloak.oidcClientsSecretName }}
-{{- end }}
 
+{{ end -}}
 {{- $tpa := .Values.trustedProfileAnalyzer }}
 {{- if $tpa.enabled }}
   {{- $trustification := .Values.trustification }}
@@ -22,4 +22,5 @@ Trusted Profile Analyzer (TPA):
     SPOG API:       {{ printf "api%s" $trustification.appDomain }}
     SPOG Console:   {{ printf "console%s" $trustification.appDomain }}
     Vexination API: {{ printf "vex%s" $trustification.appDomain }}
-{{- end }}
+
+{{ end -}}

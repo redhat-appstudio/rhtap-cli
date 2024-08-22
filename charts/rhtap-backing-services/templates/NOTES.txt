@@ -10,8 +10,8 @@ Keycloak:
     Console URL: {{ printf "http://%s" $k.route.host }}
   {{- end }}
     Admin Secret: {{ printf "%s-initial-admin" $keycloakName }}
-{{ end }}
 
+{{ end -}}
 {{- if .Values.backingServices.argoCD.enabled }}
   {{- $argoCD := .Values.backingServices.argoCD }}
 ArgoCD:
@@ -20,8 +20,8 @@ ArgoCD:
     Server URL: https://{{ include "backingServices.argoCD.serverHostname" . }}
     Admin Secret: {{ include "backingServices.argoCD.secretClusterName" . }}
     Integration Secret: {{ $argoCD.secretName }}
-{{ end }}
 
+{{ end -}}
 {{- if .Values.backingServices.acs.enabled }}
   {{- $acs := .Values.backingServices.acs }}
 Red Hat Advanced Cluster Security (ACS):
@@ -29,8 +29,8 @@ Red Hat Advanced Cluster Security (ACS):
     Namspace: {{ $acs.namespace }}
     Central URL: https://{{ include "backingServices.acs.centralEndPoint" . }}
     Secret: central-htpasswd
-{{- end }}
 
+{{ end -}}
 {{- if .Values.backingServices.quay.enabled }}
   {{- $quay := .Values.backingServices.quay }}
 Red Hat Quay Registry:
@@ -47,4 +47,5 @@ Red Hat Quay Registry:
     Integration Secret:
       Namespace: {{ $quay.secret.namespace }}
       Name: {{ $quay.secret.name }}
-{{- end }}
+
+{{ end -}}

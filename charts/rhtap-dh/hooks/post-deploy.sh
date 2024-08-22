@@ -36,6 +36,7 @@ main() {
     app_namespaces
     cd - >/dev/null
     rm -rf "$TEMP_DIR"
+    echo
 }
 
 main

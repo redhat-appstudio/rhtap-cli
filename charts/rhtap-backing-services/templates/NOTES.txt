@@ -13,7 +13,7 @@ Keycloak:
 {{ end }}
 
 {{- if .Values.backingServices.argoCD.enabled }}
-  {{- $argoCD := .Values.backingServices.argoCD }}
+  {{- $argoCD := .Values.backingServices.argoCD -}}
 ArgoCD:
   - Name: {{ $argoCD.name }}
     Namespace: {{ $argoCD.namespace }}
@@ -23,7 +23,7 @@ ArgoCD:
 {{ end }}
 
 {{- if .Values.backingServices.acs.enabled }}
-  {{- $acs := .Values.backingServices.acs }}
+  {{- $acs := .Values.backingServices.acs -}}
 Red Hat Advanced Cluster Security (ACS):
   - Name: {{ $acs.name }}
     Namspace: {{ $acs.namespace }}
@@ -32,7 +32,7 @@ Red Hat Advanced Cluster Security (ACS):
 {{- end }}
 
 {{- if .Values.backingServices.quay.enabled }}
-  {{- $quay := .Values.backingServices.quay }}
+  {{- $quay := .Values.backingServices.quay -}}
 Red Hat Quay Registry:
   - Name: {{ $quay.name }}
     Namespace: {{ $quay.namespace }}

@@ -13,7 +13,7 @@ Keycloak "chicken" Realm Credentials:
 {{ end -}}
 {{- $tpa := .Values.trustedProfileAnalyzer }}
 {{- if $tpa.enabled }}
-  {{- $trustification := .Values.trustification }}
+  {{- $trustification := .Values.trustification -}}
 Trusted Profile Analyzer (TPA):
   - Keycloak URL:   {{ $trustification.oidc.issuerUrl }}
     Namespace:      {{ .Release.Namespace }}

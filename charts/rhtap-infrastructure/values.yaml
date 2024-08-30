@@ -81,9 +81,9 @@ infrastructure:
       #     service.beta.openshift.io/serving-cert-secret-name: *minioTLSSecretName
       # The list of buckets to be created on the MinIO Tenant.
       buckets:
-        - name: &bucketBombastic bombastic-default
-        - name: &bucketVexination vexination-default
-        - name: &bucketV11y v11y-default
+        - name: *topicSbomStored
+        - name: *topicVexStored
+        - name: *topicV11yStored
       # Kafka notification settings, the MinIO Tenant will issue a message to the
       # configured topic based on the bucket activity.
       kafkaNotify:
@@ -96,11 +96,11 @@ infrastructure:
         password: {}
         # The list of buckets and Kafka topics.
         topics:
-          - bucket: *bucketBombastic
+          - bucket: *topicSbomStored
             topic: *topicSbomStored
-          - bucket: *bucketVexination
+          - bucket: *topicVexStored
             topic: *topicVexStored
-          - bucket: *bucketV11y
+          - bucket: *topicV11yStored
             topic: *topicV11yStored
       # MinIO storage pools
       pools:

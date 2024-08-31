@@ -94,14 +94,25 @@ infrastructure:
         username: __OVERWRITE_ME__
         # Secret with Kafka's password (valueFrom).
         password: {}
-        # The list of buckets and Kafka topics.
+        # The list of buckets and Kafka topics as well the events that will
+        # trigger sending a message to the topic.
         topics:
+          # The bucket name is used to identify the bucket on the MinIO Tenant.
           - bucket: *topicSbomStored
+            # Topic name on the Kafka cluster.
             topic: *topicSbomStored
+            # Events that will trigger the message, event subscription.
+            events: 
+              - put
+              - delete
           - bucket: *topicVexStored
             topic: *topicVexStored
+            events:
+              - put
           - bucket: *topicV11yStored
             topic: *topicV11yStored
+            events:
+              - put
       # MinIO storage pools
       pools:
         - name: pool-0

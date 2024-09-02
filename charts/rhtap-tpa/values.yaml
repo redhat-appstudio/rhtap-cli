@@ -228,20 +228,20 @@ redhat-trusted-profile-analyzer:
   # the "stored" Kafka topic.
   bombastic:
     # S3 bucket name, configured to emit events to the "stored" Kafka topic.
-    bucket: bombastic-default
+    bucket: sbom-stored
     # Kafka topics for the "failed", "indexed", and "stored" events.
     topics:
       failed: sbom-failed
       indexed: sbom-indexed
       stored: sbom-stored
   vexination:
-    bucket: vexination-default
+    bucket: vex-stored
     topics:
       failed: vex-failed
       indexed: vex-indexed
       stored: vex-stored
   v11y:
-    bucket: v11y-default
+    bucket: v11y-stored
     topics:
       failed: v11y-failed
       indexed: v11y-indexed

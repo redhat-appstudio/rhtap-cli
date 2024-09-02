@@ -18,13 +18,20 @@ spec:
         resource:
           type: group
           name: {{ $g }}
-          patternType: literal
+          patternType: prefix
         operations:
           - Create
           - Describe
           - Read
           - Write
   {{- end }}
+      - resource:
+          type: topic
+          name: "*"
+          patternType: literal
+        operations:
+          - Read
+          - Describe
   {{- range $t := $v.topics }}
       - host: '*'
         resource:

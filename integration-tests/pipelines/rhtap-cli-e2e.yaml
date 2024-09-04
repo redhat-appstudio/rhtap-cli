@@ -35,8 +35,8 @@ spec:
     - name: machine-type
       description: 'The type of machine to use for the cluster nodes.'
       type: string
-    - name: oras-container
-      default: 'quay.io/konflux-qe-incubator/konflux-qe-oci-storage'
+    - name: oci-container-repo
+      default: 'quay.io/konflux-test-storage/rhtap-team/rhtap-cli'
       description: The ORAS container used to store all test artifacts.
   tasks:
     - name: rosa-hcp-metadata
@@ -62,9 +62,22 @@ spec:
       params:
         - name: SNAPSHOT
           value: $(params.SNAPSHOT)
-        - name: oras-container
-          value: $(params.oras-container)
         - name: test-name
+          value: $(context.pipelineRun.name)
+    - name: create-oci-container
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/create-oci-artifact/0.1/create-oci-artifact.yaml
+      params:
+        - name: oci-container-repo
+          value: $(params.oci-container-repo)
+        - name: oci-container-tag
           value: $(context.pipelineRun.name)
     - name: provision-rosa
       when:
@@ -73,6 +86,7 @@ spec:
           values: ["pull_request"]
       runAfter:
         - rosa-hcp-metadata
+        - create-oci-container
         - test-metadata
       taskRef:
         resolver: git
@@ -157,16 +171,12 @@ spec:
           - name: pathInRepo
             value: integration-tests/tasks/rhtap-e2e.yaml
       params:
-        - name: test-name
-          value: "$(context.pipelineRun.name)"
+        - name: job-spec
+          value: $(context.pipelineRun.name)
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
-        - name: oras-container
-          value: "$(tasks.test-metadata.results.oras-container)"
-        - name: git-url
-          value: "https://github.com/xinredhat/rhtap-e2e.git"
-        - name: git-revision
-          value: "main"
+        - name: oci-container
+          value: $(tasks.create-oci-container.results.oci-container)
   finally:
     - name: deprovision-rosa-collect-artifacts
       when:
@@ -193,8 +203,8 @@ spec:
           value: $(context.pipelineRun.name)
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
-        - name: oras-container
-          value: "$(tasks.test-metadata.results.oras-container)"
+        - name: oci-container
+          value: "$(tasks.create-oci-container.results.oci-container)"
         - name: pull-request-author
           value: "$(tasks.test-metadata.results.pull-request-author)"
         - name: git-revision
@@ -244,8 +254,8 @@ spec:
       params:
         - name: test-name
           value: "$(context.pipelineRun.name)"
-        - name: oras-container
-          value: "$(tasks.test-metadata.results.oras-container)"
+        - name: oci-container
+          value: "$(tasks.create-oci-container.results.oci-container)"
         - name: pipeline-aggregate-status
           value: "$(tasks.status)"
         - name: pull-request-author

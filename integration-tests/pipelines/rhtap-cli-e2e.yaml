@@ -172,7 +172,7 @@ spec:
             value: integration-tests/tasks/rhtap-e2e.yaml
       params:
         - name: job-spec
-          value: $(context.pipelineRun.name)
+          value: $(tasks.test-metadata.results.job-spec)
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
         - name: oci-container

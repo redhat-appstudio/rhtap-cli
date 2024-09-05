@@ -165,9 +165,9 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/redhat-appstudio/rhtap-e2e.git
+            value: https://github.com/flacatus/rhtap-e2e.git
           - name: revision
-            value: main
+            value: fix_e2e
           - name: pathInRepo
             value: integration-tests/tasks/rhtap-e2e.yaml
       params:
@@ -183,12 +183,6 @@ spec:
         - input: "$(tasks.test-metadata.results.test-event-type)"
           operator: in
           values: ["pull_request"]
-        - input: "$(tasks.rhtap-install.status)"
-          operator: in
-          values: ["Succeeded"]
-        - input: "$(tasks.rhtap-e2e-tests.status)"
-          operator: in
-          values: ["Succeeded"]
       taskRef:
         resolver: git
         params:

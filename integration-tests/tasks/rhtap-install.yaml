@@ -17,9 +17,6 @@ spec:
     - name: git-revision
       type: string
       default: "main"
-    - name: image-url
-      type: string
-      description: "Image URL to be used for launching rhtap-cli for rhtap installation"
   volumes:
     - name: rhtap-cli-volume
       secret:

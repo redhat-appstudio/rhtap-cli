@@ -14,7 +14,7 @@ metadata:
 spec:
   template:
     spec:
-      restartPolicy: Never
+      restartPolicy: OnFailure
       serviceAccountName: {{ $root.Release.Name }}
       initContainers:
         #
@@ -62,6 +62,10 @@ spec:
             - /bin/sh
             - -c
             - |
+              set -o errexit
+              set -o nounset
+              set -o pipefail
+
               mc alias set minio "{{ $minIOURL }}" "${MINIO_USERNAME}" "${MINIO_PASSWORD}"
     {{- range $topic := $v.kafkaNotify.topics }}
               {{

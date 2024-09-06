@@ -59,7 +59,7 @@ spec:
         GITHUB__APP__CLIENT__ID=$(cat /usr/local/rhtap-cli-install/rhdh-github-client-id)
         GITHUB__APP__CLIENT__SECRET=$(cat /usr/local/rhtap-cli-install/rhdh-github-client-secret)
         GITHUB__APP__PRIVATE_KEY=$(base64 -d < /usr/local/rhtap-cli-install/rhdh-github-private-key | sed 's/^/        /')
-        GITOPS__GIT_TOKEN=$(cat /usr/local/rhtap-cli-install/gihtub_token)
+        GITOPS__GIT_TOKEN=$(cat /usr/local/rhtap-cli-install/github_token)
         GITHUB__APP__WEBHOOK__SECRET=$(cat /usr/local/rhtap-cli-install/rhdh-github-webhook-secret)
         GITLAB__TOKEN=$(cat /usr/local/rhtap-cli-install/gitlab_token)
 

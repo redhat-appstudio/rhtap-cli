@@ -165,9 +165,9 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/flacatus/rhtap-e2e.git
+            value: https://github.com/redhat-appstudio/rhtap-e2e.git
           - name: revision
-            value: fix_e2e
+            value: main
           - name: pathInRepo
             value: integration-tests/tasks/rhtap-e2e.yaml
       params:

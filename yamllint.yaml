@@ -3,7 +3,7 @@ yaml-files:
   - '*.yaml'
   - '*.yml'
 ignore:
-  - 'charts/**'
+  - 'installer/**'
   - 'vendor/**'
   - '.tekton/**'
   - 'test/**'

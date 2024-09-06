@@ -8,13 +8,13 @@ USER root
 
 WORKDIR /workdir/rhtap-cli
 
-COPY charts/ ./charts/
+COPY installer/ ./installer/
+
 COPY cmd/ ./cmd/
 COPY pkg/ ./pkg/
-COPY scripts/ ./scripts/
 COPY vendor/ ./vendor/
 
-COPY config.yaml go.mod go.sum Makefile ./
+COPY go.mod go.sum Makefile .
 
 RUN make GOFLAGS='-buildvcs=false'
 
@@ -30,9 +30,8 @@ WORKDIR /rhtap-cli
 
 COPY --from=quay.io/codeready-toolchain/oc-client-base:latest /usr/bin/kubectl /usr/bin/
 
-COPY --from=builder /workdir/rhtap-cli/charts ./charts/
-COPY --from=builder /workdir/rhtap-cli/scripts ./scripts/
-COPY --from=builder /workdir/rhtap-cli/config.yaml .
+COPY --from=builder /workdir/rhtap-cli/installer .
+
 COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli .
 
 RUN microdnf install shadow-utils && \

@@ -1,0 +1,7 @@
+{{- if .Values.subscriptions.minIO.enabled }}
+  {{- if not .Values.debug.ci }}
+    {{- if not (lookup "v1" "Secret" "openshift-kube-controller-manager-operator" "csr-signer") }}
+      {{- fail "'csr-signer' secret not found in 'openshift-kube-controller-manager-operator'" }}
+    {{- end }}
+  {{- end }}
+{{- end }}

@@ -26,11 +26,16 @@ FROM registry.access.redhat.com/ubi9-minimal:9.4-1227
 
 WORKDIR /rhtap-cli
 
-COPY --from=builder /workdir/rhtap-cli/charts .
-COPY --from=builder /workdir/rhtap-cli/scripts .
-COPY --from=builder /workdir/rhtap-cli/config.yaml .
+RUN microdnf install shadow-utils && \
+    groupadd -r rhtap-cli && \
+    useradd -r -g rhtap-cli -s /sbin/nologin rhtap-cli && \
+    microdnf clean all
 
-COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli .
+COPY --chown=rhtap-cli:rhtap-cli --from=builder /workdir/rhtap-cli/charts .
+COPY --chown=rhtap-cli:rhtap-cli --from=builder /workdir/rhtap-cli/scripts .
+COPY --chown=rhtap-cli:rhtap-cli --from=builder /workdir/rhtap-cli/config.yaml .
+
+COPY --chown=rhtap-cli:rhtap-cli --from=builder /workdir/rhtap-cli/bin/rhtap-cli .
 
 USER rhtap-cli
 

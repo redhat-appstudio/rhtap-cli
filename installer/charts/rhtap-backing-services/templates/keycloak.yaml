@@ -31,7 +31,7 @@ spec:
       name: {{ $keycloak.database.secretName }}
       key: password
   hostname:
-    hostname: {{ $keycloak.route.host}}
+    hostname: {{ $keycloak.route.host }}
     strict: false
     strictBackchannel: false
   http:

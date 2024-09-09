@@ -14,7 +14,7 @@ COPY pkg/ ./pkg/
 COPY scripts/ ./scripts/
 COPY vendor/ ./vendor/
 
-COPY config.yaml go.mod go.sum Makefile .
+COPY config.yaml go.mod go.sum Makefile ./
 
 RUN make GOFLAGS='-buildvcs=false'
 
@@ -31,6 +31,11 @@ COPY --from=builder /workdir/rhtap-cli/scripts .
 COPY --from=builder /workdir/rhtap-cli/config.yaml .
 
 COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli .
+
+RUN microdnf install shadow-utils && \
+    groupadd --gid 1000 -r rhtap-cli && \
+    useradd -r -g rhtap-cli -s /sbin/nologin --uid 1000 rhtap-cli && \
+    microdnf clean all
 
 USER rhtap-cli
 

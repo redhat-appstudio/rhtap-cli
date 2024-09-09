@@ -22,7 +22,7 @@ RUN make GOFLAGS='-buildvcs=false'
 # Run
 #
 
-FROM registry.access.redhat.com/ubi9-minimal:9.4-1227
+FROM registry.access.redhat.com/ubi9-minimal:9.4
 
 ARG OC_VERSION=4.14.8
 
@@ -32,11 +32,12 @@ COPY --from=quay.io/codeready-toolchain/oc-client-base:latest /usr/bin/kubectl /
 
 COPY --from=builder /workdir/rhtap-cli/installer .
 
-COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli .
+COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli /usr/local/bin/rhtap-cli
 
 RUN microdnf install shadow-utils && \
     groupadd --gid 1000 -r rhtap-cli && \
-    useradd -r -g rhtap-cli -s /sbin/nologin --uid 1000 rhtap-cli && \
+    useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 1000 rhtap-cli && \
+    microdnf remove -y shadow-utils && \
     microdnf clean all
 
 USER rhtap-cli

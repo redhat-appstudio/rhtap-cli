@@ -22,7 +22,7 @@ RUN make GOFLAGS='-buildvcs=false'
 # Run
 #
 
-FROM registry.access.redhat.com/ubi9-minimal:9.4-1227
+FROM registry.access.redhat.com/ubi9-minimal:9.4
 
 LABEL \
   name="rhtap-cli" \
@@ -45,7 +45,7 @@ COPY --from=quay.io/codeready-toolchain/oc-client-base:latest /usr/bin/kubectl /
 
 COPY --from=builder /workdir/rhtap-cli/installer .
 
-COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli .
+COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli /usr/local/bin/rhtap-cli
 
 RUN microdnf install -y gzip shadow-utils tar && \
     groupadd --gid 1000 -r rhtap-cli && \

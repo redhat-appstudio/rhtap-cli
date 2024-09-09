@@ -26,8 +26,8 @@ FROM registry.access.redhat.com/ubi9-minimal:9.4-1227
 
 WORKDIR /rhtap-cli
 
-COPY --from=builder /workdir/rhtap-cli/charts .
-COPY --from=builder /workdir/rhtap-cli/scripts .
+COPY --from=builder /workdir/rhtap-cli/charts ./charts/
+COPY --from=builder /workdir/rhtap-cli/scripts ./scripts/
 COPY --from=builder /workdir/rhtap-cli/config.yaml .
 
 COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli .

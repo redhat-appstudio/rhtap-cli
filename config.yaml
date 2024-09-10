@@ -17,7 +17,7 @@ rhtapCLI:
       enabled: &rhdhEnabled true
       namespace: *installerNamespace
       properties:
-        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
+        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/v1.2.0/all.yaml
     redHatAdvancedClusterSecurity:
       enabled: *rhdhEnabled
       namespace: rhtap-acs

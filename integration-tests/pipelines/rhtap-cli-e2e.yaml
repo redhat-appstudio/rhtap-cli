@@ -79,7 +79,7 @@ spec:
           value: $(params.oci-container-repo)
         - name: oci-container-tag
           value: $(context.pipelineRun.name)
-    - name: rhtap-install
+    - name: provision-rosa
       when:
         - input: "$(tasks.test-metadata.results.test-event-type)"
           operator: in
@@ -92,6 +92,35 @@ spec:
         resolver: git
         params:
           - name: url
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/rosa/hosted-cp/rosa-hcp-provision/rosa-hcp-provision.yaml
+      params:
+        - name: cluster-name
+          value: "$(tasks.rosa-hcp-metadata.results.cluster-name)"
+        - name: ocp-version
+          value: "$(params.ocp-version)"
+        - name: replicas
+          value: "$(params.replicas)"
+        - name: machine-type
+          value: "$(params.machine-type)"
+        - name: konflux-test-infra-secret
+          value: "$(params.konflux-test-infra-secret)"
+        - name: cloud-credential-key
+          value: "$(params.cloud-credential-key)"
+    - name: rhtap-install
+      when:
+        - input: "$(tasks.test-metadata.results.test-event-type)"
+          operator: in
+          values: ["pull_request"]
+      runAfter:
+        - provision-rosa
+      taskRef:
+        resolver: git
+        params:
+          - name: url
             value: https://github.com/flacatus/rhtap-cli.git
           - name: revision
             value: job_spec_cli
@@ -99,8 +128,93 @@ spec:
             value: integration-tests/tasks/rhtap-install.yaml
       params:
         - name: ocp-login-command
-          value: "test test"
+          value: $(tasks.provision-rosa.results.ocp-login-command)
         - name: rhtap-cli-container
           value: $(tasks.test-metadata.results.container-image)
         - name: job-spec
           value: $(tasks.test-metadata.results.job-spec)
+  finally:
+    - name: deprovision-rosa-collect-artifacts
+      when:
+        - input: "$(tasks.test-metadata.results.test-event-type)"
+          operator: in
+          values: ["pull_request"]
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/rosa/hosted-cp/rosa-hcp-deprovision/rosa-hcp-deprovision.yaml
+      params:
+        - name: test-name
+          value: $(context.pipelineRun.name)
+        - name: ocp-login-command
+          value: "$(tasks.provision-rosa.results.ocp-login-command)"
+        - name: oci-container
+          value: "$(tasks.create-oci-container.results.oci-container)"
+        - name: pull-request-author
+          value: "$(tasks.test-metadata.results.pull-request-author)"
+        - name: git-revision
+          value: "$(tasks.test-metadata.results.git-revision)"
+        - name: pull-request-number
+          value: "$(tasks.test-metadata.results.pull-request-number)"
+        - name: git-repo
+          value: "$(tasks.test-metadata.results.git-repo)"
+        - name: git-org
+          value: "$(tasks.test-metadata.results.git-org)"
+        - name: cluster-name
+          value: "$(tasks.rosa-hcp-metadata.results.cluster-name)"
+        - name: konflux-test-infra-secret
+          value: "$(params.konflux-test-infra-secret)"
+        - name: cloud-credential-key
+          value: "$(params.cloud-credential-key)"
+        - name: pipeline-aggregate-status
+          value: "$(tasks.status)"
+    - name: sprayproxy-deprovision
+      when:
+        - input: "$(tasks.test-metadata.results.test-event-type)"
+          operator: in
+          values: ["pull_request"]
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/sprayproxy/sprayproxy-deprovision/sprayproxy-unregister-server.yaml
+    - name: pull-request-status-message
+      when:
+        - input: "$(tasks.test-metadata.results.test-event-type)"
+          operator: in
+          values: ["pull_request"]
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/pull-request-comment/0.1/pull-request-comment.yaml
+      params:
+        - name: test-name
+          value: "$(context.pipelineRun.name)"
+        - name: oci-container
+          value: "$(tasks.create-oci-container.results.oci-container)"
+        - name: pipeline-aggregate-status
+          value: "$(tasks.status)"
+        - name: pull-request-author
+          value: "$(tasks.test-metadata.results.pull-request-author)"
+        - name: pull-request-number
+          value: "$(tasks.test-metadata.results.pull-request-number)"
+        - name: git-repo
+          value: "$(tasks.test-metadata.results.git-repo)"
+        - name: git-org
+          value: "$(tasks.test-metadata.results.git-org)"
+        - name: git-revision
+          value: "$(tasks.test-metadata.results.git-revision)"

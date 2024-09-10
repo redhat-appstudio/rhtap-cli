@@ -37,7 +37,7 @@ spec:
         - name: JOB_SPEC
           value: $(params.job-spec)
       image: quay.io/rhtap/rhtap-e2e:latest
-      workingDir: /workspace/rhtap-cli
+      workingDir: /workspace
       volumeMounts:
         - name: rhtap-cli-volume
           mountPath: /usr/local/rhtap-cli-install
@@ -45,10 +45,19 @@ spec:
         #!/bin/sh
         set -euo pipefail
 
-        ls -larth
+        # Create a placeholder kubeconfig file
+        touch kubeconfig
+
+        # Set the KUBECONFIG environment variable to point to the new file
+        export KUBECONFIG=$(pwd)/kubeconfig
+        $(params.ocp-login-command)
+        cat $(pwd)/kubeconfig
+
+        chmod -R 777 /workspace
+        cd /workspace/rhtap-cli
 
         if [[ -f /workspace/rhtap-cli/rhtap-cli ]]; then
-          cp /workspace/rhtap-cli /usr/local/bin
+          cp /workspace/rhtap-cli/rhtap-cli /usr/local/bin
         else
           echo "[ERROR] rhtap-cli not found in '/workspace/rhtap-cli'"
           exit 1

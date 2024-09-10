@@ -8,9 +8,9 @@ app_namespaces() {
     ### Helm does not support the patching of resources.
     NAMESPACE="$INSTALLER__DEVELOPERHUB__NAMESPACE"
 
-    echo -n "* Patching ServiceAccounts in $NAMESPACE-app-*: "
     for env in "development" "prod" "stage"; do
         for SA in "default" "pipeline"; do
+            echo -n "- Patching ServiceAccount '$SA' in '$NAMESPACE-app-$env': "
             until kubectl get serviceaccounts --namespace "$NAMESPACE-app-$env" "$SA" >/dev/null 2>&1; do
                 echo -n "_"
                 sleep 2
@@ -22,9 +22,9 @@ secrets:
 imagePullSecrets:
     - name: quay-auth
 " >/dev/null
+            echo "OK"
         done
     done
-    echo "OK"
 }
 
 #

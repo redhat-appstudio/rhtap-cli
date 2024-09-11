@@ -49,12 +49,12 @@ spec:
         git checkout "$(params.git-revision)"
 
         # Path to your values.yaml.tpl file
-        tpl_file="charts/values.yaml.tpl"
+        tpl_file="installer/charts/values.yaml.tpl"
 
         # Turn ci to true
         sed -i 's/ci: false/ci: true/' $tpl_file
 
-        # Configure to integerate with exsitng Githuab App
+        # Configure to integerate with existing GitHub App
         GITHUB__APP__ID=$(cat /usr/local/rhtap-cli-install/rhdh-github-app-id)
         GITHUB__APP__CLIENT__ID=$(cat /usr/local/rhtap-cli-install/rhdh-github-client-id)
         GITHUB__APP__CLIENT__SECRET=$(cat /usr/local/rhtap-cli-install/rhdh-github-client-secret)
@@ -65,7 +65,7 @@ spec:
 
         # Update the developer hub catalog URL
         DEVELOPER_HUB__CATALOG__URL="https://github.com/redhat-appstudio/tssc-sample-templates/blob/main/all.yaml"
-        yq e ".rhtapCLI.features.redHatDeveloperHub.properties.catalogURL = \"${DEVELOPER_HUB__CATALOG__URL}\"" -i config.yaml
+        yq e ".rhtapCLI.features.redHatDeveloperHub.properties.catalogURL = \"${DEVELOPER_HUB__CATALOG__URL}\"" -i installer/config.yaml
 
         cat <<EOF >> "$tpl_file"
         integrations:
@@ -89,7 +89,7 @@ spec:
 
         ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" jenkins --token="$JENKINS_API_TOKEN"  --url="$JENKINS_URL" --username="$JENKINS_USERNAME" --force
         ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" gitlab --token "${GITLAB__TOKEN}"
-        ./bin/rhtap-cli deploy --timeout 25m --config ./config.yaml --kube-config "$KUBECONFIG"
+        ./bin/rhtap-cli deploy --timeout 25m --embedded false --config installer/config.yaml --kube-config "$KUBECONFIG"
 
         homepage_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')
         callback_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')/api/auth/github/handler/frame

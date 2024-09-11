@@ -29,7 +29,8 @@ func (r *RootCmd) Cmd() *cobra.Command {
 
 	for _, sub := range []subcmd.Interface{
 		subcmd.NewDeploy(logger, r.flags, r.cfg, r.kube),
-		subcmd.NewTemplate(logger, r.flags, &r.cfg.Installer, r.kube),
+		subcmd.NewTemplate(logger, r.flags, r.cfg, r.kube),
+		subcmd.NewInstaller(r.flags),
 	} {
 		r.cmd.AddCommand(subcmd.NewRunner(sub).Cmd())
 	}
@@ -48,6 +49,7 @@ func NewRootCmd() *RootCmd {
 			PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 				return cfg.UnmarshalYAML()
 			},
+			SilenceUsage: true,
 		},
 		cfg:  cfg,
 		kube: k8s.NewKube(f),

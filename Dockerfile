@@ -14,7 +14,7 @@ COPY cmd/ ./cmd/
 COPY pkg/ ./pkg/
 COPY vendor/ ./vendor/
 
-COPY go.mod go.sum Makefile .
+COPY go.mod go.sum Makefile ./
 
 RUN make GOFLAGS='-buildvcs=false'
 
@@ -24,17 +24,13 @@ RUN make GOFLAGS='-buildvcs=false'
 
 FROM registry.access.redhat.com/ubi9-minimal:9.4
 
-ARG OC_VERSION=4.14.8
-
 WORKDIR /rhtap-cli
 
-COPY --from=quay.io/codeready-toolchain/oc-client-base:latest /usr/bin/kubectl /usr/bin/
-
-COPY --from=builder /workdir/rhtap-cli/installer .
+COPY --from=builder /workdir/rhtap-cli/installer ./
 
 COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli /usr/local/bin/rhtap-cli
 
-RUN microdnf install shadow-utils && \
+RUN microdnf install -y gzip shadow-utils tar && \
     groupadd --gid 1000 -r rhtap-cli && \
     useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 1000 rhtap-cli && \
     microdnf remove -y shadow-utils && \
@@ -42,4 +38,4 @@ RUN microdnf install shadow-utils && \
 
 USER rhtap-cli
 
-ENTRYPOINT ["/rhtap-cli/rhtap-cli"]
+ENTRYPOINT ["rhtap-cli"]

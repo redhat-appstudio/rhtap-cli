@@ -22,7 +22,7 @@ RUN make GOFLAGS='-buildvcs=false'
 # Run
 #
 
-FROM registry.access.redhat.com/ubi9-minimal:9.4-1227
+FROM registry.access.redhat.com/ubi9-minimal:9.4-1227.1725849298
 
 ARG OC_VERSION=4.14.8
 

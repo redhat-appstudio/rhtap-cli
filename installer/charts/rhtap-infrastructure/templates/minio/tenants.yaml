@@ -20,25 +20,25 @@ spec:
   {{- if $v.kafkaNotify.enabled }}
   env:
     {{- range $topic := $v.kafkaNotify.topics }}
-    - name: {{ printf "MINIO_NOTIFY_KAFKA_ENABLE_%s" (upper $topic.bucket)}}
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_ENABLE_%s" (upper $topic.bucket) }}
       value: "on"
-    - name: {{ printf "MINIO_NOTIFY_KAFKA_BROKERS_%s" (upper $topic.bucket)}}
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_BROKERS_%s" (upper $topic.bucket) }}
       value: {{
         required ".kafkaNotify.bootstrapServers is required"
           $v.kafkaNotify.bootstrapServers
       }}
-    - name: {{ printf "MINIO_NOTIFY_KAFKA_TOPIC_%s" (upper $topic.bucket)}}
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_TOPIC_%s" (upper $topic.bucket) }}
       value: {{ required ".kafkaNotify.topics[].topic required" .topic }}
-    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_%s" (upper $topic.bucket)}}
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_%s" (upper $topic.bucket) }}
       value: "on"
-    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_MECHANISM_%s" (upper $topic.bucket)}}
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_MECHANISM_%s" (upper $topic.bucket) }}
       value: "SHA512"
-    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_USERNAME_%s" (upper $topic.bucket)}}
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_USERNAME_%s" (upper $topic.bucket) }}
       value: {{
         required ".kafkaNotify.username is required"
           $v.kafkaNotify.username | quote
       }}
-    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_PASSWORD_%s" (upper $topic.bucket)}}
+    - name: {{ printf "MINIO_NOTIFY_KAFKA_SASL_PASSWORD_%s" (upper $topic.bucket) }}
       {{- $v.kafkaNotify.password | toYaml | nindent 6 }}
     {{- end }}
   {{- end }}

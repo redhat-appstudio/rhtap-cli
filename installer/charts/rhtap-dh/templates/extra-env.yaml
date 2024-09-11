@@ -7,7 +7,7 @@ metadata:
     labels:
         rhdh.redhat.com/ext-config-sync: "true"
     name: developer-hub-rhtap-env
-    namespace: {{.Release.Namespace}}
+    namespace: {{ .Release.Namespace }}
 type: Opaque
 data:
     BACKEND_SECRET: {{ randAlphaNum 16 | b64enc }}

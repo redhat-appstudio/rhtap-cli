@@ -1,0 +1,64 @@
+---
+name: buildah
+description: Builds a container image using Buildah
+inputs:
+  IMAGE_REPO:
+    description: Makefile's IMAGE_REPO variable
+    required: false
+    default: "ghcr.io"
+  IMAGE_NAMESPACE:
+    description: Makefile's IMAGE_NAMESPACE variable
+    required: false
+  IMAGE_REPO_USERNAME:
+    description: Makefile's IMAGE_REPO_USERNAME variable
+    required: false
+    default: ${{ github.actor }}
+  IMAGE_REPO_PASSWORD:
+    description: Makefile's IMAGE_REPO_PASSWORD variable
+    required: false
+    default: ${{ secrets.GITHUB_TOKEN }}
+  tags:
+    description: Comma-separated list of tags to apply to the image
+    required: false
+    default: "latest"
+runs:
+  using: "composite"
+  steps:
+    - name: Install Buildah
+      shell: bash
+      run: |
+          sudo apt-get update && \
+            sudo apt-get install -y buildah
+
+    - name: Log in to Container Registry
+      shell: bash
+      run: |
+        make login-buildah \
+          IMAGE_REPO="${{ inputs.IMAGE_REPO }}" \
+          IMAGE_REPO_USERNAME="${{ inputs.IMAGE_REPO_USERNAME }}" \
+          IMAGE_REPO_PASSWORD="${{ inputs.IMAGE_REPO_PASSWORD }}"
+
+    - name: Build container image
+      shell: bash
+      run: |
+        make image-buildah \
+          IMAGE_REPO="${{ inputs.IMAGE_REPO }}" \
+          IMAGE_NAMESPACE="${{ inputs.IMAGE_NAMESPACE }}"
+
+    - name: Tag and push container image(s)
+      shell: bash
+      run: |
+        IFS=',' read -ra TAGS <<< "${{ inputs.tags }}"
+        for tag in "${TAGS[@]}"; do
+          if [[ "${tag}" != "latest" ]]; then
+            make image-buildah-tag \
+              IMAGE_REPO="${{ inputs.IMAGE_REPO }}" \
+              IMAGE_NAMESPACE="${{ inputs.IMAGE_NAMESPACE }}" \
+              ARGS="${tag}"
+          fi
+
+          make image-buildah-push \
+            IMAGE_REPO="${{ inputs.IMAGE_REPO }}" \
+            IMAGE_NAMESPACE="${{ inputs.IMAGE_NAMESPACE }}" \
+            IMAGE_TAG="${tag}"
+        done

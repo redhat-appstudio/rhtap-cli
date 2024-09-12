@@ -476,7 +476,7 @@ spec:
       - name: IMAGE
         value: $(tasks.build-container.results.IMAGE_URL)
       - name: ADDITIONAL_TAGS
-        value: ["1.2.0"]
+        value: ["1.2.0", "1.2"]
       runAfter:
       - build-container
       taskRef:

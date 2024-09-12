@@ -14,7 +14,7 @@ COPY cmd/ ./cmd/
 COPY pkg/ ./pkg/
 COPY vendor/ ./vendor/
 
-COPY go.mod go.sum Makefile .
+COPY go.mod go.sum Makefile ./
 
 RUN make GOFLAGS='-buildvcs=false'
 
@@ -29,11 +29,11 @@ LABEL \
   com.redhat.component="rhtap-cli" \
   description="Red Hat Trusted Application Pipeline allows organizations to curate their own trusted, repeatable pipelines \
         that stay compliant with industry requirements. Built on proven, trusted open source technologies, Red Hat \
-        Trusted Application Pipeline is part of Red Hat Trusted Software Supply Chain, a set of solutions to protect \
+        Trusted Application Pipeline is part of Red Hat Trusted Software Supply Chain, a set of solutions to protect \ 
         users, customers, and partners from risks and vulnerabilities in their software factory." \
   io.k8s.description="Red Hat Trusted Application Pipeline allows organizations to curate their own trusted, repeatable pipelines \
   that stay compliant with industry requirements. Built on proven, trusted open source technologies, Red Hat \
-  Trusted Application Pipeline is part of Red Hat Trusted Software Supply Chain, a set of solutions to protect \
+  Trusted Application Pipeline is part of Red Hat Trusted Software Supply Chain, a set of solutions to protect \ 
   users, customers, and partners from risks and vulnerabilities in their software factory." \
   summary="Provides the binaries for downloading the RHTAP CLI." \
   io.k8s.display-name="Red Hat Trusted Application Pipeline CLI" \
@@ -41,9 +41,7 @@ LABEL \
 
 WORKDIR /rhtap-cli
 
-COPY --from=quay.io/codeready-toolchain/oc-client-base:latest /usr/bin/kubectl /usr/bin/
-
-COPY --from=builder /workdir/rhtap-cli/installer .
+COPY --from=builder /workdir/rhtap-cli/installer ./
 
 COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli /usr/local/bin/rhtap-cli
 
@@ -64,4 +62,4 @@ RUN microdnf install -y gzip shadow-utils tar && \
 
 USER rhtap-cli
 
-ENTRYPOINT ["/rhtap-cli/rhtap-cli"]
+ENTRYPOINT ["rhtap-cli"]

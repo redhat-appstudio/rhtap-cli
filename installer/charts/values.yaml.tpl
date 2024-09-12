@@ -207,6 +207,7 @@ backingServices:
 #     clientId: ""
 #     clientSecret: ""
 #     id: ""
+#     host: "github.com"
 #     publicKey: |
 #       -----BEGIN RSA PRIVATE KEY-----   # notsecret
 #       -----END RSA PRIVATE KEY-----     # notsecret

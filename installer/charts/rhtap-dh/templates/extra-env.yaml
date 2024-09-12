@@ -35,6 +35,8 @@ data:
     {{- $pacRoute := (lookup "route.openshift.io/v1" "Route" "openshift-pipelines" "pipelines-as-code-controller") }}
     {{- if $pacRoute }}
     GITHUB__APP__WEBHOOK__URL: {{ print "https://" $pacRoute.spec.host | b64enc }}
+    GITHUB__HOST: {{ $ghSecretData.host }}
+    GITHUB__URL: {{ print "https://" ($ghSecretData.host | b64dec) | b64enc }}
     {{- end }}
 {{- end }}
 {{- $glSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") -}}

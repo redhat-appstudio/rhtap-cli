@@ -2,7 +2,7 @@
 # Build
 #
 
-FROM registry.access.redhat.com/ubi9/go-toolset:latest AS builder
+FROM docker.io/library/golang:1.22 AS builder
 
 USER root
 
@@ -18,18 +18,23 @@ COPY go.mod go.sum Makefile ./
 
 RUN make GOFLAGS='-buildvcs=false'
 
-RUN groupadd --gid 1000 -r rhtap-cli && \
-    useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 1000 rhtap-cli && \
-    ARCH=$(uname -m) && \
-    KUBECTL_VERSION=$(curl -sL https://dl.k8s.io/release/stable.txt) && \
-    if [ "$ARCH" = "x86_64" ]; then \
-        curl --proto "=https" --tlsv1.2 -sSf -L -O "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"; \
-    elif [ "$ARCH" = "aarch64" ]; then \
-        curl --proto "=https" --tlsv1.2 -sSf -L -O "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/arm64/kubectl"; \
-    fi && \
-    chmod +x kubectl && \
-    mv kubectl /usr/bin/kubectl
+# Copy the tools/kubectl mod file for better layer caching when building locally
+COPY tools/kubectl/ ./tools/kubectl/
 
+RUN go install \
+    -modfile tools/kubectl/go.mod \
+    -trimpath \
+    --mod=readonly \
+    k8s.io/kubernetes/cmd/kubectl
+
+COPY "$(go env GOPATH)/bin/kubectl" /usr/bin/
+
+RUN kubectl version
+RUN ls -larth /build
+
+RUN cd tools
+
+RUN ls -larth "$(go env GOPATH)/bin"
 #
 # Run
 #
@@ -55,10 +60,22 @@ WORKDIR /rhtap-cli
 
 COPY --from=builder /workdir/rhtap-cli/installer ./
 
-COPY --from=builder /usr/bin/tar /usr/bin/tar
-COPY --from=builder /usr/bin/gzip /usr/local/bin/gzip
-COPY --from=builder /usr/bin/kubectl /usr/local/bin/kubectl
 COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli /usr/local/bin/rhtap-cli
+
+RUN microdnf install -y gzip shadow-utils tar && \
+    groupadd --gid 1000 -r rhtap-cli && \
+    useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 1000 rhtap-cli && \
+    ARCH=$(uname -m) && \
+    KUBECTL_VERSION=$(curl -sL https://dl.k8s.io/release/stable.txt) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        curl --proto "=https" --tlsv1.2 -sSf -L -O "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        curl --proto "=https" --tlsv1.2 -sSf -L -O "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/arm64/kubectl"; \
+    fi && \
+    chmod +x kubectl && \
+    mv kubectl /usr/bin/kubectl && \
+    microdnf remove -y shadow-utils && \
+    microdnf clean all
 
 USER rhtap-cli
 

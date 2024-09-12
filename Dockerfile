@@ -2,10 +2,10 @@
 # Build
 #
 
+FROM registry.redhat.io/openshift4/ose-tools-rhel9:latestt@sha256:c2a2eca448a2e1b5d73f88dcd12a6c87e5f4580512303f4e38b67acf810b4778 as ose-tools
 FROM registry.access.redhat.com/ubi9/go-toolset:latest AS builder
 
 USER root
-
 WORKDIR /workdir/rhtap-cli
 
 COPY installer/ ./installer/
@@ -41,25 +41,16 @@ LABEL \
 
 WORKDIR /rhtap-cli
 
-COPY --from=builder /workdir/rhtap-cli/installer ./
+COPY --from=ose-tools /usr/bin/kubectl /usr/bin/
 
+COPY --from=builder /workdir/rhtap-cli/installer ./
 COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli /usr/local/bin/rhtap-cli
 
-RUN microdnf install -y gzip shadow-utils tar && \
-    groupadd --gid 1000 -r rhtap-cli && \
-    useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 1000 rhtap-cli && \
-    ARCH=$(uname -m) && \
-    KUBECTL_VERSION=$(curl -sL https://dl.k8s.io/release/stable.txt) && \
-    if [ "$ARCH" = "x86_64" ]; then \
-        curl --proto "=https" --tlsv1.2 -sSf -L -O "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"; \
-    elif [ "$ARCH" = "aarch64" ]; then \
-        curl --proto "=https" --tlsv1.2 -sSf -L -O "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/arm64/kubectl"; \
-    fi && \
-    chmod +x kubectl && \
-    mv kubectl /usr/bin/kubectl && \
-    microdnf remove -y shadow-utils && \
-    microdnf clean all
+RUN groupadd --gid 1000 -r rhtap-cli && \
+    useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 1000 rhtap-cli
 
 USER rhtap-cli
+
+RUN kubectl version --client
 
 ENTRYPOINT ["rhtap-cli"]

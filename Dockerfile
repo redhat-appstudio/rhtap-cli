@@ -22,10 +22,11 @@ RUN make GOFLAGS='-buildvcs=false'
 # Run
 #
 
-FROM registry.access.redhat.com/ubi9-minimal:9.4-1227.1725849298
+FROM quay.io/openshift/origin-cli:latest
 
 LABEL \
   name="rhtap-cli" \
+  com.redhat.component="rhtap-cli" \
   description="Red Hat Trusted Application Pipeline allows organizations to curate their own trusted, repeatable pipelines \
         that stay compliant with industry requirements. Built on proven, trusted open source technologies, Red Hat \
         Trusted Application Pipeline is part of Red Hat Trusted Software Supply Chain, a set of solutions to protect \ 
@@ -40,15 +41,15 @@ LABEL \
 
 WORKDIR /rhtap-cli
 
-COPY --from=builder /workdir/rhtap-cli/installer ./
+COPY --from=builder /workdir/rhtap-cli/installer/charts ./charts
+COPY --from=builder /workdir/rhtap-cli/installer/scripts ./scripts
+COPY --from=builder /workdir/rhtap-cli/installer/config.yaml .
 
 COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli /usr/local/bin/rhtap-cli
 
-RUN microdnf install -y gzip shadow-utils tar && \
-    groupadd --gid 1000 -r rhtap-cli && \
-    useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 1000 rhtap-cli && \
-    microdnf remove -y shadow-utils && \
-    microdnf clean all
+RUN groupadd -g 1000 -r rhtap-cli && \
+    useradd -u 1000 -g rhtap-cli -r -d /rhtap-cli -s /sbin/nologin rhtap-cli && \
+    chown -v -R rhtap-cli:rhtap-cli /rhtap-cli
 
 USER rhtap-cli
 

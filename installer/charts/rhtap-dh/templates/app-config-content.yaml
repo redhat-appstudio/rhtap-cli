@@ -19,11 +19,15 @@ argocd:
 auth:
   environment: production
   providers:
-  {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
+  {{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
+  {{- if $ghSecretObj }}
     github:
       production:
         clientId: ${GITHUB__APP__CLIENT__ID}
         clientSecret: ${GITHUB__APP__CLIENT__SECRET}
+      {{- if ne ($ghSecretObj.data.host | b64dec) "github.com" }}
+        enterpriseInstanceUrl: ${GITHUB__URL}
+      {{- end }}
   {{- end }}
 backend:
   auth:
@@ -59,7 +63,7 @@ jenkins:
 integrations:
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
   github:
-    - host: github.com
+    - host: ${GITHUB__HOST}
       apps:
         - appId: ${GITHUB__APP__ID}
           clientId: ${GITHUB__APP__CLIENT__ID}

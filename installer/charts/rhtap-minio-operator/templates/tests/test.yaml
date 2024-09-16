@@ -1,0 +1,71 @@
+{{- $sa := include "rhtapMinioOperator.serviceAccountName" . -}}
+{{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
+{{- if .Values.minIOOperator.enabled }}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: hook-succeeded
+  labels:
+    {{- include "rhtap-minio-operator.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
+  name: {{ $name }} 
+spec:
+  restartPolicy: Never
+  serviceAccountName: {{ $sa }}
+  initContainers:
+    - name: copy-scripts
+      image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+      workingDir: /scripts
+      command:
+        - /bin/bash
+        - -c
+        - |
+          set -x -e
+  {{- range $path, $content := .Files.Glob "scripts/*.sh" -}}
+    {{- $name := trimPrefix "scripts/" $path }}
+          printf '%s' "{{ $content | toString | b64enc }}" | base64 -d >{{ $name }}
+          chmod +x {{ $name }}
+  {{- end }}
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+  containers:
+    - name: {{ printf "minio-crds-%s" $name }}
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      command:
+        - /scripts/test-subscriptions.sh
+      args:
+        - tenants.minio.min.io
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+    #
+    # Test the MinIO operator rollout status.
+    #
+    - name: {{ printf "operator-deployment-%s" $name }}
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      env:
+        - name: NAMESPACE
+          value: {{ .Release.Namespace }}
+        - name: RESOURCE_TYPE
+          value: "deployment"
+      command:
+        - /scripts/test-rollout-status.sh
+      args:
+        - app=minio-operator
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+  volumes:
+    - name: scripts
+      emptyDir: {}
+{{- end }}

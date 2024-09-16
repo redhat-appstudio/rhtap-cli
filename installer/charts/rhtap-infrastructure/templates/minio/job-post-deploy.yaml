@@ -68,12 +68,15 @@ spec:
 
               mc alias set minio "{{ $minIOURL }}" "${MINIO_USERNAME}" "${MINIO_PASSWORD}"
     {{- range $topic := $v.kafkaNotify.topics }}
-              {{
-                  printf "mc event add minio/%s arn:minio:sqs::%s:kafka --event \"%s\""
-                  $topic.bucket
-                  (upper $topic.bucket)
-                  (join "," $topic.events)
-              }}
+      {{- $event := printf "arn:minio:sqs::%s:kafka" (upper $topic.bucket) }}
+              if [[ -z "$(mc event list minio/{{ $topic.bucket }} {{ $event }})" ]]; then
+                {{
+                    printf "mc event add minio/%s arn:minio:sqs::%s:kafka --event \"%s\""
+                    $topic.bucket
+                    (upper $topic.bucket)
+                    (join "," $topic.events)
+                }}
+              fi
     {{- end }}
               mc admin service restart minio
           securityContext:

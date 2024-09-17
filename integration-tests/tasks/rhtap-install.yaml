@@ -71,7 +71,7 @@ spec:
 
         # Update the developer hub catalog URL
         export DEVELOPER_HUB__CATALOG__URL="https://github.com/redhat-appstudio/tssc-sample-templates/blob/main/all.yaml"
-        yq -i ".rhtapCLI.features.redHatDeveloperHub.properties.catalogURL = strenv(DEVELOPER_HUB__CATALOG__URL})" installer/config.yaml
+        yq -i ".rhtapCLI.features.redHatDeveloperHub.properties.catalogURL = strenv(DEVELOPER_HUB__CATALOG__URL)" installer/config.yaml
 
         cat <<EOF >> "$tpl_file"
         integrations:

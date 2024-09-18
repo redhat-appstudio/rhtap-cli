@@ -93,7 +93,7 @@ spec:
 
         ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" jenkins --token="$JENKINS_API_TOKEN"  --url="$JENKINS_URL" --username="$JENKINS_USERNAME" --force
         ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" gitlab --token "${GITLAB__TOKEN}"
-        ./bin/rhtap-cli deploy --timeout 25m --embedded false --config installer/config.yaml --kube-config "$KUBECONFIG"
+        ./bin/rhtap-cli deploy --timeout 25m --embedded false --config installer/config.yaml --values-template "$tpl_file" --kube-config "$KUBECONFIG"
 
         homepage_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')
         callback_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')/api/auth/github/handler/frame

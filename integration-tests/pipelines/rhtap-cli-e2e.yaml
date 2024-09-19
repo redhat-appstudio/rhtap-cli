@@ -56,9 +56,9 @@ spec:
           - name: url
             value: https://github.com/konflux-ci/konflux-qe-definitions.git
           - name: revision
-            value: main
+            value: consolidate-logic-scripts
           - name: pathInRepo
-            value: common/tasks/test-metadata/0.1/test-metadata.yaml
+            value: common/tasks/test-metadata/0.2/test-metadata.yaml
       params:
         - name: SNAPSHOT
           value: $(params.SNAPSHOT)
@@ -81,7 +81,7 @@ spec:
           value: $(context.pipelineRun.name)
     - name: provision-rosa
       when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
+        - input: "$(tasks.test-metadata.results.job-spec.git.event_type)"
           operator: in
           values: ["pull_request"]
       runAfter:
@@ -112,7 +112,7 @@ spec:
           value: "$(params.cloud-credential-key)"
     - name: rhtap-install
       when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
+        - input: "$(tasks.test-metadata.results.job-spec.git.event_type)"
           operator: in
           values: ["pull_request"]
       runAfter:
@@ -121,7 +121,7 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/redhat-appstudio/rhtap-cli.git
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
           - name: revision
             value: main
           - name: pathInRepo
@@ -130,14 +130,14 @@ spec:
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
         - name: git-url
-          value: "$(tasks.test-metadata.results.git-url)"
+          value: "$(tasks.test-metadata.results.job-spec.git.url)"
         - name: git-revision
-          value: "$(tasks.test-metadata.results.git-revision)"
+          value: "$(tasks.test-metadata.results.job-spec.git.revision)"
         - name: image-url
-          value: "$(tasks.test-metadata.results.container-image)"
+          value: "$(tasks.test-metadata.results.job-spec.container-image)"
     - name: sprayproxy-provision
       when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
+        - input: "$(tasks.test-metadata.results.job-spec.git.event_type)"
           operator: in
           values: ["pull_request"]
       runAfter:
@@ -156,7 +156,7 @@ spec:
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
     - name: rhtap-e2e-tests
       when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
+        - input: "$(tasks.test-metadata.results.job-spec.git.event_type)"
           operator: in
           values: ["pull_request"]
       runAfter:
@@ -180,7 +180,7 @@ spec:
   finally:
     - name: deprovision-rosa-collect-artifacts
       when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
+        - input: "$(tasks.test-metadata.results.job-spec.git.event_type)"
           operator: in
           values: ["pull_request"]
       taskRef:
@@ -200,15 +200,15 @@ spec:
         - name: oci-container
           value: "$(tasks.create-oci-container.results.oci-container)"
         - name: pull-request-author
-          value: "$(tasks.test-metadata.results.pull-request-author)"
+          value: "$(tasks.test-metadata.results.job-spec.git.pull_request_author)"
         - name: git-revision
-          value: "$(tasks.test-metadata.results.git-revision)"
+          value: "$(tasks.test-metadata.results.job-spec.git.revision)"
         - name: pull-request-number
-          value: "$(tasks.test-metadata.results.pull-request-number)"
+          value: "$(tasks.test-metadata.results.job-spec.git.pull_request_number)"
         - name: git-repo
-          value: "$(tasks.test-metadata.results.git-repo)"
+          value: "$(tasks.test-metadata.results.job-spec.git.repo)"
         - name: git-org
-          value: "$(tasks.test-metadata.results.git-org)"
+          value: "$(tasks.test-metadata.results.job-spec.git.org)"
         - name: cluster-name
           value: "$(tasks.rosa-hcp-metadata.results.cluster-name)"
         - name: konflux-test-infra-secret
@@ -219,7 +219,7 @@ spec:
           value: "$(tasks.status)"
     - name: sprayproxy-deprovision
       when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
+        - input: "$(tasks.test-metadata.results.job-spec.git.event_type)"
           operator: in
           values: ["pull_request"]
       taskRef:
@@ -233,7 +233,7 @@ spec:
             value: common/tasks/sprayproxy/sprayproxy-deprovision/sprayproxy-unregister-server.yaml
     - name: pull-request-status-message
       when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
+        - input: "$(tasks.test-metadata.results.job-spec.git.event_type)"
           operator: in
           values: ["pull_request"]
       taskRef:
@@ -253,12 +253,12 @@ spec:
         - name: pipeline-aggregate-status
           value: "$(tasks.status)"
         - name: pull-request-author
-          value: "$(tasks.test-metadata.results.pull-request-author)"
+          value: "$(tasks.test-metadata.results.job-spec.git.pull_request_author)"
         - name: pull-request-number
-          value: "$(tasks.test-metadata.results.pull-request-number)"
+          value: "$(tasks.test-metadata.results.job-spec.git.pull_request_number)"
         - name: git-repo
-          value: "$(tasks.test-metadata.results.git-repo)"
+          value: "$(tasks.test-metadata.results.job-spec.git.repo)"
         - name: git-org
-          value: "$(tasks.test-metadata.results.git-org)"
+          value: "$(tasks.test-metadata.results.job-spec.git.org)"
         - name: git-revision
-          value: "$(tasks.test-metadata.results.git-revision)"
+          value: "$(tasks.test-metadata.results.job-spec.git.revision)"

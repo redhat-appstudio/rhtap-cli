@@ -15,4 +15,5 @@
 *.tmp
 *.tmproj
 *~
+*.md
 hack/

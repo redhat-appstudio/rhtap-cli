@@ -17,26 +17,40 @@ get_binaries() {
     exit 1
 }
 
+patch_serviceaccount() {
+    local NAMESPACE="$1"
+    local SA="$2"
+
+    echo -n "- Patching ServiceAccount '$SA' in '$NAMESPACE': "
+
+    # Wait until the ServiceAccount is available
+    until "$KUBECTL" get serviceaccounts --namespace "$NAMESPACE" "$SA" >/dev/null 2>&1; do
+        echo -n "_"
+        sleep 2
+    done
+
+    # Check for quay-auth and nexus-auth secrets and patch if present
+    for SECRET_NAME in nexus-auth quay-auth; do
+        SECRET=$("$KUBECTL" get secret "$SECRET_NAME" --namespace "$NAMESPACE" --ignore-not-found)
+        if [ -n "$SECRET" ]; then
+            echo -n "."
+            "$KUBECTL" patch serviceaccounts --namespace "$NAMESPACE" "$SA" --patch "
+secrets:
+    - name: $SECRET_NAME
+imagePullSecrets:
+    - name: $SECRET_NAME
+" >/dev/null
+            echo "OK"
+        fi
+    done
+}
+
 app_namespaces() {
-    ### Workaround
-    ### Helm does not support the patching of resources.
     NAMESPACE="$INSTALLER__DEVELOPERHUB__NAMESPACE"
 
     for env in "development" "prod" "stage"; do
         for SA in "default" "pipeline"; do
-            echo -n "- Patching ServiceAccount '$SA' in '$NAMESPACE-app-$env': "
-            until "$KUBECTL" get serviceaccounts --namespace "$NAMESPACE-app-$env" "$SA" >/dev/null 2>&1; do
-                echo -n "_"
-                sleep 2
-            done
-            echo -n "."
-            "$KUBECTL" patch serviceaccounts --namespace "$NAMESPACE-app-$env" "$SA" --patch "
-secrets:
-    - name: quay-auth
-imagePullSecrets:
-    - name: quay-auth
-" >/dev/null
-            echo "OK"
+            patch_serviceaccount "$NAMESPACE-app-$env" "$SA"
         done
     done
 }

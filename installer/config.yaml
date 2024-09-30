@@ -41,10 +41,10 @@ rhtapCLI:
     - chart: charts/rhtap-infrastructure
       namespace: *installerNamespace
       enabled: true
-    - chart: charts/rhtap-backing-services
+    - chart: charts/rhtap-integrations
       namespace: *installerNamespace
       enabled: true
-    - chart: charts/rhtap-integrations
+    - chart: charts/rhtap-backing-services
       namespace: *installerNamespace
       enabled: true
     - chart: charts/rhtap-tas

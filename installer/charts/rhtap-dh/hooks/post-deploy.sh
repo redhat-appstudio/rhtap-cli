@@ -17,26 +17,56 @@ get_binaries() {
     exit 1
 }
 
+patch_serviceaccount() {
+    local NAMESPACE="$1"
+    local SA="$2"
+
+    echo -n "- Patching ServiceAccount '$SA' in '$NAMESPACE': "
+
+    # Wait until the ServiceAccount is available
+    until "$KUBECTL" get serviceaccounts --namespace "$NAMESPACE" "$SA" >/dev/null 2>&1; do
+        echo -n "_"
+        sleep 2
+    done
+    echo -n "."
+
+    # Check for quay-auth and nexus-auth secrets and patch if present
+    QUAY_SECRET=$("$KUBECTL" get secret quay-auth --namespace "$NAMESPACE" --ignore-not-found)
+    NEXUS_SECRET=$("$KUBECTL" get secret nexus-auth --namespace "$NAMESPACE" --ignore-not-found)
+
+    SECRET_NAME=""
+    if [ -n "$QUAY_SECRET" ]; then
+        SECRET_NAME="  - name: quay-auth"
+    fi
+
+    if [ -n "$NEXUS_SECRET" ]; then
+        if [ -n "$SECRET_NAME" ]; then
+            SECRET_NAME="$SECRET_NAME
+  - name: nexus-auth"
+        else
+            SECRET_NAME="  - name: nexus-auth"
+        fi
+    fi
+
+    if [ -n "$SECRET_NAME" ]; then
+        "$KUBECTL" patch serviceaccounts --namespace "$NAMESPACE" "$SA" --patch "
+secrets:
+$SECRET_NAME
+imagePullSecrets:
+$SECRET_NAME
+" >/dev/null
+        echo "OK"
+    else
+        echo "No quay-auth or nexus-auth secrets found, skipping patch."
+    fi
+}
+
 app_namespaces() {
-    ### Workaround
-    ### Helm does not support the patching of resources.
     NAMESPACE="$INSTALLER__DEVELOPERHUB__NAMESPACE"
 
     for env in "development" "prod" "stage"; do
         for SA in "default" "pipeline"; do
-            echo -n "- Patching ServiceAccount '$SA' in '$NAMESPACE-app-$env': "
-            until "$KUBECTL" get serviceaccounts --namespace "$NAMESPACE-app-$env" "$SA" >/dev/null 2>&1; do
-                echo -n "_"
-                sleep 2
-            done
-            echo -n "."
-            "$KUBECTL" patch serviceaccounts --namespace "$NAMESPACE-app-$env" "$SA" --patch "
-secrets:
-    - name: quay-auth
-imagePullSecrets:
-    - name: quay-auth
-" >/dev/null
-            echo "OK"
+            patch_serviceaccount "$NAMESPACE-app-$env" "$SA"
         done
     done
 }

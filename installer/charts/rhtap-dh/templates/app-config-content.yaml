@@ -90,11 +90,22 @@ proxy:
         Authorization: 'Bearer ${QUAY__API_TOKEN}'
       {{- end }}
       changeOrigin: true
-      # Change to "false" in case of using self hosted quay instance with a self-signed certificate
+      secure: true
+    '/nexus/api':
+      target: ${NEXUS__URL}
+      headers:
+        X-Requested-With: 'XMLHttpRequest'
+      {{- $nexusSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
+      {{- $nexusSecretData := ($nexusSecretObj.data | default dict) }}
+      {{- if $nexusSecretData.token }}
+        Authorization: 'Bearer ${NEXUS__TOKEN}'
+      {{- end }}
+      changeOrigin: true
       secure: true
 quay:
-  # The UI url for Quay, used to generate the link to Quay
   uiUrl: ${QUAY__URL}
+nexus:
+  uiUrl: ${NEXUS__URL}
 techdocs:
   builder: 'local'
   generator:

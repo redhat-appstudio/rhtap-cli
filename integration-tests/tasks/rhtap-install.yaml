@@ -33,7 +33,6 @@ spec:
         set -o nounset
         set -o pipefail
 
-        echo "[INFO]New CI"
         # Login to OpenShift
         export KUBECONFIG=$(pwd)/kubeconfig
         echo "[INFO]Login: $(params.ocp-login-command)"

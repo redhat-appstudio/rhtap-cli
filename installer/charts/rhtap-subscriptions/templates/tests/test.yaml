@@ -1,4 +1,3 @@
-{{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
 ---
 apiVersion: v1
 kind: Pod
@@ -8,7 +7,7 @@ metadata:
     helm.sh/hook-delete-policy: hook-succeeded
   labels:
     {{- include "rhtap-subscriptions.labels" . | nindent 4 }}
-  name: {{ $name }} 
+  name: {{ printf "%s-test-%d" .Chart.Name .Release.Revision }} 
 spec:
   restartPolicy: Never
   serviceAccountName: {{ .Release.Name }}
@@ -32,7 +31,10 @@ spec:
       securityContext:
         allowPrivilegeEscalation: false
   containers:
-    - name: {{ $name }}
+    #
+    # Tests the subcriptions CRDs.
+    #
+    - name: test-subscriptions
       image: quay.io/codeready-toolchain/oc-client-base:latest
       command:
         - /scripts/test-subscriptions.sh
@@ -45,6 +47,29 @@ spec:
           mountPath: /scripts
       securityContext:
         allowPrivilegeEscalation: false
+{{- range $sub := include "subscriptions.enabled" . | fromYaml }}
+    #
+    # Tests the {{ $sub.name }} rollout status.
+    #
+    - name: {{ printf "test-%s" ($sub.name | lower) }} 
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      env:
+        - name: NAMESPACE
+          value: {{ $sub.namespace }}
+        - name: RESOURCE_TYPE
+          value: "deployment"
+        - name: RETRIES
+          value: "15"
+      command:
+        - /scripts/test-rollout-status.sh
+      args:
+        - olm.managed=true
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+{{- end }}
   volumes:
     - name: scripts
       emptyDir: {}

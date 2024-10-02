@@ -8,6 +8,7 @@ builds:
     goos:
       - darwin
       - linux
+      - windows
     env:
       - GOFLAGS={{ .Env.GOFLAGS }}
       - CGO_ENABLED={{ .Env.CGO_ENABLED }}

@@ -170,7 +170,7 @@ infrastructure:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 2Gi
+                  storage: 100Gi
   #
   # PostgreSQL Clusters
   #

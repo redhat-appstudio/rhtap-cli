@@ -18,17 +18,6 @@ subscriptions:
     channel: v5
     source: redhat-marketplace
     sourceNamespace: openshift-marketplace
-  minIO:
-    enabled: false
-    description: MinIO Operator
-    apiResource: tenants.minio.min.io
-    namespace: minio-operator
-    name: minio-operator
-    channel: stable
-    source: certified-operators
-    sourceNamespace: openshift-marketplace
-    operatorGroup:
-      upgradeStrategy: Default
   openshiftGitOps:
     enabled: false
     description: OpenShift GitOps Operator

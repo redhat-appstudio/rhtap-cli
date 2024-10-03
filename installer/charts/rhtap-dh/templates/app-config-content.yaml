@@ -52,14 +52,7 @@ catalog:
       - Location
       - Template
       - API
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
-jenkins:
-  instances:
-    - name: default
-      baseUrl: ${JENKINS__BASEURL}
-      username: ${JENKINS__USERNAME}
-      apiKey: ${JENKINS__TOKEN}
-{{- end }}
+dangerouslyAllowSignInWithoutUserInCatalog: true
 integrations:
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
   github:
@@ -78,6 +71,17 @@ integrations:
       apiBaseUrl: https://${GITLAB__HOST}/api/v4
       token: ${GITLAB__TOKEN}
 {{- end }}
+{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
+jenkins:
+  instances:
+    - name: default
+      baseUrl: ${JENKINS__BASEURL}
+      username: ${JENKINS__USERNAME}
+      apiKey: ${JENKINS__TOKEN}
+{{- end }}
+permission:
+  # Disable RBACs
+  enabled: false
 proxy:
   endpoints:
     '/quay/api':
@@ -95,6 +99,7 @@ proxy:
 quay:
   # The UI url for Quay, used to generate the link to Quay
   uiUrl: ${QUAY__URL}
+signInPage: github
 techdocs:
   builder: 'local'
   generator:

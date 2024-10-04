@@ -33,13 +33,20 @@ IMAGE_TAG ?= latest
 # Fully qualified container image name.
 IMAGE_FQN ?= $(IMAGE_REPO)/$(IMAGE_NAMESPACE)/$(APP):$(IMAGE_TAG)
 
+# Determine the appropriate tar command based on the operating system.
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	TAR := gtar
+else
+	TAR := tar
+endif
+
 # Directory with the installer resources, scripts, Helm Charts, etc.
 INSTALLER_DIR ?= ./installer
 # Tarball with the installer resources.
 INSTALLER_TARBALL ?= $(INSTALLER_DIR)/installer.tar
 # Data to include in the tarball.
-INSTALLER_TARBALL_DATA ?= $(shell find $(INSTALLER_DIR) -maxdepth 1 \
-	! -path "$(INSTALLER_DIR)" \
+INSTALLER_TARBALL_DATA ?= $(shell find -L $(INSTALLER_DIR) -type f \
 	! -path "$(INSTALLER_TARBALL)" \
 	! -name embed.go \
 )
@@ -55,6 +62,7 @@ INSTALLER_TARBALL_DATA ?= $(shell find $(INSTALLER_DIR) -maxdepth 1 \
 # Builds the application executable with installer resources embedded.
 .PHONY: $(BIN)
 $(BIN): installer-tarball
+	@echo "# Building '$(BIN)'"
 	@[ -d $(BIN_DIR) ] || mkdir -p $(BIN_DIR)
 	go build -o $(BIN) $(CMD) $(ARGS)
 
@@ -71,7 +79,7 @@ snapshot: goreleaser-snapshot
 
 # Runs the application with arbitrary ARGS.
 .PHONY: run
-run:
+run: installer-tarball
 	go run $(CMD) $(ARGS)
 
 #
@@ -82,8 +90,9 @@ run:
 .PHONY: installer-tarball
 installer-tarball: $(INSTALLER_TARBALL)
 $(INSTALLER_TARBALL): $(INSTALLER_TARBALL_DATA)
+	@echo "# Generating '$(INSTALLER_TARBALL)'"
 	@test -f "$(INSTALLER_TARBALL)" && rm -f "$(INSTALLER_TARBALL)" || true
-	tar -C "$(INSTALLER_DIR)" -cpf "$(INSTALLER_TARBALL)" \
+	@$(TAR) -C "$(INSTALLER_DIR)" -cpf "$(INSTALLER_TARBALL)" \
 	$(shell echo "$(INSTALLER_TARBALL_DATA)" | sed "s:\./installer/:./:g")
 
 #

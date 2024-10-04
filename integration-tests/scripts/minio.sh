@@ -5,7 +5,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-echo "[INFO]Applying minIO workaround"
+echo "[INFO] Applying minIO workaround"
 DOCKER_IO_AUTH="$(cat /usr/local/rhtap-cli-install/docker_io)"
 oc get secret/pull-secret -n openshift-config --template='{{index .data ".dockerconfigjson" | base64decode}}' > ./global-pull-secret.json
 oc get secret -n openshift-config -o yaml pull-secret > global-pull-secret.yaml
@@ -13,7 +13,7 @@ yq -i e 'del(.metadata.namespace)' global-pull-secret.yaml
 oc registry login --registry=docker.io --auth-basic="$DOCKER_IO_AUTH" --to=./global-pull-secret.json
 
 namespace_sa_names=$(cat << 'EOF'
-minio-operator|minio-operator
+minio-operator|minio-operator-e2e
 EOF
 )
 while IFS='|' read -r ns sa_name; do

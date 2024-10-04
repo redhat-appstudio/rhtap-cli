@@ -50,6 +50,12 @@ rhtapCLI:
     - chart: charts/rhtap-backing-services
       namespace: *installerNamespace
       enabled: true
+    - chart: charts/rhtap-gitops
+      namespace: *installerNamespace
+      enabled: true
+    - chart: charts/rhtap-pipelines
+      namespace: *installerNamespace
+      enabled: true
     - chart: charts/rhtap-tas
       namespace: *trustedArtifactSignerNamespace
       enabled: *tasEnabled

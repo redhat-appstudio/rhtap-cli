@@ -1,5 +1,5 @@
-{{- if .Values.backingServices.argoCD.enabled }}
-  {{- $argoCD := .Values.backingServices.argoCD }}
+{{- if .Values.argoCD.enabled }}
+  {{- $argoCD := .Values.argoCD }}
   {{- $name := printf "%s-post-deploy" $argoCD.name }}
   {{- $argoCDEnvFile := "/rhtap/argocd/env" -}}
 #
@@ -16,7 +16,7 @@ metadata:
   annotations:
     helm.sh/hook: post-install,post-upgrade
   labels:
-    {{- include "rhtap-backing-services.labels" . | nindent 4 }}
+    {{- include "rhtap-gitops.labels" . | nindent 4 }}
   namespace: {{ $argoCD.namespace }}
   name: {{ $name }}
 spec:
@@ -29,7 +29,7 @@ spec:
         # Copying the scripts that will be used on the subsequent containers, the
         # scripts are shared via the "/scripts" volume.
         #
-  {{- include "backingServices.copyScripts" . | nindent 8 }}
+  {{- include "gitops.copyScripts" . | nindent 8 }}
       containers:
         #
         # Generates a token for the ArgoCD API, the credentials are stored on a
@@ -39,13 +39,13 @@ spec:
           image: registry.redhat.io/openshift-gitops-1/argocd-rhel8@sha256:5bfc4686983f9c62107772d99d900efbcc38175afe621c40958035aa49bfa9ed
           env:
             - name: ARGOCD_HOSTNAME
-              value: {{ include "backingServices.argoCD.serverHostname" . }}
+              value: {{ include "argoCD.serverHostname" . }}
             - name: ARGOCD_USER
               value: admin
             - name: ARGOCD_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "backingServices.argoCD.secretClusterName" . }} 
+                  name: {{ include "argoCD.secretClusterName" . }} 
                   key: admin.password
             - name: ARGOCD_ENV_FILE
               value: {{ $argoCDEnvFile }}

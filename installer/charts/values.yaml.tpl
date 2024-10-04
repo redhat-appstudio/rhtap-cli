@@ -205,6 +205,22 @@ backingServices:
       clair: 1
 
 #
+# rhtap-gitops
+#
+argoCD:
+  enabled: {{ $rhdh.Enabled }}
+  name: {{ $argoCDName }}
+  namespace: {{ $argoCDNamespace }}
+  # TODO: link this secret name with RHDH configuration.
+  secretName: rhtap-argocd-integration
+  ingressDomain: {{ $ingressDomain }}
+
+#
+# rhtap-gitops
+#
+pipelines: {}
+
+#
 # rhtap-integrations
 #
 

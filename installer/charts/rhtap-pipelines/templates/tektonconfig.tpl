@@ -1,10 +1,10 @@
-{{- define "backingServices.tektonconfig" -}}
+{{- define "pipelines.tektonconfig" -}}
 ---
 apiVersion: operator.tekton.dev/v1alpha1
 kind: TektonConfig
 metadata:
   labels:
-    {{- include "rhtap-backing-services.labels" . | nindent 4 }}
+    {{- include "rhtap-pipelines.labels" . | nindent 4 }}
   name: config
 spec:
   addon:

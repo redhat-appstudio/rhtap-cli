@@ -12,6 +12,7 @@
 ---
 debug:
   ci: false
+  install: false
 
 #
 # rhtap-openshift
@@ -144,7 +145,6 @@ infrastructure:
 {{- $argoCDName := "argocd" }}
 {{- $quayMinIOHost := printf "minio-%s.%s" $quay.Namespace $ingressDomain }}
 
-
 backingServices:
   keycloak:
     enabled: {{ $keycloak.Enabled }}
@@ -174,33 +174,38 @@ backingServices:
     # TODO: link this secret name with RHDH configuration.
     secretName: rhtap-argocd-integration
     ingressDomain: {{ $ingressDomain }}
-  acs:
-    enabled: {{ $acs.Enabled }}
-    namespace: {{ $acs.Namespace }}
-    name: stackrox-central-services
-    ingressDomain: {{ $ingressDomain }}
-    integrationSecret:
-      namespace: {{ .Installer.Namespace }}
+
+#
+# rhtap-acs
+#
+
+acs:
+  name: stackrox-central-services
+  ingressDomain: {{ $ingressDomain }}
+  integrationSecret:
+    namespace: {{ .Installer.Namespace }}
 
 #
 # rhtap-gitops
 #
+
 argoCD:
   enabled: {{ $rhdh.Enabled }}
   name: {{ $argoCDName }}
   namespace: {{ $argoCDNamespace }}
-  # TODO: link this secret name with RHDH configuration.
   secretName: rhtap-argocd-integration
   ingressDomain: {{ $ingressDomain }}
 
 #
 # rhtap-pipelines
 #
+
 pipelines: {}
 
 #
 # rhtap-quay
 #
+
 quay:
   enabled: {{ $quay.Enabled }}
   namespace: {{ $quay.Namespace }}

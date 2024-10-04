@@ -12,16 +12,6 @@ Keycloak:
     Admin Secret: {{ printf "%s-initial-admin" $keycloakName }}
 
 {{ end -}}
-{{- if .Values.backingServices.argoCD.enabled }}
-  {{- $argoCD := .Values.backingServices.argoCD -}}
-ArgoCD:
-  - Name: {{ $argoCD.name }}
-    Namespace: {{ $argoCD.namespace }}
-    Server URL: https://{{ include "backingServices.argoCD.serverHostname" . }}
-    Admin Secret: {{ include "backingServices.argoCD.secretClusterName" . }}
-    Integration Secret: {{ $argoCD.secretName }}
-
-{{ end -}}
 {{- if .Values.backingServices.acs.enabled }}
   {{- $acs := .Values.backingServices.acs -}}
 Red Hat Advanced Cluster Security (ACS):

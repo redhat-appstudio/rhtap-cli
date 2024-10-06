@@ -1,0 +1,6 @@
+---
+apiVersion: v2
+name: rhtap-pipelines
+description: RHTAP OpenShift Pipelines
+type: application
+version: 0.1.0

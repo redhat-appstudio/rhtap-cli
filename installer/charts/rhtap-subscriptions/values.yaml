@@ -18,24 +18,13 @@ subscriptions:
     channel: v5
     source: redhat-marketplace
     sourceNamespace: openshift-marketplace
-  minIO:
-    enabled: false
-    description: MinIO Operator
-    apiResource: tenants.minio.min.io
-    namespace: minio-operator
-    name: minio-operator
-    channel: stable
-    source: certified-operators
-    sourceNamespace: openshift-marketplace
-    operatorGroup:
-      upgradeStrategy: Default
   openshiftGitOps:
     enabled: false
     description: OpenShift GitOps Operator
     apiResource: gitopsservices.pipelines.openshift.io
     namespace: openshift-operators
     name: openshift-gitops-operator
-    channel: gitops-1.13
+    channel: gitops-1.14
     source: redhat-operators
     sourceNamespace: openshift-marketplace
     config:
@@ -58,7 +47,7 @@ subscriptions:
     apiResource: pipelines.tekton.dev
     namespace: openshift-operators
     name: openshift-pipelines-operator-rh
-    channel: pipelines-1.14
+    channel: pipelines-1.15
     source: redhat-operators
     sourceNamespace: openshift-marketplace
   openshiftTrustedArtifactSigner:

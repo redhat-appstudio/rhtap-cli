@@ -8,6 +8,7 @@
 {{- $quay := required "Quay settings" .Installer.Features.redHatQuay -}}
 {{- $rhdh := required "RHDH settings" .Installer.Features.redHatDeveloperHub -}}
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
+{{- $minIOOperatorEnabled := or $tpa.Enabled $quay.Enabled -}}
 ---
 debug:
   ci: false
@@ -38,7 +39,7 @@ openshift:
 {{- if $rhdh.Enabled }}
     - {{ $rhdh.Namespace }}
 {{- end }}
-{{- if (or $tpa.Enabled $quay.Enabled) }}
+{{- if $minIOOperatorEnabled }}
     - minio-operator
 {{- end }}
 
@@ -53,8 +54,6 @@ subscriptions:
     enabled: {{ $tpa.Enabled }}
   crunchyData:
     enabled: {{ or $tpa.Enabled $rhdh.Enabled }}
-  minIO:
-    enabled: {{ or $tpa.Enabled $quay.Enabled }}
   openshiftGitOps:
     enabled: {{ $gitops.Enabled }}
     config:
@@ -74,6 +73,13 @@ subscriptions:
     enabled: {{ $rhdh.Enabled }}
   redHatQuay:
     enabled: {{ $quay.Enabled }}
+
+#
+# rhtap-minio-operator
+#
+
+minIOOperator:
+  enabled: {{ $minIOOperatorEnabled }}
 
 #
 # rhtap-infrastructure
@@ -199,6 +205,22 @@ backingServices:
       clair: 1
 
 #
+# rhtap-gitops
+#
+argoCD:
+  enabled: {{ $rhdh.Enabled }}
+  name: {{ $argoCDName }}
+  namespace: {{ $argoCDNamespace }}
+  # TODO: link this secret name with RHDH configuration.
+  secretName: rhtap-argocd-integration
+  ingressDomain: {{ $ingressDomain }}
+
+#
+# rhtap-gitops
+#
+pipelines: {}
+
+#
 # rhtap-integrations
 #
 
@@ -207,6 +229,7 @@ backingServices:
 #     clientId: ""
 #     clientSecret: ""
 #     id: ""
+#     host: "github.com"
 #     publicKey: |
 #       -----BEGIN RSA PRIVATE KEY-----   # notsecret
 #       -----END RSA PRIVATE KEY-----     # notsecret

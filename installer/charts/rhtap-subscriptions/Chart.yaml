@@ -1,6 +1,6 @@
 ---
 apiVersion: v2
 name: rhtap-subscriptions
-description: RHTAP OpenShift Operator Subscriptions
+description: RHTAP OpenShift Operator Hub Subscriptions
 type: application
-version: 0.0.1
+version: 0.0.2

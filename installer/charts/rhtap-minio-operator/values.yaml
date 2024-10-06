@@ -1,0 +1,63 @@
+---
+minIOOperator:
+  enabled: true
+
+# Values for the MinIO Operator Helm Chart, named "operator" in the dependencies
+# section.
+operator:
+  # MinIO operator instance configuration.
+  operator:
+    replicaCount: 1
+    additionalLabels:
+      app: minio-operator
+    env:
+      - name: MINIO_OPERATOR_DEPLOYMENT_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.labels['app.kubernetes.io/name']
+      - name: MINIO_CONSOLE_TLS_ENABLE
+        value: "off"
+      - name: MINIO_OPERATOR_RUNTIME
+        value: "OpenShift"
+      - name: OPERATOR_STS_ENABLED
+        value: "off"
+    securityContext: &operatorSecurityContext
+      runAsUser: 1000
+      runAsGroup: 1000
+      runAsNonRoot: true
+      fsGroup: 1000
+    containerSecurityContext: &operatorContainerSecurityContext
+      runAsUser: 1000
+      runAsGroup: 1000
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      seccompProfile:
+        type: RuntimeDefault
+    resources:
+      requests:
+        cpu: 50m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  # MinIO console configuration.
+  console:
+    enabled: false
+    replicaCount: 1
+    additionalLabels:
+      app: minio-console
+    env:
+      - name: MINIO_OPERATOR_RUNTIME
+        value: "OpenShift"
+    securityContext: *operatorSecurityContext
+    containerSecurityContext: *operatorContainerSecurityContext
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi

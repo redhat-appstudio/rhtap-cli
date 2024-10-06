@@ -45,32 +45,6 @@ spec:
       securityContext:
         allowPrivilegeEscalation: false
 {{- end }}
-{{- if .Values.backingServices.argoCD.enabled }}
-  {{- $argoCD := .Values.backingServices.argoCD }}
-    #
-    # Test the ArgoCD rollout status.
-    #
-    - name: {{ printf "argocd-%s" $argoCD.name }}
-      image: quay.io/codeready-toolchain/oc-client-base:latest
-      env:
-        - name: NAMESPACE
-          value: {{ $argoCD.namespace }}
-        - name: RESOURCE_TYPE
-          value: "statefulset"
-      command:
-        - /scripts/test-rollout-status.sh
-      args:
-        - {{ printf "app.kubernetes.io/managed-by=%s" $argoCD.name | quote }}
-      volumeMounts:
-        - name: scripts
-          mountPath: /scripts
-      securityContext:
-        allowPrivilegeEscalation: false
-    #
-    # Tests the ArgoCD instance login.
-    #
-  {{- include "backingServices.argoCD.testArgoCDLogin" . | nindent 4 }}
-{{- end }}
 {{- if .Values.backingServices.acs.enabled -}}
   {{- $acs := .Values.backingServices.acs }}
     #

@@ -6,20 +6,15 @@ set -Eeu -o pipefail
 get_binaries() {
     if kubectl >/dev/null 2>&1; then
         KUBECTL="kubectl"
-    else
-        ARCH="$(uname -p | sed -e 's:x86_64:amd64:' -e 's:aarch:arm:')"
-        RHEL_VERSION="rhel9"
-        OCP_VERSION="4.15.31"
-        TARBALL="openshift-client-linux-${ARCH}-${RHEL_VERSION}-${OCP_VERSION}.tar.gz"
-        ROOT_URL="https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${OCP_VERSION}"
-        echo "Downloading '${ROOT_URL}/${TARBALL}'"
-        curl --proto "https" -L -s "${ROOT_URL}/${TARBALL}" -o "${TARBALL}"
-        curl --proto "https" -L -s "${ROOT_URL}/sha256sum.txt" -o sha256sum.txt.tmp
-        grep "${TARBALL}" sha256sum.txt.tmp > sha256sum.txt
-        sha256sum -c sha256sum.txt
-        tar xzf "${TARBALL}"
-        KUBECTL="$PWD/kubectl"
+        return
     fi
+    if oc >/dev/null 2>&1; then
+        KUBECTL="oc"
+        return
+    fi
+
+    echo "[ERROR] 'kubectl' or 'oc' not found" >&2
+    exit 1
 }
 
 app_namespaces() {

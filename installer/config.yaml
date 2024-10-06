@@ -38,13 +38,22 @@ rhtapCLI:
     - chart: charts/rhtap-subscriptions
       namespace: *installerNamespace
       enabled: true
+    - chart: charts/rhtap-minio-operator
+      namespace: minio-operator
+      enabled: true
     - chart: charts/rhtap-infrastructure
+      namespace: *installerNamespace
+      enabled: true
+    - chart: charts/rhtap-integrations
       namespace: *installerNamespace
       enabled: true
     - chart: charts/rhtap-backing-services
       namespace: *installerNamespace
       enabled: true
-    - chart: charts/rhtap-integrations
+    - chart: charts/rhtap-gitops
+      namespace: *installerNamespace
+      enabled: true
+    - chart: charts/rhtap-pipelines
       namespace: *installerNamespace
       enabled: true
     - chart: charts/rhtap-tas

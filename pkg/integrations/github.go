@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/url"
 
 	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/githubapp"
@@ -168,6 +169,10 @@ func (g *GithubIntegration) store(
 	ctx context.Context,
 	appConfig *github.AppConfig,
 ) error {
+	u, err := url.Parse(appConfig.GetHTMLURL())
+	if err != nil {
+		return err
+	}
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: g.secretName().Namespace,
@@ -180,6 +185,7 @@ func (g *GithubIntegration) store(
 			"createdAt":     []byte(appConfig.CreatedAt.String()),
 			"externalURL":   []byte(appConfig.GetExternalURL()),
 			"htmlURL":       []byte(appConfig.GetHTMLURL()),
+			"host":          []byte(u.Hostname()),
 			"id":            []byte(github.Stringify(appConfig.GetID())),
 			"name":          []byte(appConfig.GetName()),
 			"nodeID":        []byte(appConfig.GetNodeID()),
@@ -240,6 +246,7 @@ func (g *GithubIntegration) generateAppManifest(name string) scrape.AppManifest 
 			PullRequests:     github.String("write"),
 			// Permissions for Red Hat Developer Hub (RHDH).
 			Administration: github.String("write"),
+			Workflows:      github.String("write"),
 		},
 	}
 }

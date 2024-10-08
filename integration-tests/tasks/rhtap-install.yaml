@@ -8,15 +8,24 @@ spec:
     - name: ocp-login-command
       type: string
       description: ""
-    - name: git-repo
+    - name: job-spec
       type: string
-      default: "rhtap-cli"
-    - name: git-url
-      type: string
-      default: "https://github.com/redhat-appstudio/rhtap-cli.git"
-    - name: git-revision
-      type: string
-      default: "main"
+      description: "The job specification containing details of the test execution."
+    - name: acs_install_enabled
+      description: 'Indicates if the ACS installation is enabled.'
+      default: 'true'
+    - name: quay_install_enabled
+      description: 'Indicates if the Quay installation is enabled.'
+      default: 'true'
+    - name: github_enabled
+      description: 'Indicates if the GitHub integration is enabled.'
+      default: 'true'
+    - name: gitlab_enabled
+      description: 'Indicates if the GitLab integration is enabled.'
+      default: 'true'
+    - name: jenkins_enabled
+      description: 'Indicates if the Jenkins integration is enabled.'
+      default: 'true'
   volumes:
     - name: rhtap-cli-volume
       secret:
@@ -24,11 +33,24 @@ spec:
   steps:
     - name: install
       image: quay.io/rhtap/rhtap-e2e:latest
+      env:
+        - name: JOB_SPEC
+          value: "$(params.job-spec)"
+        - name: acs_install_enabled
+          value: "$(params.acs_install_enabled)"
+        - name: quay_install_enabled
+          value: "$(params.quay_install_enabled)"
+        - name: github_enabled 
+          value: "$(params.github_enabled)"
+        - name: gitlab_enabled
+          value: "$(params.gitlab_enabled)"
+        - name: jenkins_enabled
+          value: "$(params.jenkins_enabled)"
       volumeMounts:
         - name: rhtap-cli-volume
           mountPath: /usr/local/rhtap-cli-install
       script: |
-        #!/bin/sh
+        #!/usr/bin/env bash
         set -o errexit
         set -o nounset
         set -o pipefail
@@ -39,15 +61,22 @@ spec:
         $(params.ocp-login-command) >/dev/null
         echo "[INFO]Console: $(kubectl get routes -n openshift-console console -o jsonpath='{.spec.port.targetPort}://{.spec.host}')"
 
+        GIT_REPO="${GIT_REPO:-$(echo "$JOB_SPEC" | jq -r '.git.git_repo')}"
         # Clone the rhtap-cli repository
         cd "$(mktemp -d)"
-        echo -e "[INFO]Cloning repo name '$(params.git-repo)' with revision '$(params.git-revision)' from url '$(params.git-url)'"
-        git clone "$(params.git-url)" .
-        git checkout "$(params.git-revision)"
+
+        if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
+            GIT_URL="${GIT_URL:-$(echo "$JOB_SPEC" | jq -r '.git.source_repo_url')}"
+            GIT_REVISION="${GIT_REVISION:-$(echo "$JOB_SPEC" | jq -r '.git.commit_sha')}"
+
+            echo -e "INFO: Cloning repository '$GIT_REPO' with revision '$GIT_REVISION' from URL '$GIT_URL'"
+            git clone "${GIT_URL}" .
+            git checkout "${GIT_REVISION}"
+        else
+            echo -e "INFO: Cloning repository 'redhat-appstudio/rhtap-cli' with revision 'main'"
+            git clone https://github.com/redhat-appstudio/rhtap-cli.git .
+        fi
 
         # Deploy rhtap
-        export GITHUB__APP__ID GITHUB__APP__CLIENT__ID GITHUB__APP__CLIENT__SECRET \
-        GITHUB__APP__PRIVATE_KEY GITOPS__GIT_TOKEN GITHUB \
-        GITHUB__APP__WEBHOOK__SECRET GITLAB__TOKEN JENKINS_API_TOKEN JENKINS_URL JENKINS_USERNAME
         ./integration-tests/scripts/minio.sh
         ./integration-tests/scripts/install.sh

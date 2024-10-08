@@ -89,6 +89,9 @@ gitlab_integration() {
 
 quay_integration() {
   if [[ "${quay_install_enabled}" == "false" ]]; then
+    # disable Quay installation
+    yq e '.rhtapCLI.features.redHatQuay.enabled = false' -i "${config_file}"
+
     echo "[INFO] Configure quay.io integration into RHTAP"
     ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" quay --url="https://quay.io" --dockerconfigjson="${QUAY__DOCKERCONFIGJSON}" --token="${QUAY__API_TOKEN}"
   fi
@@ -97,6 +100,9 @@ quay_integration() {
 
 acs_integration() {
   if [[ "${acs_install_enabled}" == "false" ]]; then
+    # disable ACS installation
+    yq e '.rhtapCLI.features.redHatAdvancedClusterSecurity.enabled = false' -i "${config_file}"
+
     echo "[INFO] Configure an existing intance of ACS integration into RHTAP"
     ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" acs --endpoint="${ACS__CENTRAL_ENDPOINT}" --token="${ACS__API_TOKEN}"
   fi

@@ -2,7 +2,7 @@
 # Build
 #
 
-FROM registry.access.redhat.com/ubi9/go-toolset:latest AS builder
+FROM docker.io/library/golang:1.22 AS builder
 
 USER root
 
@@ -18,6 +18,23 @@ COPY go.mod go.sum Makefile ./
 
 RUN make GOFLAGS='-buildvcs=false'
 
+# Copy the tools/kubectl mod file for better layer caching when building locally
+COPY tools/kubectl/ ./tools/kubectl/
+
+RUN go install \
+    -modfile tools/kubectl/go.mod \
+    -trimpath \
+    --mod=readonly \
+    k8s.io/kubernetes/cmd/kubectl
+
+COPY "$(go env GOPATH)/bin/kubectl" /usr/bin/
+
+RUN kubectl version
+RUN ls -larth /build
+
+RUN cd tools
+
+RUN ls -larth "$(go env GOPATH)/bin"
 #
 # Run
 #

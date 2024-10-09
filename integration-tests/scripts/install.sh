@@ -147,9 +147,6 @@ install_rhtap() {
   callback_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')/api/auth/github/handler/frame
   webhook_url=https://$(kubectl -n openshift-pipelines get route pipelines-as-code-controller -o 'jsonpath={.spec.host}')
 
-  quay_host=$(kubectl -n rhtap-quay get route rhtap-quay-quay -o  'jsonpath={.spec.host}')
-  quay_username=$(kubectl -n rhtap-quay get secret rhtap-quay-super-user -o go-template='{{index .data "username" | base64decode}}')
-  quay_password=$(kubectl -n rhtap-quay get secret rhtap-quay-super-user -o go-template='{{index .data "password" | base64decode}}')
   echo "[INFO]homepage_url=$homepage_url"
   echo "[INFO]callback_url=$callback_url"
   echo "[INFO]webhook_url=$webhook_url"

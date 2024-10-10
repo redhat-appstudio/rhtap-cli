@@ -21,7 +21,6 @@ type IntegrationNexus struct {
 
 	nexusIntegration *integrations.NexusIntegration // nexus integration
 
-	apiToken         string // web API token
 	dockerconfigjson string // credentials to push/pull from the registry
 }
 
@@ -36,7 +35,7 @@ for RHDH.
 
 
 The given dockerconfig must include the repository path.
-The given API token (--token) must have push/pull permissions on the target repository.
+And the given user must have push/pull permissions on the target repository.
 `
 
 // Cmd exposes the cobra instance.

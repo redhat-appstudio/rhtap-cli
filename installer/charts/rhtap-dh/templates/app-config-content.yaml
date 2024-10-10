@@ -11,8 +11,6 @@ app:
 {{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
 {{- $quaySecretData := ($quaySecretObj.data | default dict) }}
 {{- $nexusSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
-{{- $nexusSecretData := ($nexusSecretObj.data | default dict) }}
-
 
 {{- if $argocdSecretData }}
 argocd:
@@ -99,17 +97,6 @@ proxy:
       {{- end }}
       changeOrigin: true
       # Change to "false" in case of using self hosted quay instance with a self-signed certificate
-      secure: true
-  {{- end }}
-  {{- if $nexusSecretObj }}
-    '/nexus/api':
-      target: ${NEXUS__URL}
-      headers:
-        X-Requested-With: 'XMLHttpRequest'
-      {{- if $nexusSecretData.token }}
-        Authorization: 'Bearer ${NEXUS__TOKEN}'
-      {{- end }}
-      changeOrigin: true
       secure: true
   {{- end }}
 {{- if $quaySecretObj }}

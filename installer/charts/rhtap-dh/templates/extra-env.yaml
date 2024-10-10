@@ -66,6 +66,5 @@ data:
 {{- $nexusSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
 {{- $nexusSecretData := ($nexusSecretObj.data | default dict) }}
 {{- if $nexusSecretData }}
-    NEXUS__TOKEN: {{ $nexusSecretData.token }}
     NEXUS__URL: {{ $nexusSecretData.url }}
 {{- end }}

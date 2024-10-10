@@ -25,7 +25,6 @@ type NexusIntegration struct {
 	force bool // overwrite the existing secret
 
 	dockerconfigjson string // dockerconfig credentials
-	token            string // API token credentials
 	url              string // nexus URL
 }
 
@@ -36,8 +35,6 @@ func (n *NexusIntegration) PersistentFlags(p *pflag.FlagSet) {
 
 	p.StringVar(&n.dockerconfigjson, "dockerconfigjson", n.dockerconfigjson,
 		"Nexus dockerconfigjson, e.g. '{ \"auths\": { \"****\": { \"auth\": \"****\", \"email\": \"\" }}}'")
-	p.StringVar(&n.token, "token", n.token,
-		"Nexus API token")
 	p.StringVar(&n.url, "url", n.url,
 		"Nexus URL")
 }
@@ -48,7 +45,6 @@ func (n *NexusIntegration) log() *slog.Logger {
 		"url", n.url,
 		"force", n.force,
 		"dockerconfigjson-len", len(n.dockerconfigjson),
-		"token-len", len(n.token),
 	)
 }
 
@@ -56,9 +52,6 @@ func (n *NexusIntegration) log() *slog.Logger {
 func (n *NexusIntegration) Validate() error {
 	if n.dockerconfigjson == "" {
 		return fmt.Errorf("dockerconfigjson is required")
-	}
-	if n.token == "" {
-		return fmt.Errorf("token is required")
 	}
 	if n.url == "" {
 		return fmt.Errorf("url is required")
@@ -132,7 +125,6 @@ func (n *NexusIntegration) store(
 		Type: corev1.SecretTypeDockerConfigJson,
 		Data: map[string][]byte{
 			".dockerconfigjson": []byte(n.dockerconfigjson),
-			"token":             []byte(n.token),
 			"url":               []byte(n.url),
 		},
 	}
@@ -176,7 +168,6 @@ func NewNexusIntegration(
 
 		force:            false,
 		dockerconfigjson: "",
-		token:            "",
 		url:              "",
 	}
 }

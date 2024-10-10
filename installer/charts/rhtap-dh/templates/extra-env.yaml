@@ -59,7 +59,12 @@ data:
 {{- end }}
 {{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
 {{- $quaySecretData := ($quaySecretObj.data | default dict) }}
-{{- if $quaySecretData.token }}
+{{- if $quaySecretData }}
     QUAY__API_TOKEN: {{ $quaySecretData.token }}
-{{- end }}
     QUAY__URL: {{ $quaySecretData.url }}
+{{- end }}
+{{- $nexusSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
+{{- $nexusSecretData := ($nexusSecretObj.data | default dict) }}
+{{- if $nexusSecretData }}
+    NEXUS__URL: {{ $nexusSecretData.url }}
+{{- end }}

@@ -6,9 +6,10 @@
 {{- $gitops := required "GitOps settings" .Installer.Features.openShiftGitOps -}}
 {{- $pipelines := required "Pipelines settings" .Installer.Features.openShiftPipelines -}}
 {{- $quay := required "Quay settings" .Installer.Features.redHatQuay -}}
+{{- $quayEnabled := not (lookup "v1" "Secret" .Installer.Namespace "rhtap-nexus-integration") -}}
 {{- $rhdh := required "RHDH settings" .Installer.Features.redHatDeveloperHub -}}
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
-{{- $minIOOperatorEnabled := or $tpa.Enabled $quay.Enabled -}}
+{{- $minIOOperatorEnabled := or $tpa.Enabled $quayEnabled -}}
 ---
 debug:
   ci: false
@@ -27,7 +28,7 @@ openshift:
     - rhacs-operator
     - {{ $acs.Namespace }}
 {{- end }}
-{{- if $quay.Enabled }}
+{{- if $quayEnabled }}
     - {{ $quay.Namespace }}
 {{- end }}
 {{- if $tas.Enabled }}
@@ -72,7 +73,7 @@ subscriptions:
   redHatDeveloperHub:
     enabled: {{ $rhdh.Enabled }}
   redHatQuay:
-    enabled: {{ $quay.Enabled }}
+    enabled: {{ $quayEnabled }}
 
 #
 # rhtap-minio-operator
@@ -111,7 +112,7 @@ infrastructure:
               name: {{ $tpaKafkaSecretName }}
               key: password
     quay:
-      enabled: {{ $quay.Enabled }}
+      enabled: {{ $quayEnabled }}
       namespace: {{ $quay.Namespace }}
       ingress:
         enabled: true
@@ -182,7 +183,7 @@ backingServices:
     integrationSecret:
       namespace: {{ .Installer.Namespace }}
   quay:
-    enabled: {{ $quay.Enabled }}
+    enabled: {{ $quayEnabled }}
     namespace: {{ $quay.Namespace }}
     ingressDomain: {{ $ingressDomain }}
     organization:

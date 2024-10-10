@@ -31,34 +31,19 @@ patch_serviceaccount() {
     echo -n "."
 
     # Check for quay-auth and nexus-auth secrets and patch if present
-    QUAY_SECRET=$("$KUBECTL" get secret quay-auth --namespace "$NAMESPACE" --ignore-not-found)
-    NEXUS_SECRET=$("$KUBECTL" get secret nexus-auth --namespace "$NAMESPACE" --ignore-not-found)
-
-    SECRET_NAME=""
-    if [ -n "$QUAY_SECRET" ]; then
-        SECRET_NAME="  - name: quay-auth"
-    fi
-
-    if [ -n "$NEXUS_SECRET" ]; then
-        if [ -n "$SECRET_NAME" ]; then
-            SECRET_NAME="$SECRET_NAME
-  - name: nexus-auth"
-        else
-            SECRET_NAME="  - name: nexus-auth"
-        fi
-    fi
-
-    if [ -n "$SECRET_NAME" ]; then
-        "$KUBECTL" patch serviceaccounts --namespace "$NAMESPACE" "$SA" --patch "
+    for SECRET_NAME in nexus-auth quay-auth; do
+        SECRET=$("$KUBECTL" get secret --namespace "$NAMESPACE" --ignore-not-found)
+        if [ -n "$SECRET" ]; then
+            "$KUBECTL" patch serviceaccounts --namespace "$NAMESPACE" "$SA" --patch "
 secrets:
-$SECRET_NAME
+    - name: $SECRET_NAME
 imagePullSecrets:
-$SECRET_NAME
+    - name: $SECRET_NAME
+imagePullSecrets:
 " >/dev/null
+        fi
         echo "OK"
-    else
-        echo "No quay-auth or nexus-auth secrets found, skipping patch."
-    fi
+    done
 }
 
 app_namespaces() {

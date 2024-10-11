@@ -257,6 +257,9 @@ spec:
             value: main
           - name: pathInRepo
             value: common/tasks/sprayproxy/sprayproxy-deprovision/sprayproxy-unregister-server.yaml
+      params:
+        - name: ocp-login-command
+          value: "$(tasks.provision-rosa.results.ocp-login-command)"
     - name: pull-request-status-message
       when:
         - input: "$(tasks.test-metadata.results.test-event-type)"

@@ -252,9 +252,9 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+            value: https://github.com/xinredhat/konflux-qe-definitions.git
           - name: revision
-            value: main
+            value: fix_unregister-pac-server
           - name: pathInRepo
             value: common/tasks/sprayproxy/sprayproxy-deprovision/sprayproxy-unregister-server.yaml
       params:

@@ -181,28 +181,6 @@ backingServices:
     ingressDomain: {{ $ingressDomain }}
     integrationSecret:
       namespace: {{ .Installer.Namespace }}
-  quay:
-    enabled: {{ $quay.Enabled }}
-    namespace: {{ $quay.Namespace }}
-    ingressDomain: {{ $ingressDomain }}
-    organization:
-      email: {{ printf "rhtap@%s" $ingressDomain }}
-    secret:
-      namespace: {{ .Installer.Namespace }}
-      name: rhtap-quay-integration
-    config:
-      radosGWStorage:
-        enabled: true
-        hostname: {{ $quayMinIOHost }}
-        port: 443
-        isSecure: true
-        credentials:
-          secretName: {{ $quayMinIOSecretName }}
-      superUser:
-        email: {{ printf "admin@%s" $ingressDomain }}
-    replicas:
-      quay: 1
-      clair: 1
 
 #
 # rhtap-gitops
@@ -216,9 +194,35 @@ argoCD:
   ingressDomain: {{ $ingressDomain }}
 
 #
-# rhtap-gitops
+# rhtap-pipelines
 #
 pipelines: {}
+
+#
+# rhtap-quay
+#
+quay:
+  enabled: {{ $quay.Enabled }}
+  namespace: {{ $quay.Namespace }}
+  ingressDomain: {{ $ingressDomain }}
+  organization:
+    email: {{ printf "rhtap@%s" $ingressDomain }}
+  secret:
+    namespace: {{ .Installer.Namespace }}
+    name: rhtap-quay-integration
+  config:
+    radosGWStorage:
+      enabled: true
+      hostname: {{ $quayMinIOHost }}
+      port: 443
+      isSecure: true
+      credentials:
+        secretName: {{ $quayMinIOSecretName }}
+    superUser:
+      email: {{ printf "admin@%s" $ingressDomain }}
+  replicas:
+    quay: 1
+    clair: 1
 
 #
 # rhtap-integrations

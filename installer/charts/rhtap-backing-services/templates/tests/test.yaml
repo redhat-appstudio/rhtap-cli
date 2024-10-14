@@ -94,28 +94,6 @@ spec:
       securityContext:
         allowPrivilegeEscalation: false
 {{- end }}
-{{- if .Values.backingServices.quay.enabled -}}
-  {{- $quay := .Values.backingServices.quay }}
-    #
-    # Test the Quay Registry components rollout status.
-    #
-    - name: {{ printf "quay-registry-%s" $quay.name }}
-      image: quay.io/codeready-toolchain/oc-client-base:latest
-      env:
-        - name: NAMESPACE
-          value: {{ $quay.namespace }}
-        - name: RESOURCE_TYPE
-          value: "deployment"
-      command:
-        - /scripts/test-rollout-status.sh
-      args:
-        - {{ printf "quay-operator/quayregistry=%s" $quay.name | quote }}
-      volumeMounts:
-        - name: scripts
-          mountPath: /scripts
-      securityContext:
-        allowPrivilegeEscalation: false
-{{- end }}
   volumes:
     - name: scripts
       emptyDir: {}

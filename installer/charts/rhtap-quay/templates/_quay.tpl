@@ -3,8 +3,8 @@
   Returns the name of the Quay Registry instance's config secret.
 
 */}}
-{{- define "backingServices.quay.configSecretName" -}}
-  {{- printf "%s-config" .Values.backingServices.quay.name }}
+{{- define "quay.configSecretName" -}}
+  {{- printf "%s-config" .Values.quay.name }}
 {{- end -}}
 
 {{/*
@@ -12,8 +12,8 @@
   Returns the name of the Quay Registry instance's super user secret.
 
 */}}
-{{- define "backingServices.quay.superUserSecretName" -}}
-  {{- printf "%s-super-user" .Values.backingServices.quay.name }}
+{{- define "quay.superUserSecretName" -}}
+  {{- printf "%s-super-user" .Values.quay.name }}
 {{- end -}}
 
 {{/*
@@ -21,11 +21,11 @@
   Returns the FQDN for the Quay Registry instance deployed.
 
 */}}
-{{- define "backingServices.quay.registryHostname" -}}
+{{- define "quay.registryHostname" -}}
   {{- printf "%s-quay-%s.%s"
-        .Values.backingServices.quay.name
-        .Values.backingServices.quay.namespace
-        .Values.backingServices.quay.ingressDomain
+        .Values.quay.name
+        .Values.quay.namespace
+        .Values.quay.ingressDomain
   -}}
 {{- end -}}
 
@@ -35,8 +35,8 @@
   credentials secret to populate the S3 storage configuration.
 
 */}}
-{{- define "backingServices.quay.s3storage.configYAML" -}}
-  {{- $quay := .Values.backingServices.quay -}}
+{{- define "quay.s3storage.configYAML" -}}
+  {{- $quay := .Values.quay -}}
   {{- $cfg := $quay.config.radosGWStorage -}}
 # Secret '{{ printf "%s/%s" $quay.namespace $cfg.credentials.secretName }}'
   {{- $secretObj := (lookup "v1" "Secret" $quay.namespace $cfg.credentials.secretName) | required ".quay.config.s3Storage.credentials.secretName must exist!" }}

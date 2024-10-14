@@ -1,0 +1,44 @@
+{{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: hook-succeeded
+  labels:
+    {{- include "rhtap-quay.labels" . | nindent 4 }}
+  name: {{ $name }} 
+spec:
+  restartPolicy: Never
+  serviceAccountName: {{ .Release.Name }}
+  initContainers:
+    #
+    # Copying the scripts that will be used on the subsequent containers, the
+    # scripts are shared via the "/scripts" volume.
+    #
+{{- include "quay.copyScripts" . | nindent 4 }}
+  containers:
+  {{- $quay := .Values.quay }}
+    #
+    # Test the Quay Registry components rollout status.
+    #
+    - name: {{ printf "quay-registry-%s" $quay.name }}
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      env:
+        - name: NAMESPACE
+          value: {{ $quay.namespace }}
+        - name: RESOURCE_TYPE
+          value: "deployment"
+      command:
+        - /scripts/test-rollout-status.sh
+      args:
+        - {{ printf "quay-operator/quayregistry=%s" $quay.name | quote }}
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+  volumes:
+    - name: scripts
+      emptyDir: {}

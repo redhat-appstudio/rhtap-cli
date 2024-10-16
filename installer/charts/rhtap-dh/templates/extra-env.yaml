@@ -52,10 +52,10 @@ data:
     JENKINS__USERNAME: {{ $jenkinsSecretData.username }}
     JENKINS__TOKEN: {{ $jenkinsSecretData.token }}
 {{- end }}
-{{- range $index, $secret := (lookup "v1" "Secret" .Release.Namespace "").items }}
-    {{- if regexMatch "rhdh-kubernetes-plugin-token-.*" $secret.metadata.name }}
-    K8S_SERVICEACCOUNT_TOKEN: {{ $secret.data.token }}
-    {{- end }}
+{{- $k8sSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-k8s-integration") }}
+{{- $k8sSecretData := ($k8sSecretObj.data | default dict) }}
+{{- if $k8sSecretData }}
+    K8S_SERVICEACCOUNT_TOKEN: {{ $k8sSecretData.token }}
 {{- end }}
 {{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
 {{- $quaySecretData := ($quaySecretObj.data | default dict) }}

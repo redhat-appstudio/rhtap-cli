@@ -206,9 +206,6 @@ spec:
         - input: "$(tasks.test-metadata.results.test-event-type)"
           operator: in
           values: ["pull_request"]
-        - input: "$(tasks.rhtap-e2e-tests.status)"
-          operator: in
-          values: ["Succeeded", "None"]
       taskRef:
         resolver: git
         params:

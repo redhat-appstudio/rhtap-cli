@@ -1,6 +1,5 @@
-{{- if .Values.backingServices.quay.enabled -}}
-  {{- $quay := .Values.backingServices.quay -}}
-  {{- $hpaEnabled := $quay.horizontalPodAutoScaler | default false -}}
+{{- $quay := .Values.quay -}}
+{{- $hpaEnabled := $quay.horizontalPodAutoScaler | default false -}}
 ---
 apiVersion: quay.redhat.com/v1
 kind: QuayRegistry
@@ -10,7 +9,7 @@ metadata:
   namespace: {{ $quay.namespace }}
   name: {{ $quay.name }} 
 spec:
-  configBundleSecret: {{ include "backingServices.quay.configSecretName" . }} 
+  configBundleSecret: {{ include "quay.configSecretName" . }} 
   components:
     - kind: quay
       managed: true
@@ -63,4 +62,3 @@ spec:
     # Disabled by default, since it uses MinIO object storage.
     - kind: objectstorage
       managed: false
-{{- end }}

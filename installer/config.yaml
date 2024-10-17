@@ -22,8 +22,8 @@ rhtapCLI:
       enabled: *rhdhEnabled
       namespace: rhtap-acs
     redHatQuay:
-      enabled: true
-      namespace: rhtap-quay
+      enabled: &quayEnabled true
+      namespace: &quayNamespace rhtap-quay
     openShiftGitOps:
       enabled: *rhdhEnabled
       namespace: *installerNamespace
@@ -50,6 +50,15 @@ rhtapCLI:
     - chart: charts/rhtap-backing-services
       namespace: *installerNamespace
       enabled: true
+    - chart: charts/rhtap-gitops
+      namespace: *installerNamespace
+      enabled: *rhdhEnabled
+    - chart: charts/rhtap-pipelines
+      namespace: *installerNamespace
+      enabled: *rhdhEnabled
+    - chart: charts/rhtap-quay
+      namespace: *quayNamespace
+      enabled: *quayEnabled
     - chart: charts/rhtap-tas
       namespace: *trustedArtifactSignerNamespace
       enabled: *tasEnabled

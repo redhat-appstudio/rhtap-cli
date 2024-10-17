@@ -1,0 +1,77 @@
+---
+quay:
+  # Toggles the Quay image registry service.
+  enabled: false
+  # Target namespace for the Quay registry.
+  namespace: __OVERWRITE_ME__
+  # Quay registry name.
+  name: rhtap-quay
+  # Quay's registry ingress domain.
+  ingressDomain: __OVERWRITE_ME__
+  # Quay's organization configuration.
+  organization:
+    # Organization's name.
+    name: rhtap
+    # Organization's email.
+    email: __OVERWRITE_ME__
+  # Quay admin "docker-registry" secret namespace and name.
+  secret:
+    namespace: __OVERWRITE_ME__
+    name: __OVERWRITE_ME__
+  # Quay configuration bundle.
+  config:
+    # To support MinIO S3 instance, the RADOS Gateway (RGW) storage is used
+    # (https://github.com/quay/quay-operator/issues/380).
+    radosGWStorage:
+      # S3 endpoint hostname.
+      hostname: __OVERWRITE_ME__
+      # S3 endpoint port.
+      port: 80
+      # Wether the S3 endpoint uses TLS.
+      isSecure: false
+      # S3 bucket name.
+      bucketName: quay
+      # MinIO credentials, must be stored in a secret
+      credentials:
+        # Secret name where the MinIO credentials are stored.
+        secretName: __OVERWRITE_ME__
+        # Access key name for the MinIO credentials.
+        accessKey: username
+        # Secret key name for the MinIO credentials.
+        secretKey: password
+      # Internal S3 storage path.
+      storagePath: "/datastorage/registry"
+    # Quay's instance adminstration user.
+    superUser:
+      # Admin (super-user) username.
+      name: admin
+      # Admin's email.
+      email: __OVERWRITE_ME__
+  # Enable managed HPA for Quay components, when enabled the
+  # `components.*.replicas` won't be used.
+  horizontalPodAutoScaler: false
+  # Override parts of the Quay managed components configuration.
+  componentOverrides:
+    # Quay registry application.
+    quay:
+      replicas: 2
+      resources: &quayResources
+        limits:
+          memory: 4480Mi
+        requests:
+          memory: 256Mi
+    # Quay registry application database.
+    postgres:
+      resources: &postgresResources
+        limits:
+          memory: 768Mi
+        requests:
+          memory: 128Mi
+    # Clair vulnerability scanner.
+    clair:
+      replicas: 1 
+      resources: *quayResources
+    # Clair vulnerability scanner local database.
+    clairpostgres:
+      resources: *postgresResources
+      

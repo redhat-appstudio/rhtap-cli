@@ -1,5 +1,5 @@
-{{- if .Values.backingServices.argoCD.enabled }}
-  {{- $argoCD := .Values.backingServices.argoCD -}}
+{{- if .Values.argoCD.enabled }}
+  {{- $argoCD := .Values.argoCD -}}
 ---
 apiVersion: argoproj.io/v1beta1
 kind: ArgoCD
@@ -7,10 +7,10 @@ metadata:
   labels:
     app: argocd
   namespace: {{
-    required ".backingServices.argoCD.namespace is required" $argoCD.namespace
+    required "$argoCD.namespace is required" $argoCD.namespace
   }}
   name: {{
-    required ".backingServices.argoCD.name is required" $argoCD.name
+    required "$argoCD.name is required" $argoCD.name
   }} 
 spec:
   #

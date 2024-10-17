@@ -38,6 +38,21 @@ spec:
     - name: oci-container-repo
       default: 'quay.io/konflux-test-storage/rhtap-team/rhtap-cli'
       description: The ORAS container used to store all test artifacts.
+    - name: acs_install_enabled
+      description: 'Indicates if the ACS installation is enabled.'
+      default: 'true'
+    - name: quay_install_enabled
+      description: 'Indicates if the Quay installation is enabled.'
+      default: 'true'
+    - name: github_enabled
+      description: 'Indicates if the GitHub integration is enabled.'
+      default: 'true'
+    - name: gitlab_enabled
+      description: 'Indicates if the GitLab integration is enabled.'
+      default: 'true'
+    - name: jenkins_enabled
+      description: 'Indicates if the Jenkins integration is enabled.'
+      default: 'true'
   tasks:
     - name: rosa-hcp-metadata
       taskRef:
@@ -127,14 +142,22 @@ spec:
           - name: pathInRepo
             value: integration-tests/tasks/rhtap-install.yaml
       params:
+        - name: job-spec
+          value: $(tasks.test-metadata.results.job-spec)
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
-        - name: git-url
-          value: "$(tasks.test-metadata.results.git-url)"
-        - name: git-revision
-          value: "$(tasks.test-metadata.results.git-revision)"
         - name: image-url
           value: "$(tasks.test-metadata.results.container-image)"
+        - name: acs_install_enabled
+          value: "$(params.acs_install_enabled)"
+        - name: quay_install_enabled
+          value: "$(params.quay_install_enabled)"
+        - name: github_enabled
+          value: "$(params.github_enabled)"
+        - name: gitlab_enabled
+          value: "$(params.gitlab_enabled)"
+        - name: jenkins_enabled
+          value: "$(params.jenkins_enabled)"
     - name: sprayproxy-provision
       when:
         - input: "$(tasks.test-metadata.results.test-event-type)"
@@ -183,9 +206,6 @@ spec:
         - input: "$(tasks.test-metadata.results.test-event-type)"
           operator: in
           values: ["pull_request"]
-        - input: "$(tasks.rhtap-e2e-tests.status)"
-          operator: in
-          values: ["Succeeded", "None"]
       taskRef:
         resolver: git
         params:
@@ -234,6 +254,9 @@ spec:
             value: main
           - name: pathInRepo
             value: common/tasks/sprayproxy/sprayproxy-deprovision/sprayproxy-unregister-server.yaml
+      params:
+        - name: ocp-login-command
+          value: "$(tasks.provision-rosa.results.ocp-login-command)"
     - name: pull-request-status-message
       when:
         - input: "$(tasks.test-metadata.results.test-event-type)"

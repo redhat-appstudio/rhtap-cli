@@ -12,7 +12,7 @@ metadata:
   annotations:
     helm.sh/hook: post-install,post-upgrade
   labels:
-    {{- include "rhtap-backing-services.labels" . | nindent 4 }}
+    {{- include "rhtap-pipelines.labels" . | nindent 4 }}
   name: tekton-post-deploy
 spec:
   template:
@@ -36,11 +36,19 @@ spec:
               set -o pipefail
 
               cat <<EOF | kubectl apply -f -
-{{ include "backingServices.tektonconfig" . | indent 14 }}
+{{ include "pipelines.tektonconfig" . | indent 14 }}
               EOF
- 
+
               echo "Success"
           workingDir: /tmp
+          resources:
+            limits:
+              cpu: 250m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 256Mi
+              memory: 256Mi
           securityContext:
             runAsNonRoot: false
             allowPrivilegeEscalation: false

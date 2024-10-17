@@ -55,10 +55,37 @@ spec:
         set -o nounset
         set -o pipefail
 
+        retry_command() {
+          local command="$1"
+          local delay=${2:-5}  # Default delay between retries is 5 seconds
+          local max_retries=${3:-10}  # Default maximum number of retries is 10
+
+          local attempt=0
+
+          while [ $attempt -lt $max_retries ]; do
+            # Run the command
+            eval "$command"
+            local status=$?
+
+            # Check if the command succeeded
+            if [ $status -eq 0 ]; then
+              echo "Command succeeded."
+              return 0
+            else
+              echo "Command failed with status $status. Retrying in $delay seconds... (Attempt $((attempt + 1))/$max_retries)"
+              attempt=$((attempt + 1))
+              sleep $delay
+            fi
+          done
+
+          echo "Command failed after $max_retries attempts."
+          return 1
+        }
+
         # Login to OpenShift
         export KUBECONFIG=$(pwd)/kubeconfig
         echo "[INFO]Login: $(params.ocp-login-command)"
-        $(params.ocp-login-command) >/dev/null
+        retry_command "$(params.ocp-login-command) >/dev/null"
         echo "[INFO]Console: $(kubectl get routes -n openshift-console console -o jsonpath='{.spec.port.targetPort}://{.spec.host}')"
 
         GIT_REPO="${GIT_REPO:-$(echo "$JOB_SPEC" | jq -r '.git.git_repo')}"

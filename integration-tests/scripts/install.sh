@@ -16,26 +16,26 @@ export DEVELOPER_HUB__CATALOG__URL GITHUB__APP__ID GITHUB__APP__CLIENT__ID GITHU
   JENKINS_URL JENKINS_USERNAME QUAY__DOCKERCONFIGJSON QUAY__API_TOKEN ACS__CENTRAL_ENDPOINT ACS__API_TOKEN
 
 # Variables for RHTAP Sample Backstage Templates
-DEVELOPER_HUB__CATALOG__URL="https://github.com/redhat-appstudio/tssc-sample-templates/blob/main/all.yaml"
+DEVELOPER_HUB__CATALOG__URL="${DEVELOPER_HUB__CATALOG__URL:-"https://github.com/redhat-appstudio/tssc-sample-templates/blob/main/all.yaml"}" 
 # Variables for GitHub integration
-GITHUB__APP__ID=$(cat /usr/local/rhtap-cli-install/rhdh-github-app-id)
-GITHUB__APP__CLIENT__ID=$(cat /usr/local/rhtap-cli-install/rhdh-github-client-id)
-GITHUB__APP__CLIENT__SECRET=$(cat /usr/local/rhtap-cli-install/rhdh-github-client-secret)
-GITHUB__APP__PRIVATE_KEY=$(base64 -d < /usr/local/rhtap-cli-install/rhdh-github-private-key | sed 's/^/        /')
-GITOPS__GIT_TOKEN=$(cat /usr/local/rhtap-cli-install/github_token)
-GITHUB__APP__WEBHOOK__SECRET=$(cat /usr/local/rhtap-cli-install/rhdh-github-webhook-secret)
+GITHUB__APP__ID="${GITHUB__APP__ID:-$(cat /usr/local/rhtap-cli-install/rhdh-github-app-id)}"
+GITHUB__APP__CLIENT__ID="${GITHUB__APP__CLIENT__ID:-$(cat /usr/local/rhtap-cli-install/rhdh-github-client-id)}"
+GITHUB__APP__CLIENT__SECRET="${GITHUB__APP__CLIENT__SECRET:-$(cat /usr/local/rhtap-cli-install/rhdh-github-client-secret)}"
+GITHUB__APP__PRIVATE_KEY="${GITHUB__APP__PRIVATE_KEY:-$(base64 -d < /usr/local/rhtap-cli-install/rhdh-github-private-key | sed 's/^/        /')}"
+GITOPS__GIT_TOKEN="${GITOPS__GIT_TOKEN:-$(cat /usr/local/rhtap-cli-install/github_token)}"
+GITHUB__APP__WEBHOOK__SECRET="${GITHUB__APP__WEBHOOK__SECRET:-$(cat /usr/local/rhtap-cli-install/rhdh-github-webhook-secret)}"
 # Variables for Gitlab integration
-GITLAB__TOKEN=$(cat /usr/local/rhtap-cli-install/gitlab_token)
+GITLAB__TOKEN="${GITLAB__TOKEN:-$(cat /usr/local/rhtap-cli-install/gitlab_token)}"
 # Variables for Jenkins integration
-JENKINS_API_TOKEN=$(cat /usr/local/rhtap-cli-install/jenkins-api-token)
-JENKINS_URL=$(cat /usr/local/rhtap-cli-install/jenkins-url)
-JENKINS_USERNAME=$(cat /usr/local/rhtap-cli-install/jenkins-username)
+JENKINS_API_TOKEN="${JENKINS_API_TOKEN:-$(cat /usr/local/rhtap-cli-install/jenkins-api-token)}"
+JENKINS_URL="${JENKINS_URL:-$(cat /usr/local/rhtap-cli-install/jenkins-url)}"
+JENKINS_USERNAME="${JENKINS_USERNAME:-$(cat /usr/local/rhtap-cli-install/jenkins-username)}"
 ## Variables for quay.io integration
-QUAY__DOCKERCONFIGJSON=$(cat /usr/local/rhtap-cli-install/quay-dockerconfig-json)
-QUAY__API_TOKEN=$(cat /usr/local/rhtap-cli-install/quay-api-token)
+QUAY__DOCKERCONFIGJSON="${QUAY__DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/quay-dockerconfig-json)}"
+QUAY__API_TOKEN="${QUAY__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/quay-api-token)}"
 ## Variables for ACS integration
-ACS__CENTRAL_ENDPOINT=$(cat /usr/local/rhtap-cli-install/acs-central-endpoint)
-ACS__API_TOKEN=$(cat /usr/local/rhtap-cli-install/acs-api-token)
+ACS__CENTRAL_ENDPOINT="${ACS__CENTRAL_ENDPOINT:-$(cat /usr/local/rhtap-cli-install/acs-central-endpoint)}"
+ACS__API_TOKEN="${ACS__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/acs-api-token)}"
 
 tpl_file="installer/charts/values.yaml.tpl"
 config_file="installer/config.yaml"

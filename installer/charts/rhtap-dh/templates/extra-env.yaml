@@ -21,6 +21,12 @@ data:
     ARGOCD__URL: {{ print "https://" ($argocdSecretData.ARGOCD_HOSTNAME | b64dec) | b64enc }}
     ARGOCD__USER: {{ $argocdSecretData.ARGOCD_USER }}
 {{- end }}
+{{- $artifactorySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-artifactory-integration") }}
+{{- $artifactorySecretData := ($artifactorySecretObj.data | default dict) }}
+{{- if $artifactorySecretData }}
+    ARTIFACTORY__API_TOKEN: {{ $artifactorySecretData.token }}
+    ARTIFACTORY__URL: {{ $artifactorySecretData.url }}
+{{- end }}
     DEVELOPER_HUB__CATALOG__URL: {{
         required ".developerHub.catalogURL is required" .Values.developerHub.catalogURL | b64enc
     }}
@@ -56,12 +62,6 @@ data:
 {{- $k8sSecretData := ($k8sSecretObj.data | default dict) }}
 {{- if $k8sSecretData }}
     K8S_SERVICEACCOUNT_TOKEN: {{ $k8sSecretData.token }}
-{{- end }}
-{{- $artifactorySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-artifactory-integration") }}
-{{- $artifactorySecretData := ($artifactorySecretObj.data | default dict) }}
-{{- if $artifactorySecretData }}
-    ARTIFACTORY__API_TOKEN: {{ $artifactorySecretData.token }}
-    ARTIFACTORY__URL: {{ $artifactorySecretData.url }}
 {{- end }}
 {{- $nexusSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
 {{- $nexusSecretData := ($nexusSecretObj.data | default dict) }}

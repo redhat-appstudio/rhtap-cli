@@ -70,3 +70,9 @@ data:
 {{- if $nexusSecretData }}
     NEXUS__URL: {{ $nexusSecretData.url }}
 {{- end }}
+{{- $artifactorySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-artifactory-integration") }}
+{{- $artifactorySecretData := ($artifactorySecretObj.data | default dict) }}
+{{- if $artifactorySecretData }}
+    ARTIFACTORY__API_TOKEN: {{ $artifactorySecretData.token }}
+    ARTIFACTORY__URL: {{ $artifactorySecretData.url }}
+{{- end }}

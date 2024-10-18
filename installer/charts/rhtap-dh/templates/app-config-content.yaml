@@ -11,6 +11,8 @@ app:
 {{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
 {{- $quaySecretData := ($quaySecretObj.data | default dict) }}
 {{- $nexusSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
+{{- $artifactorySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-artifactory-integration") }}
+{{- $artifactorySecretData := ($artifactorySecretObj.data | default dict) }}
 
 {{- if $argocdSecretData }}
 argocd:
@@ -107,6 +109,16 @@ proxy:
       changeOrigin: true
       secure: true
   {{- end }}
+  {{- if $artifactorySecretObj }}
+    '/jfrog-artifactory/api':
+      target: ${ARTIFACTORY__URL}
+      headers:
+      {{- if $artifactorySecretData.token }}
+        Authorization: 'Bearer ${ARTIFACTORY__API_TOKEN}'
+      {{- end }}
+      # Change to "false" in case of using self hosted artifactory instance with a self-signed certificate
+      secure: true
+  {{- end }}
 {{- if $quaySecretObj }}
 quay:
   uiUrl: ${QUAY__URL}
@@ -114,6 +126,10 @@ quay:
 {{- if $nexusSecretObj }}
 nexus:
   uiUrl: ${NEXUS__URL}
+{{- end }}
+{{- if $artifactorySecretObj }}
+artifactory:
+  uiUrl: ${ARTIFACTORY__URL}
 {{- end }}
 techdocs:
   builder: 'local'

@@ -2,8 +2,16 @@
 app:
   title: Red Hat Developer Hub
   baseUrl: ${BACKEND_URL}
+# Lookup for all the required secrets
 {{- $argocdSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-argocd-integration") }}
 {{- $argocdSecretData := ($argocdSecretObj.data | default dict) }}
+{{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
+{{- $gitlabSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
+{{- $jenkinsSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
+{{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
+{{- $quaySecretData := ($quaySecretObj.data | default dict) }}
+{{- $nexusSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
+
 {{- if $argocdSecretData }}
 argocd:
   appLocatorMethods:
@@ -19,7 +27,6 @@ argocd:
 auth:
   environment: production
   providers:
-  {{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
   {{- if $ghSecretObj }}
     github:
       production:
@@ -52,7 +59,7 @@ catalog:
       - Location
       - Template
       - API
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
+{{- if $jenkinsSecretObj }}
 jenkins:
   instances:
     - name: default
@@ -61,7 +68,7 @@ jenkins:
       apiKey: ${JENKINS__TOKEN}
 {{- end }}
 integrations:
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
+{{- if $ghSecretObj }}
   github:
     - host: ${GITHUB__HOST}
       apps:
@@ -72,7 +79,7 @@ integrations:
           webhookSecret: ${GITHUB__APP__WEBHOOK__SECRET}
           privateKey: ${GITHUB__APP__PRIVATE_KEY}
 {{- end }}
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
+{{- if $gitlabSecretObj }}
   gitlab:
     - host: ${GITLAB__HOST}
       apiBaseUrl: https://${GITLAB__HOST}/api/v4
@@ -80,21 +87,34 @@ integrations:
 {{- end }}
 proxy:
   endpoints:
+  {{- if $quaySecretObj }}
     '/quay/api':
       target: ${QUAY__URL}
       headers:
         X-Requested-With: 'XMLHttpRequest'
-      {{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
-      {{- $quaySecretData := ($quaySecretObj.data | default dict) }}
       {{- if $quaySecretData.token }}
         Authorization: 'Bearer ${QUAY__API_TOKEN}'
       {{- end }}
       changeOrigin: true
       # Change to "false" in case of using self hosted quay instance with a self-signed certificate
       secure: true
+  {{- end }}
+  {{- if $nexusSecretObj }}
+    '/nexus/api':
+      target: ${NEXUS__URL}
+      headers:
+        X-Requested-With: 'XMLHttpRequest'
+      changeOrigin: true
+      secure: true
+  {{- end }}
+{{- if $quaySecretObj }}
 quay:
-  # The UI url for Quay, used to generate the link to Quay
   uiUrl: ${QUAY__URL}
+{{- end }}
+{{- if $nexusSecretObj }}
+nexus:
+  uiUrl: ${NEXUS__URL}
+{{- end }}
 techdocs:
   builder: 'local'
   generator:

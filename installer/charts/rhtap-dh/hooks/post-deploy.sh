@@ -30,7 +30,7 @@ patch_serviceaccount() {
     done
 
     # Check for quay-auth and nexus-auth secrets and patch if present
-    for SECRET_NAME in nexus-auth quay-auth; do
+    for SECRET_NAME in nexus-auth quay-auth artifactory-auth; do
         SECRET=$("$KUBECTL" get secret "$SECRET_NAME" --namespace "$NAMESPACE" --ignore-not-found)
         if [ -n "$SECRET" ]; then
             echo -n "."

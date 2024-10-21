@@ -32,6 +32,10 @@ data:
                 instances: []
     {{- end }}
       - disabled: false
+        package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-bitbucket-cloud-dynamic
+      - disabled: false
+        package: ./dynamic-plugins/dist/backstage-plugin-scaffolder-backend-module-bitbucket-cloud-dynamic
+      - disabled: false
         package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
       - disabled: false
         package: ./dynamic-plugins/dist/backstage-plugin-techdocs

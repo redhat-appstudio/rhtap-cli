@@ -24,6 +24,9 @@ data:
     DEVELOPER_HUB__CATALOG__URL: {{
         required ".developerHub.catalogURL is required" .Values.developerHub.catalogURL | b64enc
     }}
+{{- $bbSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-bitbucket-integration") }}
+{{- $bbSecretData := ($bbSecretObj.data | default dict) }}
+    BITBUCKET_WORKSPACE: {{ get $bbSecretData "workspace" | default ("#unset" | b64enc) }}
 {{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
 {{- $ghSecretData := ($ghSecretObj.data | default dict) }}
 {{- if $ghSecretData }}

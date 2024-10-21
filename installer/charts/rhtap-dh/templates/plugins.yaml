@@ -100,3 +100,5 @@ data:
                     mountPoint: entity.page.ci/cards
       - disabled: false
         package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-topology
+      - disabled: false
+        package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-nexus-repository-manager

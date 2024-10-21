@@ -102,7 +102,7 @@ proxy:
       secure: true
   {{- end }}
   {{- if $nexusSecretObj }}
-    '/nexus/api':
+    '/nexus-repository-manager':
       target: ${NEXUS__URL}
       headers:
         X-Requested-With: 'XMLHttpRequest'

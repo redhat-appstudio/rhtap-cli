@@ -80,8 +80,18 @@ data:
                 type: config
             serviceLocatorMethod:
               type: multiTenant
+    {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-artifactory-integration") }}
+      - disabled: false
+        package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-jfrog-artifactory
+    {{- end }}
+    {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
+      - disabled: false
+        package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-nexus-repository-manager
+    {{- end }}
+    {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
       - disabled: false
         package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-quay
+    {{- end }}
       - disabled: false
         package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-tekton
         pluginConfig:
@@ -100,5 +110,3 @@ data:
                     mountPoint: entity.page.ci/cards
       - disabled: false
         package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-topology
-      - disabled: false
-        package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-nexus-repository-manager

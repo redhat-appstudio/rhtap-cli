@@ -33,7 +33,10 @@ artifactory:
 auth:
   environment: production
   providers:
+  {{- $signInPage := "" }}
+  {{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
   {{- if $ghSecretObj }}
+    {{- $signInPage = "github" }}
     github:
       production:
         clientId: ${GITHUB__APP__CLIENT__ID}
@@ -41,6 +44,20 @@ auth:
       {{- if ne ($ghSecretObj.data.host | b64dec) "github.com" }}
         enterpriseInstanceUrl: ${GITHUB__URL}
       {{- end }}
+  {{- end }}
+  {{- $glSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
+  {{- $glSecretData := ($glSecretObj.data | default dict) }}
+  {{- if $glSecretData }}
+    {{- if and $glSecretData.clientId $glSecretData.clientSecret }}
+    {{- $signInPage = "gitlab" }}
+    gitlab:
+      production:
+      {{- if ne ($glSecretData.host | b64dec) "gitlab.com" }}
+        audience: ${GITLAB__URL}
+      {{- end }}
+        clientId: ${GITLAB__APP__CLIENT__ID}
+        clientSecret: ${GITLAB__APP__CLIENT__SECRET}
+    {{- end }}
   {{- end }}
 backend:
   auth:
@@ -136,7 +153,9 @@ proxy:
 quay:
   uiUrl: ${QUAY__URL}
 {{- end }}
-signInPage: github
+{{- if $signInPage }}
+signInPage: {{ $signInPage }}
+{{- end }}
 techdocs:
   builder: 'local'
   generator:

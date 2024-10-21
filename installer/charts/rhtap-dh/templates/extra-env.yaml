@@ -34,10 +34,11 @@ data:
 {{- $ghSecretData := ($ghSecretObj.data | default dict) }}
 {{- if $ghSecretData }}
     GITHUB__APP__ID: {{ $ghSecretData.id }}
-    GITHUB__APP__CLIENT__ID: {{ $ghSecretData.clientID }}
+    GITHUB__APP__CLIENT__ID: {{ $ghSecretData.clientId }}
     GITHUB__APP__CLIENT__SECRET: {{ $ghSecretData.clientSecret }}
     GITHUB__APP__PRIVATE_KEY: {{ $ghSecretData.pem }}
     GITHUB__APP__WEBHOOK__SECRET: {{ $ghSecretData.webhookSecret }}
+    GITHUB__URL: {{ print "https://" ($ghSecretData.host | b64dec) | b64enc }}
     {{- $pacRoute := (lookup "route.openshift.io/v1" "Route" "openshift-pipelines" "pipelines-as-code-controller") }}
     {{- if $pacRoute }}
     GITHUB__APP__WEBHOOK__URL: {{ print "https://" $pacRoute.spec.host | b64enc }}
@@ -51,6 +52,11 @@ data:
 {{- if $glSecretData }}
     GITLAB__HOST: {{ $glSecretData.host }}
     GITLAB__TOKEN: "{{ $glSecretData.token }}"
+    GITLAB__URL: {{ print "https://" ($glSecretData.host | b64dec) | b64enc }}
+    {{- if and $glSecretData.clientId $glSecretData.clientSecret }}
+    GITLAB__APP__CLIENT__ID: {{ $glSecretData.clientId }}
+    GITLAB__APP__CLIENT__SECRET: {{ $glSecretData.clientSecret }}
+    {{- end }}
 {{- end }}
 {{- $jenkinsSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
 {{- $jenkinsSecretData := ($jenkinsSecretObj.data | default dict) }}

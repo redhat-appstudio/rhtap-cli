@@ -59,7 +59,7 @@ spec:
         export KUBECONFIG=$(pwd)/kubeconfig
         echo "[INFO]Login: $(params.ocp-login-command)"
 
-        "$(params.ocp-login-command) >/dev/null"
+        $(params.ocp-login-command) >/dev/null
         echo "[INFO]Console: $(kubectl get routes -n openshift-console console -o jsonpath='{.spec.port.targetPort}://{.spec.host}')"
 
         GIT_REPO="${GIT_REPO:-$(echo "$JOB_SPEC" | jq -r '.git.git_repo')}"

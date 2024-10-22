@@ -17,14 +17,18 @@ app:
 {{- if $argocdSecretData }}
 argocd:
   appLocatorMethods:
-    - type: 'config'
-      instances:
+    - instances:
         - name: default
           url: ${ARGOCD__URL}
           token: ${ARGOCD__API_TOKEN}
+      type: 'config'
   password: ${ARGOCD__PASSWORD}
   username: ${ARGOCD__USER}
   waitCycles: 25
+{{- end }}
+{{- if $artifactorySecretObj }}
+artifactory:
+  uiUrl: ${ARTIFACTORY__URL}
 {{- end }}
 auth:
   environment: production
@@ -50,8 +54,8 @@ backend:
     origin: ${BACKEND_URL}
 catalog:
   locations:
-    - type: url
-      target: ${DEVELOPER_HUB__CATALOG__URL}
+    - target: ${DEVELOPER_HUB__CATALOG__URL}
+      type: url
   rules:
     - allow:
       - Component
@@ -61,14 +65,7 @@ catalog:
       - Location
       - Template
       - API
-{{- if $jenkinsSecretObj }}
-jenkins:
-  instances:
-    - name: default
-      baseUrl: ${JENKINS__BASEURL}
-      username: ${JENKINS__USERNAME}
-      apiKey: ${JENKINS__TOKEN}
-{{- end }}
+dangerouslyAllowSignInWithoutUserInCatalog: true
 integrations:
 {{- if $ghSecretObj }}
   github:
@@ -87,28 +84,23 @@ integrations:
       apiBaseUrl: https://${GITLAB__HOST}/api/v4
       token: ${GITLAB__TOKEN}
 {{- end }}
+{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
+jenkins:
+  instances:
+    - name: default
+      apiKey: ${JENKINS__TOKEN}
+      baseUrl: ${JENKINS__BASEURL}
+      username: ${JENKINS__USERNAME}
+{{- end }}
+{{- if $nexusSecretObj }}
+nexus:
+  uiUrl: ${NEXUS__URL}
+{{- end }}
+permission:
+  # Disable RBACs
+  enabled: false
 proxy:
   endpoints:
-  {{- if $quaySecretObj }}
-    '/quay/api':
-      target: ${QUAY__URL}
-      headers:
-        X-Requested-With: 'XMLHttpRequest'
-      {{- if $quaySecretData.token }}
-        Authorization: 'Bearer ${QUAY__API_TOKEN}'
-      {{- end }}
-      changeOrigin: true
-      # Change to "false" in case of using self hosted quay instance with a self-signed certificate
-      secure: true
-  {{- end }}
-  {{- if $nexusSecretObj }}
-    '/nexus-repository-manager':
-      target: ${NEXUS__URL}
-      headers:
-        X-Requested-With: 'XMLHttpRequest'
-      changeOrigin: true
-      secure: true
-  {{- end }}
   {{- if $artifactorySecretObj }}
     '/jfrog-artifactory/api':
       target: ${ARTIFACTORY__URL}
@@ -119,18 +111,31 @@ proxy:
       # Change to "false" in case of using self hosted artifactory instance with a self-signed certificate
       secure: true
   {{- end }}
+  {{- if $nexusSecretObj }}
+    '/nexus-repository-manager':
+      target: ${NEXUS__URL}
+      headers:
+        X-Requested-With: 'XMLHttpRequest'
+      changeOrigin: true
+      secure: true
+  {{- end }}
+  {{- if $quaySecretObj }}
+    '/quay/api':
+      target: ${QUAY__URL}
+      changeOrigin: true
+      headers:
+        X-Requested-With: 'XMLHttpRequest'
+      {{- if $quaySecretData.token }}
+        Authorization: 'Bearer ${QUAY__API_TOKEN}'
+      {{- end }}
+      # Change to "false" in case of using self hosted quay instance with a self-signed certificate
+      secure: true
+  {{- end }}
 {{- if $quaySecretObj }}
 quay:
   uiUrl: ${QUAY__URL}
 {{- end }}
-{{- if $nexusSecretObj }}
-nexus:
-  uiUrl: ${NEXUS__URL}
-{{- end }}
-{{- if $artifactorySecretObj }}
-artifactory:
-  uiUrl: ${ARTIFACTORY__URL}
-{{- end }}
+signInPage: github
 techdocs:
   builder: 'local'
   generator:

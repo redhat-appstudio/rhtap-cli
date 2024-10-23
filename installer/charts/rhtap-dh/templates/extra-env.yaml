@@ -42,6 +42,7 @@ data:
     {{- if $pacRoute }}
     GITHUB__APP__WEBHOOK__URL: {{ print "https://" $pacRoute.spec.host | b64enc }}
     GITHUB__HOST: {{ $ghSecretData.host }}
+    GITHUB__TOKEN: {{ $ghSecretData.token }}
     GITHUB__URL: {{ print "https://" ($ghSecretData.host | b64dec) | b64enc }}
     {{- end }}
 {{- end }}

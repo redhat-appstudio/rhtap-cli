@@ -65,7 +65,7 @@ subscriptions:
     apiResource: quayregistries.quay.redhat.com
     namespace: openshift-operators
     name: quay-operator
-    channel: stable-3.11
+    channel: stable-3.12
     source: redhat-operators
     sourceNamespace: openshift-marketplace
   redHatAdvancedClusterSecurity:

@@ -48,6 +48,10 @@ plugins:
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-plugin-github-actions
 {{- end }}
+{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
+  - disabled: false
+    package: ./dynamic-plugins/dist/immobiliarelabs-backstage-plugin-gitlab
+{{- end }}
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-plugin-jenkins

@@ -3,6 +3,14 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# Login to OpenShift
+export KUBECONFIG=$(pwd)/kubeconfig
+echo "[INFO]Login: $OCP_LOGIN_COMMAND"
+
+$OCP_LOGIN_COMMAND >/dev/null
+echo "[INFO]Console: $(kubectl get routes -n openshift-console console -o jsonpath='{.spec.port.targetPort}://{.spec.host}')"
+
+
 echo "[INFO]Configuring deployment"
 
 acs_install_enabled="${acs_install_enabled:-true}"

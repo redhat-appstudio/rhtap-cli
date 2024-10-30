@@ -3,6 +3,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+## This file should be present only in CI created by integration-tests/scripts/ci-oc-login.sh
+if [ -f "$HOME/rhtap-cli-ci-kubeconfig" ]; then
+    export KUBECONFIG="$HOME/rhtap-cli-ci-kubeconfig"
+fi
+
 echo "[INFO]Configuring deployment"
 
 acs_install_enabled="${acs_install_enabled:-true}"

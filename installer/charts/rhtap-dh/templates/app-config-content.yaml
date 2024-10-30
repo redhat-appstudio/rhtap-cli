@@ -5,6 +5,7 @@ app:
 # Lookup for all the required secrets
 {{- $argocdSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-argocd-integration") }}
 {{- $argocdSecretData := ($argocdSecretObj.data | default dict) }}
+{{- $bbSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-bitbucket-integration") }}
 {{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
 {{- $gitlabSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
 {{- $jenkinsSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
@@ -84,6 +85,11 @@ catalog:
       - API
 dangerouslyAllowSignInWithoutUserInCatalog: true
 integrations:
+{{- if $bbSecretObj }}
+  bitbucketCloud:
+    - appPassword: ${BITBUCKET__APP_PASSWORD}
+      username: ${BITBUCKET__USERNAME}
+{{- end }}
 {{- if $ghSecretObj }}
   github:
     - host: ${GITHUB__HOST}

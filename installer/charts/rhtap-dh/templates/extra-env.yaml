@@ -27,6 +27,12 @@ data:
     ARTIFACTORY__API_TOKEN: {{ $artifactorySecretData.token }}
     ARTIFACTORY__URL: {{ $artifactorySecretData.url }}
 {{- end }}
+{{- $bbSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-bitbucket-integration") }}
+{{- $bbSecretData := ($bbSecretObj.data | default dict) }}
+{{- if $bbSecretData }}
+    BITBUCKET__APP_PASSWORD:  {{ $bbSecretData.appPassword }}
+    BITBUCKET__USERNAME: {{ $bbSecretData.username }}
+{{- end }}
     DEVELOPER_HUB__CATALOG__URL: {{
         required ".developerHub.catalogURL is required" .Values.developerHub.catalogURL | b64enc
     }}

@@ -2,7 +2,8 @@ Developer Hub:
   - homepage: https://backstage-{{ .Values.developerHub.instanceName }}-rhtap.{{ .Values.developerHub.ingressDomain }}
 
 {{- $gitlabObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") | default dict -}}
-{{- if $gitlabObj }}
+{{- $bitbucketObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-bitbucket-integration") | default dict -}}
+{{- if (or $gitlabObj $bitbucketObj) }}
 
 Tekton Pipelines as Code:
     {{- $routeObj := (lookup "route.openshift.io/v1" "Route" "openshift-pipelines" "pipelines-as-code-controller") | default dict -}}

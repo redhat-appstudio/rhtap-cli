@@ -5,6 +5,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+## This file should be present only in CI created by integration-tests/scripts/ci-oc-login.sh
+if [ -f "$HOME/rhtap-cli-ci-kubeconfig" ]; then
+    export KUBECONFIG="$HOME/rhtap-cli-ci-kubeconfig"
+fi
+
 echo "[INFO] Applying minIO workaround"
 DOCKER_IO_AUTH="$(cat /usr/local/rhtap-cli-install/docker_io)"
 oc get secret/pull-secret -n openshift-config --template='{{index .data ".dockerconfigjson" | base64decode}}' > ./global-pull-secret.json

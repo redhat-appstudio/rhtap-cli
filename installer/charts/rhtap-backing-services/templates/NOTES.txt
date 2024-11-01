@@ -12,12 +12,3 @@ Keycloak:
     Admin Secret: {{ printf "%s-initial-admin" $keycloakName }}
 
 {{ end -}}
-{{- if .Values.backingServices.acs.enabled }}
-  {{- $acs := .Values.backingServices.acs -}}
-Red Hat Advanced Cluster Security (ACS):
-  - Name: {{ $acs.name }}
-    Namspace: {{ $acs.namespace }}
-    Central URL: https://{{ include "backingServices.acs.centralEndPoint" . }}
-    Secret: central-htpasswd
-
-{{ end -}}

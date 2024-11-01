@@ -1,14 +1,15 @@
-{{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
-{{- if .Values.backingServices.keycloak -}}
+{{- $acs := .Values.acs }}
+{{- $name := printf "%s-test" .Chart.Name -}}
+{{- $namespace := .Release.Namespace }}
 ---
 apiVersion: v1
 kind: Pod
 metadata:
   annotations:
     helm.sh/hook: test
-    helm.sh/hook-delete-policy: hook-succeeded
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
   labels:
-    {{- include "rhtap-backing-services.labels" . | nindent 4 }}
+    {{- include "rhtap-acs.labels" . | nindent 4 }}
   name: {{ $name }} 
 spec:
   restartPolicy: Never
@@ -18,35 +19,30 @@ spec:
     # Copying the scripts that will be used on the subsequent containers, the
     # scripts are shared via the "/scripts" volume.
     #
-{{- include "backingServices.copyScripts" . | nindent 4 }}
+{{- include "acs.copyScripts" . | nindent 4 }}
   containers:
-{{- if .Values.backingServices.keycloak.enabled }}
+{{- range tuple "central" "central-db" "scanner" "scanner-db" }}
     #
-    # Tests the Keycloak rollout status.
+    # Test the ACS rollout status.
     #
-  {{- $keycloak := .Values.backingServices.keycloak }}
-  {{- $keycloakName := include "backingServices.keycloak.name" . }}
-    - name: {{ printf "keycloak-%s" $keycloakName }}
+    - name: {{ printf "acs-%s-%s" . $acs.name }}
       image: quay.io/codeready-toolchain/oc-client-base:latest
       env:
         - name: NAMESPACE
-          value: {{ $keycloak.namespace }}
+          value: {{ $namespace }}
         - name: RESOURCE_TYPE
-          value: "statefulset"
+          value: "deployment"
       command:
         - /scripts/test-rollout-status.sh
       args:
-        - {{
-            printf "app=keycloak,app.kubernetes.io/instance=%s"
-              $keycloakName | quote
-          }}
+        - {{ printf "app=%s,app.kubernetes.io/instance=stackrox-central-services" . }}
       volumeMounts:
         - name: scripts
           mountPath: /scripts
       securityContext:
+        runAsNonRoot: false
         allowPrivilegeEscalation: false
 {{- end }}
   volumes:
     - name: scripts
       emptyDir: {}
-{{- end }}

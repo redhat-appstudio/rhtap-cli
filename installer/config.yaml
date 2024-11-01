@@ -19,8 +19,8 @@ rhtapCLI:
       properties:
         catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
     redHatAdvancedClusterSecurity:
-      enabled: *rhdhEnabled
-      namespace: rhtap-acs
+      enabled: &rhacsEnabled true
+      namespace: &rhacsNamespace rhtap-acs
     redHatQuay:
       enabled: &quayEnabled true
       namespace: &quayNamespace rhtap-quay
@@ -49,7 +49,10 @@ rhtapCLI:
       enabled: true
     - chart: charts/rhtap-backing-services
       namespace: *installerNamespace
-      enabled: true
+      enabled: *tpaEnabled
+    - chart: charts/rhtap-acs
+      namespace: *rhacsNamespace
+      enabled: *rhacsEnabled
     - chart: charts/rhtap-gitops
       namespace: *installerNamespace
       enabled: *rhdhEnabled

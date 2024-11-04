@@ -47,12 +47,12 @@ plugins:
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-plugin-github-actions
-  - disabled: false
-    package: ./dynamic-plugins/dist/immobiliarelabs-backstage-plugin-gitlab-backend-dynamic
 {{- end }}
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
   - disabled: false
     package: ./dynamic-plugins/dist/immobiliarelabs-backstage-plugin-gitlab
+  - disabled: false
+    package: ./dynamic-plugins/dist/immobiliarelabs-backstage-plugin-gitlab-backend-dynamic
 {{- end }}
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
   - disabled: false

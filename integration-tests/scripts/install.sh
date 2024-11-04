@@ -15,6 +15,7 @@ quay_install_enabled="${quay_install_enabled:-true}"
 github_enabled="${github_enabled:-true}"
 gitlab_enabled="${gitlab_enabled:-true}"
 jenkins_enabled="${jenkins_enabled:-true}"
+bitbucket_enabled="${bitbucket_enabled:-false}"
 
 echo "[INFO] acs_install_enabled=$acs_install_enabled"
 echo "[INFO] quay_install_enabled=$quay_install_enabled"
@@ -47,6 +48,10 @@ QUAY__API_TOKEN="${QUAY__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/quay-api-
 ## Variables for ACS integration
 ACS__CENTRAL_ENDPOINT="${ACS__CENTRAL_ENDPOINT:-$(cat /usr/local/rhtap-cli-install/acs-central-endpoint)}"
 ACS__API_TOKEN="${ACS__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/acs-api-token)}"
+## variables for Bitbucket integration
+BITBUCKET_HOST="bitbucket.org"
+BITBUCKET_USERNAME="${BITBUCKET_USERNAME:-$(cat /usr/local/rhtap-cli-install/bitbucket-username)}"
+BITBUCKET_APP_PASSWORD="${BITBUCKET_APP_PASSWORD:-$(cat /usr/local/rhtap-cli-install/bitbucket-app-password)}"
 
 tpl_file="installer/charts/values.yaml.tpl"
 config_file="installer/config.yaml"
@@ -138,6 +143,13 @@ acs_quay_connection() {
   fi
 }
 
+bitbucket_integration() {
+  if [[ "${bitbucket_enabled}" == "true" ]]; then
+    echo "[INFO] Configure Bitbucket integration into RHTAP"
+    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" bitbucket --host="${BITBUCKET_HOST}" --username="${BITBUCKET_USERNAME}" --app-password="${BITBUCKET_APP_PASSWORD}"
+  fi
+}
+
 install_rhtap() {
   echo "[INFO] Start installing RHTAP"
   github_integration
@@ -149,8 +161,9 @@ install_rhtap() {
   gitlab_integration
   quay_integration
   acs_integration
+  bitbucket_integration
   # for debugging purpose
-  echo "installer/charts/values.yaml.tpl============"
+  echo "[INFO] Print out the content of values.yaml.tpl"
   cat "$tpl_file"
   ./bin/rhtap-cli deploy --timeout 30m --embedded false --config "$config_file" --values-template "$tpl_file" --kube-config "$KUBECONFIG" --debug --log-level=debug
 

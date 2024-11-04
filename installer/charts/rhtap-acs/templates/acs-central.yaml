@@ -1,16 +1,12 @@
-{{- if .Values.backingServices.acs.enabled -}}
-  {{- $acs := .Values.backingServices.acs -}}
+{{- $acs := .Values.acs -}}
 ---
 apiVersion: platform.stackrox.io/v1alpha1
 kind: Central
 metadata:
   labels:
     app: acs
-  namespace: {{
-    required ".backingServices.acs.namespace is required" $acs.namespace
-  }}
   name: {{
-    required ".backingServices.acs.name is required" $acs.name
+    required ".acs.name is required" $acs.name
   }} 
 spec:
   monitoring:
@@ -23,7 +19,7 @@ spec:
         persistentVolumeClaim:
           claimName: central-db
       resources: {{-
-        required ".backingServices.acs.central.db.resources is required"
+        required ".acs.central.db.resources is required"
           $acs.central.db.resources | toYaml | nindent 8
       }}
     exposure:
@@ -40,7 +36,7 @@ spec:
       persistentVolumeClaim:
         claimName: stackrox-db
     resources: {{-
-      required ".backingServices.acs.central.resources is required"
+      required ".acs.central.resources is required"
         $acs.central.resources | toYaml | nindent 6
     }}
     telemetry:
@@ -53,17 +49,16 @@ spec:
         persistentVolumeClaim:
           claimName: scanner-v4-db
     indexer: {{-
-      required ".backingServices.acs.scanners.indexer is required"
+      required ".acs.scanners.indexer is required"
         $acs.scanners.indexer | toYaml | nindent 6
     }}
     matcher: {{-
-      required ".backingServices.acs.scanners.matcher is required"
+      required ".acs.scanners.matcher is required"
         $acs.scanners.matcher | toYaml | nindent 6
     }}
     scannerComponent: Default
   scanner:
     analyzer: {{-
-      required ".backingServices.acs.scanners.analyzer is required"
+      required ".acs.scanners.analyzer is required"
         $acs.scanners.analyzer | toYaml | nindent 6
     }}
-{{- end }}

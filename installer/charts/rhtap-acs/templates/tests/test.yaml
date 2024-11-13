@@ -21,6 +21,22 @@ spec:
     #
 {{- include "acs.copyScripts" . | nindent 4 }}
   containers:
+    #
+    # Test ACS availibility, pending https://issues.redhat.com/browse/RFE-6727
+    #
+    - name: acs-image-scan
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      env:
+        - name: IMAGE
+          value: quay.io/fedora/fedora:36-x86_64@sha256:d6e4c7d6d1eaa24d71c8efd7432890acdc0179502224d0aaad6bb05d15ffde19
+      command:
+        - /scripts/test-acs-image-scan.sh
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        runAsNonRoot: false
+        allowPrivilegeEscalation: false
 {{- range tuple "central" "central-db" "scanner" "scanner-db" }}
     #
     # Test the ACS rollout status.

@@ -34,12 +34,13 @@ patch_serviceaccount() {
         SECRET=$("$KUBECTL" get secret "$SECRET_NAME" --namespace "$NAMESPACE" --ignore-not-found)
         if [ -n "$SECRET" ]; then
             echo -n "."
-            "$KUBECTL" patch serviceaccounts --namespace "$NAMESPACE" "$SA" --patch "
-secrets:
-    - name: $SECRET_NAME
-imagePullSecrets:
-    - name: $SECRET_NAME
-" >/dev/null
+            CURRENT_SA_PATCH=$("$KUBECTL" get serviceaccount "$SA" --namespace "$NAMESPACE" -o json)
+            UPDATED_SA=$(echo "$CURRENT_SA_PATCH" | jq --arg NAME "$SECRET_NAME" '
+                .secrets |= (. + [{"name": $NAME}] | unique) |
+                .imagePullSecrets |= (. + [{"name": $NAME}] | unique)
+            ')
+
+            echo "$UPDATED_SA" | "$KUBECTL" apply -f -
             echo "OK"
         fi
     done

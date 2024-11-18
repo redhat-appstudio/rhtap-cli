@@ -130,7 +130,7 @@ infrastructure:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 8Gi
+                  storage: 50Gi
     #
     # Quay.io Tenant, stores the container image artifacts.
     #

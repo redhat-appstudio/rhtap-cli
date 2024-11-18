@@ -2,8 +2,8 @@
 # Build
 #
 
-FROM registry.redhat.io/openshift4/ose-tools-rhel9:latestt@sha256:c2a2eca448a2e1b5d73f88dcd12a6c87e5f4580512303f4e38b67acf810b4778 as ose-tools
-FROM registry.access.redhat.com/ubi9/go-toolset:latest AS builder
+FROM registry.redhat.io/openshift4/ose-tools-rhel9@sha256:683fe19d6624335d60fcfdd9b53aedac6d299205c4c573e4f334008d92591eb5 as ose-tools
+FROM registry.access.redhat.com/ubi9/go-toolset:1.22.5-1730550521 AS builder
 
 USER root
 WORKDIR /workdir/rhtap-cli
@@ -22,7 +22,7 @@ RUN make GOFLAGS='-buildvcs=false'
 # Run
 #
 
-FROM registry.access.redhat.com/ubi9-minimal:9.4-1227.1726694542
+FROM registry.access.redhat.com/ubi9-minimal:9.5-1731518200
 
 LABEL \
   name="rhtap-cli" \

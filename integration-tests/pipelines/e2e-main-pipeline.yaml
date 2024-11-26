@@ -1,0 +1,122 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: e2e-main-pipeline
+  namespace: rhtap-shared-team-tenant
+  labels:
+    appstudio.openshift.io/component: rhtap-cli
+    appstudio.openshift.io/application: rhtap-cli
+spec:
+  params:
+    - name: SNAPSHOT
+      description: 'The JSON string representing the snapshot of the application under test.'
+      default: '{"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}'
+      type: string
+    - name: konflux-test-infra-secret
+      description: The name of secret where testing infrastructures credentials are stored.
+      type: string
+  tasks:
+    - name: test-metadata
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/test-metadata/0.2/test-metadata.yaml
+      params:
+        - name: SNAPSHOT
+          value: $(params.SNAPSHOT)
+        - name: test-name
+          value: $(context.pipelineRun.name)
+    - name: get-pict-file
+      runAfter:
+      - test-metadata
+      taskSpec:
+        results:
+          - name: pict-file
+            description: pict file to be used in next step
+        steps:
+          - name: download
+            image: quay.io/konflux-ci/appstudio-utils:ab6b0b8e40e440158e7288c73aff1cf83a2cc8a9@sha256:24179f0efd06c65d16868c2d7eb82573cce8e43533de6cea14fec3b7446e0b14
+            env:
+              - name: JOB_SPEC
+                value: $(tasks.test-metadata.results.job-spec)
+            script: |
+              #!/usr/bin/env bash
+              FORK=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
+              BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+              curl -o $(results.pict-file.path) https://raw.githubusercontent.com/$FORK/rhtap-cli/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
+    - name: generate-configs
+      runAfter:
+      - get-pict-file
+      taskSpec:
+        results:
+          - name: configs-json
+            description: Config json generated from pict file.
+        steps:
+          - name: pict-generate
+            image: quay.io/apodhrad/pict:latest
+            script: |
+              #!/usr/bin/env bash
+              echo "$(tasks.get-pict-file.results.pict-file)" > main.pict
+              cat main.pict
+              pict ./main.pict -o:1 -f:json > $(results.configs-json.path)
+    - name: start-nested-pipelines
+      params:
+        - name: job-spec
+          value: "$(tasks.test-metadata.results.job-spec)"
+      runAfter:
+        - test-metadata
+        - generate-configs
+      taskSpec:
+        steps:
+          - name: start-pipeline
+            image: quay.io/openshift-pipeline/ci
+            env: 
+              - name: SNAPSHOT
+                value: $(params.SNAPSHOT)
+              - name: JOB_SPEC
+                value: $(tasks.test-metadata.results.job-spec)
+              - name: CONFIGS_JSON
+                value: $(tasks.generate-configs.results.configs-json)
+            script: |
+              #!/usr/bin/env bash
+              set -x
+              echo "Running tests for OCP versions:"
+              echo "$CONFIGS_JSON" | jq -r '.[][] | select(.key == "OCP").value'
+              failed_pipelines=0
+
+              while IFS= read -r version; do
+                (
+                pipeline_run_name=$(tkn pipeline start -f https://raw.githubusercontent.com/redhat-appstudio/rhtap-cli/refs/heads/main/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                  --param ocp-version="$version"\
+                  --param job-spec="$JOB_SPEC"\
+                  --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
+                  --use-param-defaults \
+                  --labels "appstudio.openshift.io/component=rhtap-cli" \
+                  --labels "appstudio.openshift.io/application=rhtap-cli" \
+                  --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
+                  --labels "test.appstudio.openshift.io/scenario=multi-level" \
+                  --prefix-name "e2e-$version"\
+                  -o name)
+                  
+                  tkn pipelinerun logs  "$pipeline_run_name" -f | sed "s/^/$pipeline_run_name: /"
+
+                  pipelinerun_status=$(tkn pipelinerun describe "$pipeline_run_name" -o jsonpath='{.status.conditions[0].status}')
+                  if [ "$pipelinerun_status" != "True" ]; then
+                    echo "Pipelinerun $pipeline_run_name failed"
+                    failed_pipelines=$((failed_pipelines + 1))
+                  fi
+
+                ) &
+              done < <(echo "$CONFIGS_JSON" | jq -r '.[][] | select(.key == "OCP").value')
+              wait
+              if [ $failed_pipelines -gt 0 ]; then
+                echo "One or more pipelineruns failed. Exiting with non-zero code."
+                oc get pipelineruns
+                exit 1
+              fi
+

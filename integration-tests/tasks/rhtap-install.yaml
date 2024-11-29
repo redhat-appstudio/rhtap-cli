@@ -57,7 +57,13 @@ spec:
         set -o nounset
         set -o pipefail
 
-        GIT_REPO="${GIT_REPO:-$(echo "$JOB_SPEC" | jq -r '.git.git_repo')}"
+        GIT_REPO="${GIT_REPO:-$(echo "$JOB_SPEC" | jq -r '.git.repo // empty')}"
+
+        if [ -z "$GIT_REPO" ]; then
+          echo "[ERROR] GIT_REPO is not set in JOB_SPEC"
+          exit 1
+        fi
+
         # Clone the rhtap-cli repository
         cd "$(mktemp -d)"
 

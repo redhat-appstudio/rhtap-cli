@@ -214,7 +214,7 @@ infrastructure:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 500Mi
+                  storage: 50Gi
       instances:
         - replicas: 1
           dataVolumeClaimSpec:
@@ -222,7 +222,7 @@ infrastructure:
               - ReadWriteOnce
             resources:
               requests:
-                storage: 500Mi
+                storage: 50Gi
       patroni:
         dynamicConfiguration:
           postgresql:

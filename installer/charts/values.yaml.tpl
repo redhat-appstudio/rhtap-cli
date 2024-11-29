@@ -39,9 +39,7 @@ openshift:
 {{- if $rhdh.Enabled }}
     - {{ $rhdh.Namespace }}
 {{- end }}
-{{- if $minIOOperatorEnabled }}
     - minio-operator
-{{- end }}
 
 #
 # rhtap-subscriptions

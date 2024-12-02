@@ -47,9 +47,16 @@ spec:
                 value: $(tasks.test-metadata.results.job-spec)
             script: |
               #!/usr/bin/env bash
-              FORK=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
-              BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
-              curl -o $(results.pict-file.path) https://raw.githubusercontent.com/$FORK/rhtap-cli/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
+              GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
+
+              if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
+                REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
+                BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+              else
+                REPO_ORG="redhat-appstudio"
+                BRANCH="main"
+              fi
+              curl -o $(results.pict-file.path) https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
     - name: generate-configs
       runAfter:
         - get-pict-file
@@ -83,22 +90,42 @@ spec:
                 value: $(tasks.test-metadata.results.job-spec)
               - name: CONFIGS_JSON
                 value: $(tasks.generate-configs.results.configs-json)
+              - name: KONFLUX_APPLICATION_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.labels['appstudio.openshift.io/application']
+              - name: KONFLUX_COMPONENT_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.labels['appstudio.openshift.io/component']
             script: |
               #!/usr/bin/env bash
-              set -x
+              set -euxo pipefail
+
+              GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
+
+              if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
+                REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
+                BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+              else
+                REPO_ORG="redhat-appstudio"
+                BRANCH="main"
+              fi
+
               echo "Running tests for OCP versions:"
               echo "$CONFIGS_JSON" | jq -r '.[][] | select(.key == "OCP").value'
+
               pids=()
 
               while IFS= read -r version; do
                 (
-                pipeline_run_name=$(tkn pipeline start -f https://raw.githubusercontent.com/redhat-appstudio/rhtap-cli/refs/heads/main/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                pipeline_run_name=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
                   --param ocp-version="$version"\
                   --param job-spec="$JOB_SPEC"\
                   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
                   --use-param-defaults \
-                  --labels "appstudio.openshift.io/component=rhtap-cli" \
-                  --labels "appstudio.openshift.io/application=rhtap-cli" \
+                  --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
+                  --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
                   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
                   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
                   --prefix-name "e2e-$version"\
@@ -115,11 +142,12 @@ spec:
                 ) &
                 pid="$!"
                 pids+=("$pid")
-              done < <(echo "$CONFIGS_JSON" | jq -r '.[][] | select(.key == "OCP").value');
+              done < <(echo "$CONFIGS_JSON" | jq -r '.[][] | select(.key == "OCP").value')
+
               for pid in "${pids[@]}"; do
                 wait "$pid"
                 return_code=$?
-                if [ ! $return_code -eq 0 ]; then
+                if [ $return_code -ne 0 ]; then
                   echo "One or more pipelineruns failed. Exiting with non-zero code."
                   oc get pipelineruns
                   exit 1

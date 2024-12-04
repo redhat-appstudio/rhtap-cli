@@ -40,7 +40,7 @@ spec:
           value: "$(params.acs_install_enabled)"
         - name: quay_install_enabled
           value: "$(params.quay_install_enabled)"
-        - name: github_enabled 
+        - name: github_enabled
           value: "$(params.github_enabled)"
         - name: gitlab_enabled
           value: "$(params.gitlab_enabled)"

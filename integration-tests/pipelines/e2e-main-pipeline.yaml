@@ -1,3 +1,4 @@
+---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
@@ -33,7 +34,7 @@ spec:
           value: $(context.pipelineRun.name)
     - name: get-pict-file
       runAfter:
-      - test-metadata
+        - test-metadata
       taskSpec:
         results:
           - name: pict-file
@@ -58,7 +59,7 @@ spec:
               curl -o $(results.pict-file.path) https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
     - name: generate-configs
       runAfter:
-      - get-pict-file
+        - get-pict-file
       taskSpec:
         results:
           - name: configs-json
@@ -82,7 +83,7 @@ spec:
         steps:
           - name: start-pipeline
             image: quay.io/openshift-pipeline/ci
-            env: 
+            env:
               - name: SNAPSHOT
                 value: $(params.SNAPSHOT)
               - name: JOB_SPEC
@@ -129,7 +130,7 @@ spec:
                   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
                   --prefix-name "e2e-$version"\
                   -o name)
-                  
+
                   tkn pipelinerun logs  "$pipeline_run_name" -f | sed "s/^/$pipeline_run_name: /"
 
                   pipelinerun_status=$(tkn pipelinerun describe "$pipeline_run_name" -o jsonpath='{.status.conditions[0].status}')
@@ -152,4 +153,3 @@ spec:
                   exit 1
                 fi
               done
-

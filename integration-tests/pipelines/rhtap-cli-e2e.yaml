@@ -15,7 +15,7 @@ spec:
       default: ''
       type: string
     - name: ocp-version
-      description: 'The OpenShift version to use for the ephemeral cluster deployment.'   
+      description: 'The OpenShift version to use for the ephemeral cluster deployment.'
       type: string
     - name: cloud-credential-key
       type: string
@@ -177,7 +177,7 @@ spec:
             value: main
           - name: pathInRepo
             value: common/tasks/sprayproxy/sprayproxy-deprovision/sprayproxy-unregister-server.yaml
-      params: 
+      params:
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
     - name: pull-request-status-message

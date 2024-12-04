@@ -10,49 +10,34 @@ spec:
     the ROSA cluster, installs RHTAP using the installer, runs the tests, collects artifacts,
     and finally deprovisions the ROSA cluster.
   params:
-    - name: SNAPSHOT
-      description: 'The JSON string representing the snapshot of the application under test.'
-      default: '{"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}'
-      type: string
     - name: test-name
       description: 'The name of the test corresponding to a defined Konflux integration test.'
       default: ''
-    - name: ocp-version
-      description: 'The OpenShift version to use for the ephemeral cluster deployment.'
       type: string
-    - name: test-event-type
-      description: 'Indicates if the test is triggered by a Pull Request or Push event.'
-      default: 'none'
-    - name: konflux-test-infra-secret
-      description: The name of secret where testing infrastructures credentials are stored.
+    - name: ocp-version
+      description: 'The OpenShift version to use for the ephemeral cluster deployment.'   
       type: string
     - name: cloud-credential-key
       type: string
+      default: "qe-cloud-credentials-us-east-1"
       description: The key secret from konflux-test-infra-secret where all AWS ROSA configurations are stored.
     - name: replicas
       description: 'The number of replicas for the cluster nodes.'
+      default: "3"
       type: string
     - name: machine-type
       description: 'The type of machine to use for the cluster nodes.'
+      default: "m6i.4xlarge"
       type: string
     - name: oci-container-repo
       default: 'quay.io/konflux-test-storage/rhtap-team/rhtap-cli'
       description: The ORAS container used to store all test artifacts.
-    - name: acs_install_enabled
-      description: 'Indicates if the ACS installation is enabled.'
-      default: 'true'
-    - name: quay_install_enabled
-      description: 'Indicates if the Quay installation is enabled.'
-      default: 'true'
-    - name: github_enabled
-      description: 'Indicates if the GitHub integration is enabled.'
-      default: 'true'
-    - name: gitlab_enabled
-      description: 'Indicates if the GitLab integration is enabled.'
-      default: 'true'
-    - name: jenkins_enabled
-      description: 'Indicates if the Jenkins integration is enabled.'
-      default: 'true'
+      type: string
+    - name: job-spec
+      type: string
+    - name: konflux-test-infra-secret
+      description: The name of secret where testing infrastructures credentials are stored.
+      type: string
   tasks:
     - name: rosa-hcp-metadata
       taskRef:
@@ -64,21 +49,6 @@ spec:
             value: main
           - name: pathInRepo
             value: common/tasks/rosa/hosted-cp/rosa-hcp-metadata/rosa-hcp-metadata.yaml
-    - name: test-metadata
-      taskRef:
-        resolver: git
-        params:
-          - name: url
-            value: https://github.com/konflux-ci/konflux-qe-definitions.git
-          - name: revision
-            value: main
-          - name: pathInRepo
-            value: common/tasks/test-metadata/0.1/test-metadata.yaml
-      params:
-        - name: SNAPSHOT
-          value: $(params.SNAPSHOT)
-        - name: test-name
-          value: $(context.pipelineRun.name)
     - name: create-oci-container
       taskRef:
         resolver: git
@@ -95,14 +65,9 @@ spec:
         - name: oci-container-tag
           value: $(context.pipelineRun.name)
     - name: provision-rosa
-      when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
-          operator: in
-          values: ["pull_request"]
       runAfter:
         - rosa-hcp-metadata
         - create-oci-container
-        - test-metadata
       taskRef:
         resolver: git
         params:
@@ -126,10 +91,6 @@ spec:
         - name: cloud-credential-key
           value: "$(params.cloud-credential-key)"
     - name: rhtap-install
-      when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
-          operator: in
-          values: ["pull_request"]
       runAfter:
         - provision-rosa
       taskRef:
@@ -142,27 +103,11 @@ spec:
           - name: pathInRepo
             value: integration-tests/tasks/rhtap-install.yaml
       params:
-        - name: job-spec
-          value: $(tasks.test-metadata.results.job-spec)
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
-        - name: image-url
-          value: "$(tasks.test-metadata.results.container-image)"
-        - name: acs_install_enabled
-          value: "$(params.acs_install_enabled)"
-        - name: quay_install_enabled
-          value: "$(params.quay_install_enabled)"
-        - name: github_enabled
-          value: "$(params.github_enabled)"
-        - name: gitlab_enabled
-          value: "$(params.gitlab_enabled)"
-        - name: jenkins_enabled
-          value: "$(params.jenkins_enabled)"
+        - name: job-spec
+          value: "$(params.job-spec)"
     - name: sprayproxy-provision
-      when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
-          operator: in
-          values: ["pull_request"]
       runAfter:
         - rhtap-install
       taskRef:
@@ -178,10 +123,6 @@ spec:
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
     - name: rhtap-e2e-tests
-      when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
-          operator: in
-          values: ["pull_request"]
       runAfter:
         - sprayproxy-provision
       taskRef:
@@ -195,22 +136,18 @@ spec:
             value: integration-tests/tasks/rhtap-e2e.yaml
       params:
         - name: job-spec
-          value: $(tasks.test-metadata.results.job-spec)
+          value: $(params.job-spec)
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
         - name: oci-container
           value: $(tasks.create-oci-container.results.oci-container)
   finally:
     - name: deprovision-rosa-collect-artifacts
-      when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
-          operator: in
-          values: ["pull_request"]
       taskRef:
         resolver: git
         params:
           - name: url
-            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+            value: https://github.com/konflux-ci/tekton-integration-catalog.git
           - name: revision
             value: main
           - name: pathInRepo
@@ -222,16 +159,6 @@ spec:
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
         - name: oci-container
           value: "$(tasks.create-oci-container.results.oci-container)"
-        - name: pull-request-author
-          value: "$(tasks.test-metadata.results.pull-request-author)"
-        - name: git-revision
-          value: "$(tasks.test-metadata.results.git-revision)"
-        - name: pull-request-number
-          value: "$(tasks.test-metadata.results.pull-request-number)"
-        - name: git-repo
-          value: "$(tasks.test-metadata.results.git-repo)"
-        - name: git-org
-          value: "$(tasks.test-metadata.results.git-org)"
         - name: cluster-name
           value: "$(tasks.rosa-hcp-metadata.results.cluster-name)"
         - name: konflux-test-infra-secret
@@ -241,36 +168,28 @@ spec:
         - name: pipeline-aggregate-status
           value: "$(tasks.status)"
     - name: sprayproxy-deprovision
-      when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
-          operator: in
-          values: ["pull_request"]
       taskRef:
         resolver: git
         params:
           - name: url
-            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+            value: https://github.com/konflux-ci/tekton-integration-catalog.git
           - name: revision
             value: main
           - name: pathInRepo
             value: common/tasks/sprayproxy/sprayproxy-deprovision/sprayproxy-unregister-server.yaml
-      params:
+      params: 
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
     - name: pull-request-status-message
-      when:
-        - input: "$(tasks.test-metadata.results.test-event-type)"
-          operator: in
-          values: ["pull_request"]
       taskRef:
         resolver: git
         params:
           - name: url
-            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+            value: https://github.com/konflux-ci/tekton-integration-catalog.git
           - name: revision
             value: main
           - name: pathInRepo
-            value: common/tasks/pull-request-comment/0.1/pull-request-comment.yaml
+            value: common/tasks/pull-request-comment/0.2/pull-request-comment.yaml
       params:
         - name: test-name
           value: "$(context.pipelineRun.name)"
@@ -278,13 +197,5 @@ spec:
           value: "$(tasks.create-oci-container.results.oci-container)"
         - name: pipeline-aggregate-status
           value: "$(tasks.status)"
-        - name: pull-request-author
-          value: "$(tasks.test-metadata.results.pull-request-author)"
-        - name: pull-request-number
-          value: "$(tasks.test-metadata.results.pull-request-number)"
-        - name: git-repo
-          value: "$(tasks.test-metadata.results.git-repo)"
-        - name: git-org
-          value: "$(tasks.test-metadata.results.git-org)"
-        - name: git-revision
-          value: "$(tasks.test-metadata.results.git-revision)"
+        - name: job-spec
+          value: "$(params.job-spec)"

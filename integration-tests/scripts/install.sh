@@ -82,7 +82,7 @@ integrations:
     clientSecret: "${GITHUB__APP__CLIENT__SECRET}"
     host: "github.com"
     publicKey: |-
-$(echo "${GITHUB__APP__PRIVATE_KEY}" | sed 's/^/      /')
+$(printf "%s\n" "${GITHUB__APP__PRIVATE_KEY}" | sed 's/^/      /')
     token: "${GITOPS__GIT_TOKEN}"
     webhookSecret: "${GITHUB__APP__WEBHOOK__SECRET}"
 EOF

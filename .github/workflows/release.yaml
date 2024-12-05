@@ -16,10 +16,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/go
 
-      - name: Container Image
-        uses: ./.github/actions/buildah
-        with:
-          tags: "latest,${{ github.ref }}"
+      #
+      # TODO(otaviof): In order to build this container image, we need Red Hat
+      #   container registry credentials.
+      #
+      # - name: Container Image
+      #   uses: ./.github/actions/buildah
+      #   with:
+      #     tags: "latest,${{ github.ref }}"
+      #     IMAGE_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
       - name: GitHub Release
         env:

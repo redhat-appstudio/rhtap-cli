@@ -23,35 +23,31 @@ echo "[INFO] github_enabled=$github_enabled"
 echo "[INFO] gitlab_enabled=$gitlab_enabled"
 echo "[INFO] jenkins_enabled=$jenkins_enabled"
 
-export DEVELOPER_HUB__CATALOG__URL GITHUB__APP__ID GITHUB__APP__CLIENT__ID GITHUB__APP__CLIENT__SECRET \
-  GITHUB__APP__PRIVATE_KEY GITOPS__GIT_TOKEN GITHUB__APP__WEBHOOK__SECRET GITLAB__TOKEN JENKINS_API_TOKEN \
-  JENKINS_URL JENKINS_USERNAME QUAY__DOCKERCONFIGJSON QUAY__API_TOKEN ACS__CENTRAL_ENDPOINT ACS__API_TOKEN
-
 # Variables for RHTAP Sample Backstage Templates
-DEVELOPER_HUB__CATALOG__URL="${DEVELOPER_HUB__CATALOG__URL:-"https://github.com/redhat-appstudio/tssc-sample-templates/blob/main/all.yaml"}" 
+export DEVELOPER_HUB__CATALOG__URL="${DEVELOPER_HUB__CATALOG__URL:-"https://github.com/redhat-appstudio/tssc-sample-templates/blob/main/all.yaml"}"
 # Variables for GitHub integration
-GITHUB__APP__ID="${GITHUB__APP__ID:-$(cat /usr/local/rhtap-cli-install/rhdh-github-app-id)}"
-GITHUB__APP__CLIENT__ID="${GITHUB__APP__CLIENT__ID:-$(cat /usr/local/rhtap-cli-install/rhdh-github-client-id)}"
-GITHUB__APP__CLIENT__SECRET="${GITHUB__APP__CLIENT__SECRET:-$(cat /usr/local/rhtap-cli-install/rhdh-github-client-secret)}"
-GITHUB__APP__PRIVATE_KEY="${GITHUB__APP__PRIVATE_KEY:-$(base64 -d < /usr/local/rhtap-cli-install/rhdh-github-private-key | sed 's/^/        /')}"
-GITOPS__GIT_TOKEN="${GITOPS__GIT_TOKEN:-$(cat /usr/local/rhtap-cli-install/github_token)}"
-GITHUB__APP__WEBHOOK__SECRET="${GITHUB__APP__WEBHOOK__SECRET:-$(cat /usr/local/rhtap-cli-install/rhdh-github-webhook-secret)}"
+export GITHUB__APP__ID
+export GITHUB__APP__CLIENT__ID
+export GITHUB__APP__CLIENT__SECRET
+export GITHUB__APP__PRIVATE_KEY
+export GITOPS__GIT_TOKEN
+export GITHUB__APP__WEBHOOK__SECRET
 # Variables for Gitlab integration
-GITLAB__TOKEN="${GITLAB__TOKEN:-$(cat /usr/local/rhtap-cli-install/gitlab_token)}"
+export GITLAB__TOKEN
 # Variables for Jenkins integration
-JENKINS_API_TOKEN="${JENKINS_API_TOKEN:-$(cat /usr/local/rhtap-cli-install/jenkins-api-token)}"
-JENKINS_URL="${JENKINS_URL:-$(cat /usr/local/rhtap-cli-install/jenkins-url)}"
-JENKINS_USERNAME="${JENKINS_USERNAME:-$(cat /usr/local/rhtap-cli-install/jenkins-username)}"
+export JENKINS_API_TOKEN
+export JENKINS_URL
+export JENKINS_USERNAME
 ## Variables for quay.io integration
-QUAY__DOCKERCONFIGJSON="${QUAY__DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/quay-dockerconfig-json)}"
-QUAY__API_TOKEN="${QUAY__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/quay-api-token)}"
+export QUAY__DOCKERCONFIGJSON
+export QUAY__API_TOKEN
 ## Variables for ACS integration
-ACS__CENTRAL_ENDPOINT="${ACS__CENTRAL_ENDPOINT:-$(cat /usr/local/rhtap-cli-install/acs-central-endpoint)}"
-ACS__API_TOKEN="${ACS__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/acs-api-token)}"
+export ACS__CENTRAL_ENDPOINT
+export ACS__API_TOKEN
 ## variables for Bitbucket integration
-BITBUCKET_HOST="bitbucket.org"
-BITBUCKET_USERNAME="${BITBUCKET_USERNAME:-$(cat /usr/local/rhtap-cli-install/bitbucket-username)}"
-BITBUCKET_APP_PASSWORD="${BITBUCKET_APP_PASSWORD:-$(cat /usr/local/rhtap-cli-install/bitbucket-app-password)}"
+export BITBUCKET_HOST="bitbucket.org"
+export BITBUCKET_USERNAME
+export BITBUCKET_APP_PASSWORD
 
 tpl_file="installer/charts/values.yaml.tpl"
 config_file="installer/config.yaml"
@@ -74,6 +70,13 @@ github_integration() {
   if [[ "${github_enabled}" == "true" ]]; then
     echo "[INFO] Config Github integration with RHTAP"
 
+    GITHUB__APP__ID="${GITHUB__APP__ID:-$(cat /usr/local/rhtap-cli-install/rhdh-github-app-id)}"
+    GITHUB__APP__CLIENT__ID="${GITHUB__APP__CLIENT__ID:-$(cat /usr/local/rhtap-cli-install/rhdh-github-client-id)}"
+    GITHUB__APP__CLIENT__SECRET="${GITHUB__APP__CLIENT__SECRET:-$(cat /usr/local/rhtap-cli-install/rhdh-github-client-secret)}"
+    GITHUB__APP__PRIVATE_KEY="${GITHUB__APP__PRIVATE_KEY:-$(base64 -d < /usr/local/rhtap-cli-install/rhdh-github-private-key | sed 's/^/        /')}"
+    GITOPS__GIT_TOKEN="${GITOPS__GIT_TOKEN:-$(cat /usr/local/rhtap-cli-install/github_token)}"
+    GITHUB__APP__WEBHOOK__SECRET="${GITHUB__APP__WEBHOOK__SECRET:-$(cat /usr/local/rhtap-cli-install/rhdh-github-webhook-secret)}"
+
     cat <<EOF >>"$tpl_file"
 integrations:
   github:
@@ -92,6 +95,11 @@ EOF
 jenkins_integration() {
   if [[ "${jenkins_enabled}" == "true" ]]; then
     echo "[INFO] Integrates an exising Jenkins server into RHTAP"
+
+    JENKINS_API_TOKEN="${JENKINS_API_TOKEN:-$(cat /usr/local/rhtap-cli-install/jenkins-api-token)}"
+    JENKINS_URL="${JENKINS_URL:-$(cat /usr/local/rhtap-cli-install/jenkins-url)}"
+    JENKINS_USERNAME="${JENKINS_USERNAME:-$(cat /usr/local/rhtap-cli-install/jenkins-username)}"
+
     ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" jenkins --token="$JENKINS_API_TOKEN" --url="$JENKINS_URL" --username="$JENKINS_USERNAME" --force
   fi
 }
@@ -99,6 +107,9 @@ jenkins_integration() {
 gitlab_integration() {
   if [[ "${gitlab_enabled}" == "true" ]]; then
     echo "[INFO] Configure Gitlab integration into RHTAP"
+
+    GITLAB__TOKEN="${GITLAB__TOKEN:-$(cat /usr/local/rhtap-cli-install/gitlab_token)}"
+
     ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" gitlab --token "${GITLAB__TOKEN}"
   fi
 }
@@ -109,6 +120,10 @@ quay_integration() {
     yq e '.rhtapCLI.features.redHatQuay.enabled = false' -i "${config_file}"
 
     echo "[INFO] Configure quay.io integration into RHTAP"
+
+    QUAY__DOCKERCONFIGJSON="${QUAY__DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/quay-dockerconfig-json)}"
+    QUAY__API_TOKEN="${QUAY__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/quay-api-token)}"
+
     ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" quay --url="https://quay.io" --dockerconfigjson="${QUAY__DOCKERCONFIGJSON}" --token="${QUAY__API_TOKEN}"
   fi
 
@@ -120,6 +135,10 @@ acs_integration() {
     yq e '.rhtapCLI.features.redHatAdvancedClusterSecurity.enabled = false' -i "${config_file}"
 
     echo "[INFO] Configure an existing intance of ACS integration into RHTAP"
+
+    ACS__CENTRAL_ENDPOINT="${ACS__CENTRAL_ENDPOINT:-$(cat /usr/local/rhtap-cli-install/acs-central-endpoint)}"
+    ACS__API_TOKEN="${ACS__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/acs-api-token)}"
+
     ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" acs --endpoint="${ACS__CENTRAL_ENDPOINT}" --token="${ACS__API_TOKEN}"
   fi
 }
@@ -146,6 +165,10 @@ acs_quay_connection() {
 bitbucket_integration() {
   if [[ "${bitbucket_enabled}" == "true" ]]; then
     echo "[INFO] Configure Bitbucket integration into RHTAP"
+
+    BITBUCKET_USERNAME="${BITBUCKET_USERNAME:-$(cat /usr/local/rhtap-cli-install/bitbucket-username)}"
+    BITBUCKET_APP_PASSWORD="${BITBUCKET_APP_PASSWORD:-$(cat /usr/local/rhtap-cli-install/bitbucket-app-password)}"
+
     ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" bitbucket --host="${BITBUCKET_HOST}" --username="${BITBUCKET_USERNAME}" --app-password="${BITBUCKET_APP_PASSWORD}"
   fi
 }

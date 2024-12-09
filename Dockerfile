@@ -22,7 +22,7 @@ RUN make GOFLAGS='-buildvcs=false'
 # Run
 #
 
-FROM registry.access.redhat.com/ubi9-minimal:9.5-1731604394
+FROM registry.access.redhat.com/ubi9-minimal:9.5-1733767867
 
 LABEL \
   name="rhtap-cli" \

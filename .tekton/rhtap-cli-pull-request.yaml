@@ -385,6 +385,23 @@ spec:
         operator: in
         values:
         - "false"
+    - name: rpms-signature-scan
+      params:
+      - name: image-digest
+        value: $(tasks.build-container.results.IMAGE_DIGEST)
+      - name: image-url
+        value: $(tasks.build-container.results.IMAGE_URL)
+      runAfter:
+      - build-container
+      taskRef:
+        params:
+        - name: name
+          value: rpms-signature-scan
+        - name: bundle
+          value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:71c220bdc11e6308c79693d134f8799de02929549fec523ccc4f0cff1e314e14
+        - name: kind
+          value: task
+        resolver: bundles
     - name: ecosystem-cert-preflight-checks
       params:
       - name: image-url

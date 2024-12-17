@@ -41,7 +41,8 @@ LABEL \
 
 WORKDIR /rhtap-cli
 
-COPY --from=ose-tools /usr/bin/kubectl /usr/bin/
+COPY --from=ose-tools /usr/bin/jq /usr/bin/kubectl /usr/bin/oc /usr/bin/
+COPY --from=ose-tools /usr/lib64/libjq.so.1 /usr/lib64/libonig.so.5 /usr/lib64/
 
 COPY --from=builder /workdir/rhtap-cli/installer ./
 COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli /usr/local/bin/rhtap-cli
@@ -51,6 +52,8 @@ RUN groupadd --gid 1000 -r rhtap-cli && \
 
 USER rhtap-cli
 
-RUN kubectl version --client
+RUN echo "# jq" && jq --version && \
+    echo "# kubectl" && kubectl version --client && \
+    echo "# oc" && oc version
 
 ENTRYPOINT ["rhtap-cli"]

@@ -188,7 +188,7 @@ install_rhtap() {
   # for debugging purpose
   echo "[INFO] Print out the content of values.yaml.tpl"
   cat "$tpl_file"
-  ./bin/rhtap-cli deploy --timeout 30m --embedded false --config "$config_file" --values-template "$tpl_file" --kube-config "$KUBECONFIG" --debug --log-level=debug
+  ./bin/rhtap-cli deploy --timeout 30m --config "$config_file" --values-template "$tpl_file" --kube-config "$KUBECONFIG" --debug --log-level=debug
 
   homepage_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')
   callback_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')/api/auth/github/handler/frame

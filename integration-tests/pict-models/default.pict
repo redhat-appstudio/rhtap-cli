@@ -3,7 +3,7 @@
 #
 
 OCP: 4.17, 4.16
-ACS: Enabled(deploy new)
+ACS: Enabled(deploy new), Enabled(hosted)
 Registry: Quay(deploy new)
 TPA: Enabled
 SCM: GitHub

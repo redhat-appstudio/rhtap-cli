@@ -17,6 +17,9 @@ spec:
     - name: ocp-version
       description: 'The OpenShift version to use for the ephemeral cluster deployment.'
       type: string
+    - name: acs_config
+      description: 'The configuration for ACS integration (deploy new or hosted) in RHTAP installation'
+      type: string
     - name: cloud-credential-key
       type: string
       default: "qe-cloud-credentials-us-east-1"
@@ -90,9 +93,30 @@ spec:
           value: "$(params.konflux-test-infra-secret)"
         - name: cloud-credential-key
           value: "$(params.cloud-credential-key)"
-    - name: rhtap-install
+    - name: process-rhtap-install-values
       runAfter:
         - provision-rosa
+      params:
+        - name: acs_config
+          value: "$(params.acs_config)"
+      taskSpec:
+        results:
+          - name: acs_install_enabled
+            description: Boolean value for acs install enabled or not.
+        steps:
+          - name: process-values
+            image: quay.io/konflux-ci/appstudio-utils:ab6b0b8e40e440158e7288c73aff1cf83a2cc8a9@sha256:24179f0efd06c65d16868c2d7eb82573cce8e43533de6cea14fec3b7446e0b14
+            env:
+              - name: ACS_CONFIG
+                value: $(params.acs_config)
+            script: |
+              #!/usr/bin/env bash
+              
+              # Set acs_install_enabled based on acs_config
+              echo $( [[ "$ACS_CONFIG" =~ "deploy new" ]] && echo true || echo false ) > $(results.acs_install_enabled.path)      
+    - name: rhtap-install
+      runAfter:
+        - process-rhtap-install-values
       taskRef:
         resolver: git
         params:
@@ -107,6 +131,8 @@ spec:
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
         - name: job-spec
           value: "$(params.job-spec)"
+        - name: acs_install_enabled
+          value: "$(tasks.process-rhtap-install-values.results.acs_install_enabled)"  
     - name: sprayproxy-provision
       runAfter:
         - rhtap-install

@@ -71,7 +71,7 @@ spec:
               #!/usr/bin/env bash
               echo "$(tasks.get-pict-file.results.pict-file)" > main.pict
               cat main.pict
-              pict ./main.pict -o:1 -f:json > $(results.configs-json.path)
+              pict ./main.pict -o:2 -f:json > $(results.configs-json.path)
     - name: start-nested-pipelines
       params:
         - name: job-spec
@@ -117,10 +117,14 @@ spec:
 
               pids=()
 
-              while IFS= read -r version; do
+              while IFS=$'\n' read -r values; do
                 (
+                version="$(echo $values | jq -r '.[] | select(.key == "OCP") | .value')"
+                acs_config="$(echo $values | jq -r '.[] | select(.key == "ACS") | .value')"
+                acs=$([[ "$acs_config" =~ "deploy" ]] && echo "acs-deploy" || echo "acs-hosted")
                 pipeline_run_name=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
                   --param ocp-version="$version"\
+                  --param acs_config="$acs_config" \
                   --param job-spec="$JOB_SPEC"\
                   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
                   --use-param-defaults \
@@ -128,7 +132,7 @@ spec:
                   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
                   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
                   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                  --prefix-name "e2e-$version"\
+                  --prefix-name "e2e-$version-$acs"\
                   -o name)
 
                   tkn pipelinerun logs  "$pipeline_run_name" -f | sed "s/^/$pipeline_run_name: /"
@@ -142,7 +146,7 @@ spec:
                 ) &
                 pid="$!"
                 pids+=("$pid")
-              done < <(echo "$CONFIGS_JSON" | jq -r '.[][] | select(.key == "OCP").value')
+              done < <(echo "$CONFIGS_JSON" | jq -c '.[]')
 
               for pid in "${pids[@]}"; do
                 wait "$pid"

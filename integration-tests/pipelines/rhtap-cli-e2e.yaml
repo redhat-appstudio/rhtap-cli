@@ -113,7 +113,7 @@ spec:
               #!/usr/bin/env bash
               
               # Set acs_install_enabled based on acs_config
-              echo $( [[ "$ACS_CONFIG" =~ "deploy new" ]] && echo true || echo false ) > $(results.acs_install_enabled.path)      
+              echo -n $( [[ "$ACS_CONFIG" =~ "deploy" ]] && echo true || echo false ) > $(results.acs_install_enabled.path)      
     - name: rhtap-install
       runAfter:
         - process-rhtap-install-values

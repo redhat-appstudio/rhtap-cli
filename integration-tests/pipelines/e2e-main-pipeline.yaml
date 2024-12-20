@@ -119,9 +119,12 @@ spec:
 
               while IFS=$'\n' read -r values; do
                 (
+                version="$(echo $values | jq -r '.[] | select(.key == "OCP") | .value')"
+                acs_config="$(echo $values | jq -r '.[] | select(.key == "ACS") | .value')"
+                acs=$([[ "$acs_config" =~ "deploy" ]] && echo "acs-deploy" || echo "acs-hosted")
                 pipeline_run_name=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
-                  --param ocp-version="$(echo $values | jq -r '.[] | select(.key == "OCP") | .value')"\
-                  --param acs_config="$(echo $values | jq -r '.[] | select(.key == "ACS") | .value')" \
+                  --param ocp-version="$version"\
+                  --param acs_config="$acs_config" \
                   --param job-spec="$JOB_SPEC"\
                   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
                   --use-param-defaults \
@@ -129,7 +132,7 @@ spec:
                   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
                   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
                   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                  --prefix-name "e2e-$version"\
+                  --prefix-name "e2e-$version-$acs"\
                   -o name)
 
                   tkn pipelinerun logs  "$pipeline_run_name" -f | sed "s/^/$pipeline_run_name: /"

@@ -111,9 +111,8 @@ spec:
                 value: $(params.acs_config)
             script: |
               #!/usr/bin/env bash
-              
               # Set acs_install_enabled based on acs_config
-              echo -n $( [[ "$ACS_CONFIG" =~ "deploy" ]] && echo true || echo false ) > $(results.acs_install_enabled.path)      
+              echo -n $( [[ "$ACS_CONFIG" =~ "deploy" ]] && echo true || echo false ) > $(results.acs_install_enabled.path)
     - name: rhtap-install
       runAfter:
         - process-rhtap-install-values
@@ -132,7 +131,7 @@ spec:
         - name: job-spec
           value: "$(params.job-spec)"
         - name: acs_install_enabled
-          value: "$(tasks.process-rhtap-install-values.results.acs_install_enabled)"  
+          value: "$(tasks.process-rhtap-install-values.results.acs_install_enabled)"
     - name: sprayproxy-provision
       runAfter:
         - rhtap-install

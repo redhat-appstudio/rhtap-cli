@@ -38,6 +38,24 @@ spec:
     - name: konflux-test-infra-secret
       description: The name of secret where testing infrastructures credentials are stored.
       type: string
+    - name: acs_config
+      type: string
+      description: "The ACS option for rhtap-cli installation. Valid values are 'new' and 'hosted'."
+    - name: tpa_config
+      type: string
+      description: "The TPA option for rhtap-cli installation. Valid values are 'new' and 'hosted'."
+    - name: registry_config
+      type: string
+      description: "The image registry option for rhtap-cli installation. Valid values are 'quay', 'quay.io' and 'artifactory'."
+    - name: scm_config
+      type: string
+      description: "The SCM option for rhtap-cli installation. Valid values are 'github' , 'gitlab' and 'bitbucket'."
+    - name: pipeline_config
+      type: string
+      description: "The Pipeline option for rhtap-cli installation. Valid values are 'tekton' and 'jenkins'."
+    - name: auth_config
+      type: string
+      description: "The authentication provider for rhtap. Valid values are 'github' and 'gitlab'."
   tasks:
     - name: rosa-hcp-metadata
       taskRef:
@@ -107,6 +125,16 @@ spec:
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
         - name: job-spec
           value: "$(params.job-spec)"
+        - name: acs_config
+          value: $(params.acs_config)
+        - name: tpa_config
+          value: $(params.tpa_config)
+        - name: registry_config
+          value: $(params.registry_config)
+        - name: scm_config
+          value: $(params.scm_config)
+        - name: pipeline_config
+          value: $(params.pipeline_config)
     - name: sprayproxy-provision
       runAfter:
         - rhtap-install

@@ -47,16 +47,12 @@ spec:
                 value: $(tasks.test-metadata.results.job-spec)
             script: |
               #!/usr/bin/env bash
+              ## Download the pict file from the repository under directory integration-tests/pict-models/default.pict
               GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
+              REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
+              BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
 
-              if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
-                REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
-                BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
-              else
-                REPO_ORG="redhat-appstudio"
-                BRANCH="main"
-              fi
-              curl -o $(results.pict-file.path) https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
+              curl -o $(results.pict-file.path) https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
     - name: generate-configs
       runAfter:
         - get-pict-file
@@ -117,18 +113,32 @@ spec:
 
               pids=()
 
-              while IFS= read -r version; do
+              while IFS= read -r config; do
+                OCP_VERSION=$(echo "$config" | jq -r '.[] | select(.key == "OCP").value')
+                ACS=$(echo "$config" | jq -r '.[] | select(.key == "ACS").value')
+                REGISTRY=$(echo "$config" | jq -r '.[] | select(.key == "Registry").value')
+                TPA=$(echo "$config" | jq -r '.[] | select(.key == "TPA").value')
+                SCM=$(echo "$config" | jq -r '.[] | select(.key == "SCM").value')
+                PIPELINE=$(echo "$config" | jq -r '.[] | select(.key == "Pipeline").value')
+                AUTH=$(echo "$config" | jq -r '.[] | select(.key == "AUTH").value')
+
                 (
                 pipeline_run_name=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
-                  --param ocp-version="$version"\
+                  --param ocp-version="$OCP_VERSION"\
                   --param job-spec="$JOB_SPEC"\
                   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
+                  --param acs_config="$ACS" \
+                  --param registry_config="$REGISTRY" \
+                  --param tpa_config="$TPA" \
+                  --param scm_config="$SCM" \
+                  --param pipeline_config="$PIPELINE" \
+                  --param auth_config="$AUTH" \
                   --use-param-defaults \
                   --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
                   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
                   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
                   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                  --prefix-name "e2e-$version"\
+                  --prefix-name "e2e-$OCP_VERSION"\
                   -o name)
 
                   tkn pipelinerun logs  "$pipeline_run_name" -f | sed "s/^/$pipeline_run_name: /"
@@ -142,7 +152,7 @@ spec:
                 ) &
                 pid="$!"
                 pids+=("$pid")
-              done < <(echo "$CONFIGS_JSON" | jq -r '.[][] | select(.key == "OCP").value')
+              done < <(echo "$CONFIGS_JSON" | jq -c '.[]')
 
               for pid in "${pids[@]}"; do
                 wait "$pid"

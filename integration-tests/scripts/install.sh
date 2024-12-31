@@ -9,19 +9,18 @@ if [ -f "$HOME/rhtap-cli-ci-kubeconfig" ]; then
 fi
 
 echo "[INFO]Configuring deployment"
+acs_config="${acs_config:-new}" # new, hosted
+tpa_config="${tpa_config:-new}" # new, hosted
+registry_config="${registry_config:-quay}" # quay, quayio, artifactory
+scm_config="${scm_config:-github}"  # github, gitlab, bitbucket
+pipeline_config="${pipeline_config:-tekton}" # tekton, jenkins
+auth_config="${auth_config:-github}" # github, gitlab
 
-acs_install_enabled="${acs_install_enabled:-true}"
-quay_install_enabled="${quay_install_enabled:-true}"
-github_enabled="${github_enabled:-true}"
-gitlab_enabled="${gitlab_enabled:-true}"
-jenkins_enabled="${jenkins_enabled:-true}"
-bitbucket_enabled="${bitbucket_enabled:-false}"
-
-echo "[INFO] acs_install_enabled=$acs_install_enabled"
-echo "[INFO] quay_install_enabled=$quay_install_enabled"
-echo "[INFO] github_enabled=$github_enabled"
-echo "[INFO] gitlab_enabled=$gitlab_enabled"
-echo "[INFO] jenkins_enabled=$jenkins_enabled"
+echo "[INFO] acs_config=$acs_config"
+echo "[INFO] tpa_config=$tpa_config"
+echo "[INFO] registry_config=$registry_config"
+echo "[INFO] scm_config=$scm_config"
+echo "[INFO] ci_config=$pipeline_config"
 
 # Variables for RHTAP Sample Backstage Templates
 export DEVELOPER_HUB__CATALOG__URL="${DEVELOPER_HUB__CATALOG__URL:-"https://github.com/redhat-appstudio/tssc-sample-templates/blob/main/all.yaml"}"
@@ -34,6 +33,8 @@ export GITOPS__GIT_TOKEN
 export GITHUB__APP__WEBHOOK__SECRET
 # Variables for Gitlab integration
 export GITLAB__TOKEN
+export GITLAB__APP__ID
+export GITLAB__APP_SECRET
 # Variables for Jenkins integration
 export JENKINS_API_TOKEN
 export JENKINS_URL
@@ -48,6 +49,12 @@ export ACS__API_TOKEN
 export BITBUCKET_HOST="bitbucket.org"
 export BITBUCKET_USERNAME
 export BITBUCKET_APP_PASSWORD
+## variables for TPA integration
+export BOMBASTIC_API_URL
+export OIDC_CLIENT_ID
+export OIDC_CLIENT_SECRET
+export OIDC_ISSUER_URL
+export SUPPORTED_CYCLONEDX_VERSION="1.4"
 
 tpl_file="installer/charts/values.yaml.tpl"
 config_file="installer/config.yaml"
@@ -66,8 +73,8 @@ update_dh_catalog_url() {
 }
 
 github_integration() {
-  # if github_enabled is true, then perform the github integration
-  if [[ "${github_enabled}" == "true" ]]; then
+  # if scm_config is "github", then perform the github integration
+  if [[ "${scm_config}" == "github" || "$auth_config" == "github" ]]; then
     echo "[INFO] Config Github integration with RHTAP"
 
     GITHUB__APP__ID="${GITHUB__APP__ID:-$(cat /usr/local/rhtap-cli-install/rhdh-github-app-id)}"
@@ -93,7 +100,7 @@ EOF
 }
 
 jenkins_integration() {
-  if [[ "${jenkins_enabled}" == "true" ]]; then
+  if [[ "${pipeline_config}" == "jenkins" ]]; then
     echo "[INFO] Integrates an exising Jenkins server into RHTAP"
 
     JENKINS_API_TOKEN="${JENKINS_API_TOKEN:-$(cat /usr/local/rhtap-cli-install/jenkins-api-token)}"
@@ -105,17 +112,20 @@ jenkins_integration() {
 }
 
 gitlab_integration() {
-  if [[ "${gitlab_enabled}" == "true" ]]; then
+  if [[ "${scm_config}" == "gitlab" || "$auth_config" = "gitlab" ]]; then
     echo "[INFO] Configure Gitlab integration into RHTAP"
 
     GITLAB__TOKEN="${GITLAB__TOKEN:-$(cat /usr/local/rhtap-cli-install/gitlab_token)}"
 
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" gitlab --token "${GITLAB__TOKEN}"
+    GITLAB__APP__ID="${GITLAB__APP__ID:-$(cat /usr/local/rhtap-cli-install/gitlab-app-id)}"
+    GITLAB__APP_SECRET="${GITLAB__APP_SECRET:-$(cat /usr/local/rhtap-cli-install/gitlab-app-secret)}"
+
+    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" gitlab --token="${GITLAB__TOKEN}" --app-id="${GITLAB__APP__ID}" --app-secret="${GITLAB__APP_SECRET}"
   fi
 }
 
-quay_integration() {
-  if [[ "${quay_install_enabled}" == "false" ]]; then
+quayio_integration() {
+  if [[ "${registry_config}" == "quay.io" ]]; then
     # disable Quay installation
     yq e '.rhtapCLI.features.redHatQuay.enabled = false' -i "${config_file}"
 
@@ -130,7 +140,7 @@ quay_integration() {
 }
 
 acs_integration() {
-  if [[ "${acs_install_enabled}" == "false" ]]; then
+  if [[ "${acs_config}" == "hosted" ]]; then
     # disable ACS installation
     yq e '.rhtapCLI.features.redHatAdvancedClusterSecurity.enabled = false' -i "${config_file}"
 
@@ -144,8 +154,11 @@ acs_integration() {
 }
 
 acs_quay_connection() {
-  # if quay_install_enabled is false, then skip the quay integration
-  if [[ "${quay_install_enabled}" == "true" ]]; then
+  #TODO: it needs to consider the following scenarios:
+  # 1. ACS is installed and Quay is installed
+  # 2. ACS is hosted on somewhere and registry is using quay.io
+  # 3. ACS is hosted on somewhere and registry is Artifactory
+  if [[ "${registry_config}" == "quay" ]]; then
     echo "[INFO] Configure internal Quay integration with internal ACS"
 
     acs_central_url=https://$(kubectl -n rhtap-acs get route central -o  'jsonpath={.spec.host}')
@@ -163,13 +176,28 @@ acs_quay_connection() {
 }
 
 bitbucket_integration() {
-  if [[ "${bitbucket_enabled}" == "true" ]]; then
+  if [[ "${scm_config}" == "bitbucket" ]]; then
     echo "[INFO] Configure Bitbucket integration into RHTAP"
 
     BITBUCKET_USERNAME="${BITBUCKET_USERNAME:-$(cat /usr/local/rhtap-cli-install/bitbucket-username)}"
     BITBUCKET_APP_PASSWORD="${BITBUCKET_APP_PASSWORD:-$(cat /usr/local/rhtap-cli-install/bitbucket-app-password)}"
 
     ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" bitbucket --host="${BITBUCKET_HOST}" --username="${BITBUCKET_USERNAME}" --app-password="${BITBUCKET_APP_PASSWORD}"
+  fi
+}
+
+tpa_integration() {
+  if [[ "${tpa_config}" == "hosted" ]]; then
+    echo "[INFO] Configure a hosted TPA integration into RHTAP"
+
+    BOMBASTIC_API_URL="${BOMBASTIC_API_URL:-$(cat /usr/local/rhtap-cli-install/bombastic-api-url)}"
+    OIDC_CLIENT_ID="${OIDC_CLIENT_ID:-$(cat /usr/local/rhtap-cli-install/oidc-client-id)}"
+    OIDC_CLIENT_SECRET="${OIDC_CLIENT_SECRET:-$(cat /usr/local/rhtap-cli-install/oidc-client-secret)}"
+    OIDC_ISSUER_URL="${OIDC_ISSUER_URL:-$(cat /usr/local/rhtap-cli-install/oidc-issuer-url)}"
+
+    # disable TPA installation
+    yq e '.rhtapCLI.features.trustedProfileAnalyzer.enabled = false' -i "${config_file}"
+    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" trustification --bombastic-api-url="${BOMBASTIC_API_URL}" --oidc-client-id="${OIDC_CLIENT_ID}" --oidc-client-secret="${OIDC_CLIENT_SECRET}" --oidc-issuer-url="${OIDC_ISSUER_URL}" --supported-cyclonedx-version="${SUPPORTED_CYCLONEDX_VERSION}"
   fi
 }
 
@@ -182,13 +210,14 @@ install_rhtap() {
   echo "[INFO] Installing RHTAP"
   jenkins_integration
   gitlab_integration
-  quay_integration
+  quayio_integration
   acs_integration
   bitbucket_integration
+  tpa_integration
   # for debugging purpose
   echo "[INFO] Print out the content of values.yaml.tpl"
   cat "$tpl_file"
-  ./bin/rhtap-cli deploy --timeout 30m --config "$config_file" --values-template "$tpl_file" --kube-config "$KUBECONFIG" --debug --log-level=debug
+  ./bin/rhtap-cli deploy --timeout 35m --config "$config_file" --values-template "$tpl_file" --kube-config "$KUBECONFIG" --debug --log-level=debug
 
   homepage_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')
   callback_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')/api/auth/github/handler/frame

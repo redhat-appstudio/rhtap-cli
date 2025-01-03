@@ -94,6 +94,10 @@ spec:
                 valueFrom:
                   fieldRef:
                     fieldPath: metadata.labels['appstudio.openshift.io/component']
+              - name: KONFLUX_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
             script: |
               #!/usr/bin/env bash
               set -euxo pipefail
@@ -111,7 +115,7 @@ spec:
               echo "Running tests for OCP versions:"
               echo "$CONFIGS_JSON" | jq -r '.[][] | select(.key == "OCP").value'
 
-              pids=()
+              PIPELINERUNS_ARRAY=()
 
               while IFS= read -r config; do
                 OCP_VERSION=$(echo "$config" | jq -r '.[] | select(.key == "OCP").value')
@@ -122,7 +126,6 @@ spec:
                 PIPELINE=$(echo "$config" | jq -r '.[] | select(.key == "Pipeline").value')
                 AUTH=$(echo "$config" | jq -r '.[] | select(.key == "AUTH").value')
 
-                (
                 pipeline_run_name=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
                   --param ocp-version="$OCP_VERSION"\
                   --param job-spec="$JOB_SPEC"\
@@ -141,25 +144,50 @@ spec:
                   --prefix-name "e2e-$OCP_VERSION"\
                   -o name)
 
-                  tkn pipelinerun logs  "$pipeline_run_name" -f | sed "s/^/$pipeline_run_name: /"
+                  echo "Started new pipelinerun: https://console.redhat.com/application-pipeline/workspaces/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${pipeline_run_name}"
 
-                  pipelinerun_status=$(tkn pipelinerun describe "$pipeline_run_name" -o jsonpath='{.status.conditions[0].status}')
-                  if [ "$pipelinerun_status" != "True" ]; then
-                    echo "Pipelinerun $pipeline_run_name failed"
-                    exit 1
-                  fi
+                  PIPELINERUNS_ARRAY+=($pipeline_run_name)
 
-                ) &
-                pid="$!"
-                pids+=("$pid")
+                  # tkn pipelinerun logs  "$pipeline_run_name" -f | sed "s/^/$pipeline_run_name: /"
+
+                  # pipelinerun_status=$(tkn pipelinerun describe "$pipeline_run_name" -o jsonpath='{.status.conditions[0].status}')
+                  # if [ "$pipelinerun_status" != "True" ]; then
+                  #   echo "Pipelinerun $pipeline_run_name failed"
+                  #   exit 1
+                  # fi
               done < <(echo "$CONFIGS_JSON" | jq -c '.[]')
 
-              for pid in "${pids[@]}"; do
-                wait "$pid"
-                return_code=$?
-                if [ $return_code -ne 0 ]; then
-                  echo "One or more pipelineruns failed. Exiting with non-zero code."
-                  oc get pipelineruns
-                  exit 1
+
+              # Wait for all PLRs to finish 
+              timeout --foreground 120m /bin/bash -c '
+                  while true; do
+                    IS_SOMETHING_RUNNING=false
+                    for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
+                      if [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Unknown" ]]; then
+                        #something is still running. Break this cycle and wait one minute.
+                        IS_SOMETHING_RUNNING=true
+                        break
+                      fi
+                    done
+                    if $IS_SOMETHING_RUNNING ; then
+                      echo "Nested pipelines are still running. Waiting 1 minute"
+                      sleep 60
+                    else
+                      echo "All nested pipelines finished"
+                      break
+                  done
+              '
+              ## Explore and report status of all failed pipelineruns. Fail if anything failed
+              SOMETHING_FAILED=false
+              for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
+                if [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Failed" ]]; then
+                  if ! $SOMETHING_FAILED ; then
+                    echo "List of failed PLRs:"
+                  fi
+                  echo "https://console.redhat.com/application-pipeline/workspaces/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                  SOMETHING_FAILED=true
                 fi
-              done
+              done 
+              if $SOMETHING_FAILED ; then
+                exit 1
+              fi

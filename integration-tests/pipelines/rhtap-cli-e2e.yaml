@@ -135,6 +135,8 @@ spec:
           value: $(params.scm_config)
         - name: pipeline_config
           value: $(params.pipeline_config)
+        - name: auth_config
+          value: $(params.auth_config)
     - name: sprayproxy-provision
       runAfter:
         - rhtap-install

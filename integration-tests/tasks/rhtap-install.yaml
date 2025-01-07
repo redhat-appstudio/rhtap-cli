@@ -49,6 +49,7 @@ spec:
         set -o errexit
         set -o nounset
         set -o pipefail
+        set -x
 
         GIT_REPO="${GIT_REPO:-$(echo "$JOB_SPEC" | jq -r '.git.repo // empty')}"
 
@@ -56,17 +57,6 @@ spec:
           echo "[ERROR] GIT_REPO is not set in JOB_SPEC"
           exit 1
         fi
-
-        # Generate the .env file for rhtap-cli installation based on the configuration given in the pict file
-        if [ -f .env ]; then
-            rm .env
-        fi
-        echo "export acs_config=\"$(params.acs_config)\"" >> .env
-        echo "export tpa_config=\"$(params.tpa_config)\"" >> .env
-        echo "export registry_config=\"$(params.registry_config)\"" >> .env
-        echo "export scm_config=\"$(params.scm_config)\"" >> .env
-        echo "export pipeline_config=\"$(params.pipeline_config)\"" >> .env
-        echo "export auth_config=\"$(params.auth_config)\"" >> .env
 
         # Clone the rhtap-cli repository
         cd "$(mktemp -d)"
@@ -82,6 +72,17 @@ spec:
             echo -e "INFO: Cloning repository 'redhat-appstudio/rhtap-cli' with revision 'main'"
             git clone https://github.com/redhat-appstudio/rhtap-cli.git .
         fi
+
+        # Generate the .env file for rhtap-cli installation based on the configuration given in the pict file
+        if [ -f .env ]; then
+            rm .env
+        fi
+        echo "export acs_config=\"$(params.acs_config)\"" > .env
+        echo "export tpa_config=\"$(params.tpa_config)\"" >> .env
+        echo "export registry_config=\"$(params.registry_config)\"" >> .env
+        echo "export scm_config=\"$(params.scm_config)\"" >> .env
+        echo "export pipeline_config=\"$(params.pipeline_config)\"" >> .env
+        echo "export auth_config=\"$(params.auth_config)\"" >> .env
 
         # Deploy rhtap
         source .env

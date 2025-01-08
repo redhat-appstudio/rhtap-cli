@@ -1,4 +1,7 @@
 ---
+debug:
+  ci: false
+
 developerHub:
   instanceName: developer-hub
   catalogURL: __OVERWRITE_ME__

@@ -1,0 +1,6 @@
+---
+apiVersion: v2
+name: rhtap-acs-scanner
+description: RHTAP Advanced Cluster Security - Scanner check
+type: application
+version: 0.1.0

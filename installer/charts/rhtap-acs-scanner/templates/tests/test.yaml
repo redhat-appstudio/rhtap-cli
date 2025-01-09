@@ -1,0 +1,56 @@
+{{- $name := printf "%s-test" .Chart.Name -}}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+  labels:
+    {{- include "rhtap-acs-scanner.labels" . | nindent 4 }}
+  name: {{ $name }} 
+spec:
+  restartPolicy: Never
+  serviceAccount: default
+  automountServiceAccountToken: false
+  initContainers:
+    #
+    # Copying the scripts that will be used on the subsequent containers, the
+    # scripts are shared via the "/scripts" volume.
+    #
+{{- include "acs-scanner.copyScripts" . | nindent 4 }}
+  containers:
+    #
+    # Test ACS availibility, pending https://issues.redhat.com/browse/RFE-6727
+    #
+    - name: acs-image-scan
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      command:
+        - /scripts/test-acs-image-scan.sh
+      env:
+        - name: IMAGE
+          value: {{ .Values.acsScanner.image }}
+        - name: ROX_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: rhtap-acs-integration
+              key: token
+        - name: ROX_CENTRAL_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: rhtap-acs-integration
+              key: endpoint
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+        - name: workdir
+          mountPath: /workdir
+      workingDir: /workdir
+      securityContext:
+        runAsNonRoot: false
+        allowPrivilegeEscalation: false
+  volumes:
+    - name: scripts
+      emptyDir: {}
+    - name: workdir
+      emptyDir: {}

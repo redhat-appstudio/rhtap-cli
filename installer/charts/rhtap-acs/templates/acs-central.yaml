@@ -56,7 +56,7 @@ spec:
       required ".acs.scanners.matcher is required"
         $acs.scanners.matcher | toYaml | nindent 6
     }}
-    scannerComponent: Default
+    scannerComponent: Enabled
   scanner:
     analyzer: {{-
       required ".acs.scanners.analyzer is required"

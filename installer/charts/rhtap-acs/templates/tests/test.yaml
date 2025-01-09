@@ -32,6 +32,11 @@ spec:
           value: {{ $namespace }}
         - name: RESOURCE_TYPE
           value: "deployment"
+      {{- if eq . "scanner" }}
+        # Downloading the vulnerability DB can take a long time
+        - name: RETRIES
+          value: "70"
+      {{- end }}
       command:
         - /scripts/test-rollout-status.sh
       args:

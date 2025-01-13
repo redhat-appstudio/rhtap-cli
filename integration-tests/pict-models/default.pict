@@ -3,11 +3,12 @@
 #
 
 # OCP: valid OCP versions, for example: 4.17, 4.16
-# ACS: valid values:  new, hosted
-# Registry: valid values:  quay, quay.io, artifactory, nexus
-# TPA: valid values:  new, hosted
-# SCM: valid values:  github, gitlab, bitbucket
-# Pipeline: valid values:  github, gitlab, bitbucket
+# ACS: valid values is "new" and "hosted"
+# Registry: valid values are "quay", "quay.io", "artifactory" and "nexus"
+# TPA: valid values are "new" and "hosted"
+# SCM: valid values are "github", "gitlab" and "bitbucket"
+# Pipeline: valid values are "github", "gitlab" and "bitbucket"
+# AUTH: valid values are "github" and "gitlab"
 
 OCP: 4.17, 4.16
 AUTH: github

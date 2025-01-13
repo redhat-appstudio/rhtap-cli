@@ -1,0 +1,3 @@
+---
+acsScanner:
+  image: registry.access.redhat.com/ubi9:latest

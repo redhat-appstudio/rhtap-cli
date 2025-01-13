@@ -1,10 +1,9 @@
 ---
 approvers:
-  - otaviof
-  - roming22
-  - lcarva
-reviewers:
   - xinredhat
   - prietyc123
   - jkopriva
   - rhopp
+reviewers:
+  - otaviof
+  - roming22

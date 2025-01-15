@@ -49,7 +49,6 @@ spec:
         set -o errexit
         set -o nounset
         set -o pipefail
-        set -x
 
         GIT_REPO="${GIT_REPO:-$(echo "$JOB_SPEC" | jq -r '.git.repo // empty')}"
 
@@ -74,18 +73,18 @@ spec:
         fi
 
         # Generate the .env file for rhtap-cli installation based on the configuration given in the pict file
-        if [ -f .env ]; then
-            rm .env
-        fi
-        echo "export acs_config=\"$(params.acs_config)\"" > .env
-        echo "export tpa_config=\"$(params.tpa_config)\"" >> .env
-        echo "export registry_config=\"$(params.registry_config)\"" >> .env
-        echo "export scm_config=\"$(params.scm_config)\"" >> .env
-        echo "export pipeline_config=\"$(params.pipeline_config)\"" >> .env
-        echo "export auth_config=\"$(params.auth_config)\"" >> .env
+        env_file="integration-tests/scripts/.ci-env"
+        echo "export acs_config=\"$(params.acs_config)\"" >> ${env_file}
+        echo "export tpa_config=\"$(params.tpa_config)\"" >> ${env_file}
+        echo "export registry_config=\"$(params.registry_config)\"" >> ${env_file}
+        echo "export scm_config=\"$(params.scm_config)\"" >> ${env_file}
+        echo "export pipeline_config=\"$(params.pipeline_config)\"" >> ${env_file}
+        echo "export auth_config=\"$(params.auth_config)\"" >> ${env_file}
 
+        echo "INFO: .env file for rhtap-cli installation"
+        cat ${env_file}
         # Deploy rhtap
-        source .env
+        source ${env_file}
         ./integration-tests/scripts/ci-oc-login.sh
         ./integration-tests/scripts/minio.sh
         ./integration-tests/scripts/install.sh

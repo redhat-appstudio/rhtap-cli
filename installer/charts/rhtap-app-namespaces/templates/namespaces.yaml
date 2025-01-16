@@ -1,10 +1,11 @@
 {{ $namespace := .Release.Namespace }}
+{{ $argoCD := .Values.argoCD }}
 {{- range tuple "development" "prod" "stage" }}
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   labels:
-    argocd.argoproj.io/managed-by: {{ $namespace }}
+    argocd.argoproj.io/managed-by: {{ $argoCD.name }}
   name: {{ $namespace }}-app-{{ . }}
 {{- end }}

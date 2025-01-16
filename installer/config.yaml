@@ -25,10 +25,10 @@ rhtapCLI:
       enabled: &quayEnabled true
       namespace: &quayNamespace rhtap-quay
     openShiftGitOps:
-      enabled: *rhdhEnabled
+      enabled: &gitopsEnabled true
       namespace: *installerNamespace
     openShiftPipelines:
-      enabled: *rhdhEnabled
+      enabled: &pipelinesEnabled true
       # No new resources will be created in the namespace
       namespace: openshift-pipelines
   dependencies:
@@ -55,10 +55,10 @@ rhtapCLI:
       enabled: *rhacsEnabled
     - chart: charts/rhtap-gitops
       namespace: *installerNamespace
-      enabled: *rhdhEnabled
+      enabled: *gitopsEnabled
     - chart: charts/rhtap-pipelines
       namespace: *installerNamespace
-      enabled: *rhdhEnabled
+      enabled: *pipelinesEnabled
     - chart: charts/rhtap-quay
       namespace: *quayNamespace
       enabled: *quayEnabled
@@ -68,6 +68,9 @@ rhtapCLI:
     - chart: charts/rhtap-tpa
       namespace: *trustedProfileAnalyzerNamespace
       enabled: *tpaEnabled
+    - chart: charts/rhtap-app-namespaces
+      namespace: *installerNamespace
+      enabled: *pipelinesEnabled
     - chart: charts/rhtap-dh
       namespace: *installerNamespace
       enabled: *rhdhEnabled

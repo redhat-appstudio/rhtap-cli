@@ -41,14 +41,19 @@ LABEL \
 
 WORKDIR /rhtap-cli
 
-COPY --from=ose-tools /usr/bin/jq /usr/bin/kubectl /usr/bin/oc /usr/bin/
+COPY --from=ose-tools /usr/bin/jq /usr/bin/kubectl /usr/bin/oc /usr/bin/vi /usr/bin/
+# jq libraries
 COPY --from=ose-tools /usr/lib64/libjq.so.1 /usr/lib64/libonig.so.5 /usr/lib64/
+# vi libraries
+COPY --from=ose-tools /usr/libexec/vi /usr/libexec/
 
-COPY --from=builder /workdir/rhtap-cli/installer ./
+COPY --from=builder /workdir/rhtap-cli/installer/charts ./charts
+COPY --from=builder /workdir/rhtap-cli/installer/config.yaml ./
 COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli /usr/local/bin/rhtap-cli
 
-RUN groupadd --gid 1000 -r rhtap-cli && \
-    useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 1000 rhtap-cli
+RUN groupadd --gid 999 -r rhtap-cli && \
+    useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 999 rhtap-cli && \
+    chown -R rhtap-cli:rhtap-cli .
 
 USER rhtap-cli
 

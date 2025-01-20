@@ -159,9 +159,9 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/redhat-appstudio/rhtap-e2e.git
+            value: https://github.com/xinredhat/rhtap-e2e.git
           - name: revision
-            value: main
+            value: RHTAP-3422
           - name: pathInRepo
             value: integration-tests/tasks/rhtap-e2e.yaml
       params:
@@ -171,6 +171,12 @@ spec:
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
         - name: oci-container
           value: $(tasks.create-oci-container.results.oci-container)
+        - name: scm_config
+          value: $(params.scm_config)
+        - name: pipeline_config
+          value: $(params.pipeline_config)
+        - name: ocp-version
+          value: "$(params.ocp-version)"
   finally:
     - name: deprovision-rosa-collect-artifacts
       taskRef:

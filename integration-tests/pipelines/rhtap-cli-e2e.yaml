@@ -171,6 +171,12 @@ spec:
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
         - name: oci-container
           value: $(tasks.create-oci-container.results.oci-container)
+        - name: scm_config
+          value: $(params.scm_config)
+        - name: pipeline_config
+          value: $(params.pipeline_config)
+        - name: ocp-version
+          value: "$(params.ocp-version)"
   finally:
     - name: deprovision-rosa-collect-artifacts
       taskRef:

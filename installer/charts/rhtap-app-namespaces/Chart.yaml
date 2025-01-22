@@ -2,5 +2,4 @@ apiVersion: v2
 name: rhtap-app-namespaces
 description: Red Hat User Application Namespaces
 type: application
-version: 0.1.0
-appVersion: "1.2"
+version: 1.4.0

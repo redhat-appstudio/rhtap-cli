@@ -3,7 +3,8 @@ apiVersion: v2
 name: rhtap-minio-operator
 description: Helm Chart to manage the MinIO Operator for RHTAP
 type: application
-version: 0.0.1
+version: 1.4.0
+appVersion: "5.0.17"
 
 dependencies:
   - name: operator

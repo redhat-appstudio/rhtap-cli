@@ -3,4 +3,4 @@ apiVersion: v2
 name: rhtap-openshift
 description: RHTAP OpenShift Projects
 type: application
-version: 0.0.1
+version: 1.4.0

@@ -61,4 +61,6 @@ RUN echo "# jq" && jq --version && \
     echo "# kubectl" && kubectl version --client && \
     echo "# oc" && oc version
 
+ENV KUBECONFIG=/rhtap-cli/.kube/config
+
 ENTRYPOINT ["rhtap-cli"]

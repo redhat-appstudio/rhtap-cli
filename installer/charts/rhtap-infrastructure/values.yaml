@@ -25,17 +25,17 @@ infrastructure:
         transaction.state.log.replication.factor: 1
       kafkaStorage:
         type: persistent-claim
-        size: 1Gi
+        size: 12Gi
       zookeeperStorage:
         type: persistent-claim
-        size: 500Mi
+        size: 756Mi
       # List of topics for TPA, some topics are used by MinIO (S3) for
       # notifications, therefore the topic name needs to be aligned with the MinIO
       # configuration.
       topics:
         - name: &topicSbomStored sbom-stored
           config: &kafkaTopicConfig
-            retention.ms: 604800000
+            retention.ms: 302400000
         - name: sbom-failed
           config: *kafkaTopicConfig
         - name: sbom-indexed

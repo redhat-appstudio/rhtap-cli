@@ -60,7 +60,7 @@ plugins:
     pluginConfig:
       dynamicPlugins:
         frontend:
-          backstage.plugin-jenkins:
+          backstage-community.plugin-jenkins:
             mountPoints:
               - mountPoint: entity.page.ci/cards
                 importName: EntityJenkinsContent

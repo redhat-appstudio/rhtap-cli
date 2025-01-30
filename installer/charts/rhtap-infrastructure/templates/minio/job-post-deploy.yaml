@@ -21,7 +21,7 @@ spec:
         # Copying the scripts that will be used on the subsequent containers, the
         # scripts are shared via the "/scripts" volume.
         #
-    {{- include "infrastructure.copyScripts" $root | nindent 8 }}
+    {{- include "common.copyScripts" $root | nindent 8 }}
         #
         # Waiting for the MinIO Tenant to be ready.
         #

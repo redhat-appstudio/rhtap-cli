@@ -18,7 +18,7 @@ spec:
     # Copying the scripts that will be used on the subsequent containers, the
     # scripts are shared via the "/scripts" volume.
     #
-{{- include "acs-scanner.copyScripts" . | nindent 4 }}
+{{- include "common.copyScripts" . | nindent 4 }}
   containers:
     #
     # Test ACS availibility, pending https://issues.redhat.com/browse/RFE-6727

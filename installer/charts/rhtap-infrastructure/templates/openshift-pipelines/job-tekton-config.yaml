@@ -25,7 +25,7 @@ spec:
         # Copying the scripts that will be used on the subsequent containers, the
         # scripts are shared via the "/scripts" volume.
         #
-    {{- include "infrastructure.copyScripts" . | nindent 8 }}
+    {{- include "common.copyScripts" . | nindent 8 }}
       containers:
     {{- if $osp.patchClusterTektonConfig.annotations }}
         #

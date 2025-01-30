@@ -19,7 +19,7 @@ spec:
     # Copying the scripts that will be used on the subsequent containers, the
     # scripts are shared via the "/scripts" volume.
     #
-{{- include "acs.copyScripts" . | nindent 4 }}
+{{- include "common.copyScripts" . | nindent 4 }}
   containers:
 {{- range tuple "central" "central-db" "scanner" "scanner-db" }}
     #

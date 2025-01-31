@@ -177,6 +177,7 @@ backingServices:
 #
 
 acs:
+  enabled: {{ $acs.Enabled }}
   name: stackrox-central-services
   ingressDomain: {{ $ingressDomain }}
   integrationSecret:
@@ -230,7 +231,11 @@ quay:
 # rhtap-integrations
 #
 
-# integrations:
+integrations:
+  acs:
+    enabled: {{ $acs.Enabled }}
+  quay:
+    enabled: {{ $quay.Enabled }}
 #   github:
 #     clientId: ""
 #     clientSecret: ""

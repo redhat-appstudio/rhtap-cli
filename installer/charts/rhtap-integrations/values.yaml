@@ -1,2 +1,6 @@
 ---
-integrations: {}
+integrations:
+  acs:
+    enabled: true
+  quay:
+    enabled: true

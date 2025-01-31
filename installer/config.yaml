@@ -44,9 +44,6 @@ rhtapCLI:
     - chart: charts/rhtap-infrastructure
       namespace: *installerNamespace
       enabled: true
-    - chart: charts/rhtap-integrations
-      namespace: *installerNamespace
-      enabled: true
     - chart: charts/rhtap-backing-services
       namespace: *installerNamespace
       enabled: *tpaEnabled
@@ -74,6 +71,9 @@ rhtapCLI:
     - chart: charts/rhtap-dh
       namespace: *installerNamespace
       enabled: *rhdhEnabled
+    - chart: charts/rhtap-integrations
+      namespace: *installerNamespace
+      enabled: true
     - chart: charts/rhtap-acs-scanner
       namespace: *installerNamespace
       enabled: *rhacsEnabled

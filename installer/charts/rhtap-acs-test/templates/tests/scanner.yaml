@@ -1,4 +1,3 @@
-{{- $name := printf "%s-test" .Chart.Name -}}
 ---
 apiVersion: v1
 kind: Pod
@@ -7,8 +6,9 @@ metadata:
     helm.sh/hook: test
     helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
   labels:
-    {{- include "rhtap-acs-scanner.labels" . | nindent 4 }}
-  name: {{ $name }} 
+    {{- include "rhtap-acs-test.labels" . | nindent 4 }}
+  name: {{ .Chart.Name }}-scanner
+  namespace: {{ .Values.acsTest.integrationSecret.namespace }}
 spec:
   restartPolicy: Never
   serviceAccount: default
@@ -27,9 +27,10 @@ spec:
       image: quay.io/codeready-toolchain/oc-client-base:latest
       command:
         - /scripts/test-acs-image-scan.sh
+        - -d
       env:
         - name: IMAGE
-          value: {{ .Values.acsScanner.image }}
+          value: {{ .Values.acsTest.test.scanner.image }}
         - name: ROX_API_TOKEN
           valueFrom:
             secretKeyRef:

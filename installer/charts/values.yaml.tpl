@@ -176,12 +176,16 @@ backingServices:
 # rhtap-acs
 #
 
-acs:
+acs: &acs
   enabled: {{ $acs.Enabled }}
-  name: stackrox-central-services
+  name: &acsName stackrox-central-services
   ingressDomain: {{ $ingressDomain }}
   integrationSecret:
     namespace: {{ .Installer.Namespace }}
+  test:
+    scanner:
+      image: registry.access.redhat.com/ubi9:latest
+acsTest: *acs
 
 #
 # rhtap-gitops

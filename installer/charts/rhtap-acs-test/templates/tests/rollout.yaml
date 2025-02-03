@@ -1,5 +1,3 @@
-{{- $acs := .Values.acs }}
-{{- $name := printf "%s-test" .Chart.Name -}}
 {{- $namespace := .Release.Namespace }}
 ---
 apiVersion: v1
@@ -9,8 +7,8 @@ metadata:
     helm.sh/hook: test
     helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
   labels:
-    {{- include "rhtap-acs.labels" . | nindent 4 }}
-  name: {{ $name }} 
+    {{- include "rhtap-acs-test.labels" . | nindent 4 }}
+  name: {{ .Chart.Name }}-rollout-test 
 spec:
   restartPolicy: Never
   serviceAccountName: {{ .Release.Name }}
@@ -25,7 +23,7 @@ spec:
     #
     # Test the ACS rollout status.
     #
-    - name: {{ printf "acs-%s-%s" . $acs.name }}
+    - name: acs-{{ . }}-rollout
       image: quay.io/codeready-toolchain/oc-client-base:latest
       env:
         - name: NAMESPACE

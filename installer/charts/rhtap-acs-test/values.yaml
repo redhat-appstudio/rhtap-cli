@@ -1,0 +1,9 @@
+---
+acsTest:
+  # ACS Central instance name.
+  name: __OVERWRITE_ME__
+  integrationSecret:
+    namespace: __OVERWRITE_ME__
+  test:
+    scanner:
+      image: __OVERWRITE_ME__

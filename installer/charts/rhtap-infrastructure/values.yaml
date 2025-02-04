@@ -15,10 +15,10 @@ infrastructure:
       # to allow the group ID to access the topics.
       groupIDs:
         - indexer
-      version: 3.6.0
+      version: 3.8.0
       config:
         default.replication.factor: 1
-        inter.broker.protocol.version: "3.6"
+        inter.broker.protocol.version: "3.8"
         min.insync.replicas: 1
         offsets.topic.replication.factor: 1
         transaction.state.log.min.isr: 1

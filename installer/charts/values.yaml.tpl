@@ -20,12 +20,16 @@ debug:
 openshift:
   projects:
 {{- if $keycloak.Enabled }}
-    - rhbk-operator
     - {{ $keycloak.Namespace }}
+    {{- if $gitops.Properties.manageSubscription }}
+    - rhbk-operator
+    {{- end }}
 {{- end }}
 {{- if $acs.Enabled }}
-    - rhacs-operator
     - {{ $acs.Namespace }}
+    {{- if $acs.Properties.manageSubscription }}
+    - rhacs-operator
+    {{- end }}
 {{- end }}
 {{- if $quay.Enabled }}
     - {{ $quay.Namespace }}
@@ -50,27 +54,36 @@ openshift:
 subscriptions:
   amqStreams:
     enabled: {{ $tpa.Enabled }}
+    managed: {{ and $tpa.Enabled $tpa.Properties.manageSubscription }}
   crunchyData:
     enabled: {{ or $tpa.Enabled $rhdh.Enabled }}
+    managed: {{ or (and $tpa.Enabled $tpa.Properties.manageSubscription ) (and $rhdh.Enabled $rhdh.Properties.manageSubscription) }}
   openshiftGitOps:
     enabled: {{ $gitops.Enabled }}
+    managed: {{ and $gitops.Enabled $gitops.Properties.manageSubscription }}
     config:
       argoCDClusterNamespace: {{ $argoCDNamespace }}
   openshiftKeycloak:
     enabled: {{ $keycloak.Enabled }}
+    managed: {{ and $keycloak.Enabled $keycloak.Properties.manageSubscription }}
     operatorGroup:
       targetNamespaces:
         - {{ default "empty" $keycloak.Namespace }}
   openshiftPipelines:
     enabled: {{ $pipelines.Enabled }}
+    managed: {{ and $pipelines.Enabled $pipelines.Properties.manageSubscription }}
   openshiftTrustedArtifactSigner:
     enabled: {{ $tas.Enabled }}
+    managed: {{ and $tas.Enabled $tas.Properties.manageSubscription }}
   redHatAdvancedClusterSecurity:
     enabled: {{ $acs.Enabled }}
+    managed: {{ and $acs.Enabled $acs.Properties.manageSubscription }}
   redHatDeveloperHub:
     enabled: {{ $rhdh.Enabled }}
+    managed: {{ and $rhdh.Enabled $rhdh.Properties.manageSubscription }}
   redHatQuay:
     enabled: {{ $quay.Enabled }}
+    managed: {{ and $quay.Enabled $quay.Properties.manageSubscription }}
 
 #
 # rhtap-minio-operator

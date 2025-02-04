@@ -7,30 +7,45 @@ rhtapCLI:
     trustedProfileAnalyzer:
       enabled: &tpaEnabled true
       namespace: &trustedProfileAnalyzerNamespace rhtap-tpa
+      properties:
+        manageSubscription: true
     keycloak:
       enabled: *tpaEnabled
       namespace: rhtap-keycloak
+      properties:
+        manageSubscription: true
     trustedArtifactSigner:
       enabled: &tasEnabled true
       namespace: &trustedArtifactSignerNamespace rhtap-tas
+      properties:
+        manageSubscription: true
     redHatDeveloperHub:
       enabled: &rhdhEnabled true
       namespace: *installerNamespace
       properties:
         catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/v1.4.0/all.yaml
+        manageSubscription: true
     redHatAdvancedClusterSecurity:
       enabled: &rhacsEnabled true
       namespace: &rhacsNamespace rhtap-acs
+      properties:
+        manageSubscription: true
     redHatQuay:
       enabled: &quayEnabled true
       namespace: &quayNamespace rhtap-quay
+      properties:
+        manageSubscription: true
     openShiftGitOps:
       enabled: &gitopsEnabled true
       namespace: *installerNamespace
+      properties:
+        manageSubscription: true
     openShiftPipelines:
       enabled: &pipelinesEnabled true
       # No new resources will be created in the namespace
       namespace: openshift-pipelines
+      properties:
+        manageSubscription: true
   dependencies:
     - chart: charts/rhtap-openshift
       namespace: *installerNamespace

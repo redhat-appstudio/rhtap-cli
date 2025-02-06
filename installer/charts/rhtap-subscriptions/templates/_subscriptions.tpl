@@ -10,3 +10,15 @@
   {{- end -}}
   {{- $enabled | toYaml -}}
 {{- end -}}
+{{- /*
+  Select the managed subscriptions.
+*/ -}}
+{{- define "subscriptions.managed" -}}
+  {{- $managed := dict -}}
+  {{- range $k, $v := .Values.subscriptions -}}
+    {{- if $v.managed -}}
+      {{- $managed = merge $managed (dict $k $v) -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $managed | toYaml -}}
+{{- end -}}

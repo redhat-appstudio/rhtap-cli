@@ -1,4 +1,4 @@
-{{- range $s := include "subscriptions.enabled" . | fromYaml }}
+{{- range $s := include "subscriptions.managed" . | fromYaml }}
   {{- if $s.operatorGroup }}
 ---
 apiVersion: operators.coreos.com/v1

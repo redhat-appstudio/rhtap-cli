@@ -24,8 +24,8 @@ spec:
       options: SUPERUSER
   backups:
     pgbackrest:
-  {{- with $v.pgbackrestConfig }}
-      config:
+  {{- with $v.pgbackrestGlobal }}
+      global:
         {{- toYaml . | nindent 8 }}
   {{- end }}
       repos:

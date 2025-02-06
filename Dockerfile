@@ -2,8 +2,8 @@
 # Build
 #
 
-FROM registry.redhat.io/openshift4/ose-tools-rhel9@sha256:683fe19d6624335d60fcfdd9b53aedac6d299205c4c573e4f334008d92591eb5 AS ose-tools
-FROM registry.access.redhat.com/ubi9/go-toolset:1.22.5-1730550521 AS builder
+FROM registry.redhat.io/openshift4/ose-tools-rhel9@sha256:b143e0cb25643a764335040e1f2ddc16cf2031b2213e45a0ba30274b4ca6a4a3 AS ose-tools
+FROM registry.access.redhat.com/ubi9/go-toolset:1.22.9-1736729788 AS builder
 
 USER root
 WORKDIR /workdir/rhtap-cli
@@ -22,7 +22,7 @@ RUN make GOFLAGS='-buildvcs=false'
 # Run
 #
 
-FROM registry.access.redhat.com/ubi9-minimal:9.5-1731604394
+FROM registry.access.redhat.com/ubi9-minimal:9.5-1736404155
 
 LABEL \
   name="rhtap-cli" \
@@ -41,16 +41,26 @@ LABEL \
 
 WORKDIR /rhtap-cli
 
-COPY --from=ose-tools /usr/bin/kubectl /usr/bin/
+COPY --from=ose-tools /usr/bin/jq /usr/bin/kubectl /usr/bin/oc /usr/bin/vi /usr/bin/
+# jq libraries
+COPY --from=ose-tools /usr/lib64/libjq.so.1 /usr/lib64/libonig.so.5 /usr/lib64/
+# vi libraries
+COPY --from=ose-tools /usr/libexec/vi /usr/libexec/
 
-COPY --from=builder /workdir/rhtap-cli/installer ./
+COPY --from=builder /workdir/rhtap-cli/installer/charts ./charts
+COPY --from=builder /workdir/rhtap-cli/installer/config.yaml ./
 COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli /usr/local/bin/rhtap-cli
 
-RUN groupadd --gid 1000 -r rhtap-cli && \
-    useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 1000 rhtap-cli
+RUN groupadd --gid 999 -r rhtap-cli && \
+    useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 999 rhtap-cli && \
+    chown -R rhtap-cli:rhtap-cli .
 
 USER rhtap-cli
 
-RUN kubectl version --client
+RUN echo "# jq" && jq --version && \
+    echo "# kubectl" && kubectl version --client && \
+    echo "# oc" && oc version
+
+ENV KUBECONFIG=/rhtap-cli/.kube/config
 
 ENTRYPOINT ["rhtap-cli"]

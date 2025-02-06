@@ -21,29 +21,33 @@ patch_serviceaccount() {
     local NAMESPACE="$1"
     local SA="$2"
 
-    echo -n "- Patching ServiceAccount '$SA' in '$NAMESPACE': "
-
-    # Wait until the ServiceAccount is available
+    # Wait until the ServiceAccount is available and get the definition
     until "$KUBECTL" get serviceaccounts --namespace "$NAMESPACE" "$SA" >/dev/null 2>&1; do
         echo -n "_"
         sleep 2
     done
+    SA_DEFINITION="service-account.yaml"
+    SA_DEFINITION_UPDATED="$SA_DEFINITION.patch.yaml"
+    "$KUBECTL" get serviceaccount "$SA" --namespace "$NAMESPACE" -o json >"$SA_DEFINITION"
 
-    # Check for  artifactory-auth, nexus-auth and quay-auth secrets and patch if present
+    # Check for artifactory-auth, nexus-auth and quay-auth secrets and patch if present
+    [ -e "$SA_DEFINITION_UPDATED" ] && rm "$SA_DEFINITION_UPDATED"
     for SECRET_NAME in artifactory-auth nexus-auth quay-auth; do
         SECRET=$("$KUBECTL" get secret "$SECRET_NAME" --namespace "$NAMESPACE" --ignore-not-found)
         if [ -n "$SECRET" ]; then
             echo -n "."
-            CURRENT_SA_PATCH=$("$KUBECTL" get serviceaccount "$SA" --namespace "$NAMESPACE" -o json)
-            UPDATED_SA=$(echo "$CURRENT_SA_PATCH" | jq --arg NAME "$SECRET_NAME" '
+            jq --arg NAME "$SECRET_NAME" '
                 .secrets |= (. + [{"name": $NAME}] | unique) |
                 .imagePullSecrets |= (. + [{"name": $NAME}] | unique)
-            ')
-
-            echo "$UPDATED_SA" | "$KUBECTL" apply -f -
-            echo "OK"
+            ' "$SA_DEFINITION" >"$SA_DEFINITION_UPDATED"
+            cp "$SA_DEFINITION_UPDATED" "$SA_DEFINITION"
         fi
     done
+
+    if [ -e "$SA_DEFINITION_UPDATED" ]; then
+        echo -n "- Patching ServiceAccount '$SA' in '$NAMESPACE': "
+        "$KUBECTL" apply -f "$SA_DEFINITION_UPDATED"
+    fi
 }
 
 app_namespaces() {

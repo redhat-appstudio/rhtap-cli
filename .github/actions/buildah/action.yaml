@@ -9,14 +9,14 @@ inputs:
   IMAGE_NAMESPACE:
     description: Makefile's IMAGE_NAMESPACE variable
     required: false
+    default: ${{ github.repository_owner }}
   IMAGE_REPO_USERNAME:
     description: Makefile's IMAGE_REPO_USERNAME variable
     required: false
     default: ${{ github.actor }}
   IMAGE_REPO_PASSWORD:
     description: Makefile's IMAGE_REPO_PASSWORD variable
-    required: false
-    default: ${{ secrets.GITHUB_TOKEN }}
+    required: true
   tags:
     description: Comma-separated list of tags to apply to the image
     required: false

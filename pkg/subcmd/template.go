@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/redhat-appstudio/rhtap-cli/pkg/chartfs"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/flags"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/installer"
@@ -14,11 +15,12 @@ import (
 
 // Template represents the "template" subcommand.
 type Template struct {
-	cmd    *cobra.Command // cobra command
-	logger *slog.Logger   // application logger
-	flags  *flags.Flags   // global flags
-	cfg    *config.Config // installer configuration
-	kube   *k8s.Kube      // kubernetes client
+	cmd    *cobra.Command   // cobra command
+	logger *slog.Logger     // application logger
+	flags  *flags.Flags     // global flags
+	cfg    *config.Config   // installer configuration
+	cfs    *chartfs.ChartFS // embedded filesystem
+	kube   *k8s.Kube        // kubernetes client
 
 	// TODO: add support for "--validate", so the rendered resources are validated
 	// against the cluster during templating.
@@ -36,15 +38,27 @@ The Template subcommand is used to render the values template file and,
 optionally, the Helm chart manifests. It is particularly useful for
 troubleshooting and developing Helm charts for the RHTAP installation process.
 
-By using the '--show-manifest=false' flag, only the values template
-('--values-template') will be rendered, making the last argument, with the Helm
-chart directory, optional.
+By using the '--show-manifest=false' flag, only the global values template
+('--values-template') will be rendered as YAML, thus the last argument, with the
+Helm chart directory, optional.
 
-Additionally, the '--debug' flag should be used to display the raw values template
-payload, regardless of whether it is valid YAML or not.
+Additionally, the '--debug' flag should be used to display rendered global values,
+passed into every Helm Chart installed, as key-value pairs.
 
 The installer resources are embedded in the executable, these resources are
-employed by default, to use local files, set the '--embedded' flag to false.
+employed by default, to use local files just use the last argument with the path
+to the local Helm Chart.
+
+Examples:
+
+  # Only showing the global values as YAML.
+  $ rhtap-cli template --show-manifests=false
+
+  # Rendering only the templates of a single Helm Chart.
+  $ rhtap-cli template --show-values=false charts/rhtap-subscriptions
+
+  # Rendering all resources of a Helm Chart.
+  $ rhtap-cli template charts/rhtap-subscriptions
 `
 
 // Cmd exposes the cobra instance.
@@ -88,29 +102,22 @@ func (t *Template) Validate() error {
 	if t.dep.Chart == "" {
 		return fmt.Errorf("missing chart path")
 	}
-	if t.flags.Embedded && t.valuesTemplatePath == "" {
-		return fmt.Errorf(
-			"flag --%s is ignored when using embedded resources",
-			flags.ValuesTemplateFlag,
-		)
-	}
 	return nil
 }
 
 // Run Renders the templates.
 func (t *Template) Run() error {
-	cfs, err := newChartFS(t.logger, t.flags, t.cfg)
-	if err != nil {
-		return err
-	}
-
-	valuesTmplPayload, err := cfs.ReadFile(t.valuesTemplatePath)
+	valuesTmplPayload, err := t.cfs.ReadFile(t.valuesTemplatePath)
 	if err != nil {
 		return fmt.Errorf("failed to read values template file: %w", err)
 	}
 
 	// Installer for the specific dependency
-	i := installer.NewInstaller(t.logger, t.flags, t.kube, cfs, &t.dep)
+	dep, err := t.cfg.GetDependency(t.log(), t.dep.Chart)
+	if err != nil {
+		return err
+	}
+	i := installer.NewInstaller(t.logger, t.flags, t.kube, t.cfs, dep)
 
 	// Setting values and loading cluster's information.
 	if err = i.SetValues(
@@ -120,16 +127,20 @@ func (t *Template) Run() error {
 	); err != nil {
 		return err
 	}
-	if t.showValues && t.flags.Debug {
-		i.PrintRawValues()
-	}
 
 	// Rendering the global values.
 	if err = i.RenderValues(); err != nil {
 		return err
 	}
+	// Show the rendered global values, what's passed into very chart.
 	if t.showValues {
-		i.PrintValues()
+		// Displaying the rendered values as properties, where it's easier to
+		// verify settings by inspecting key-value pairs.
+		if t.flags.Debug {
+			// i.PrintValues()
+		}
+		// Show values as YAML.
+		i.PrintRawValues()
 	}
 
 	// When the manifests aren't shown, we don't need to dry-run "helm install".
@@ -144,6 +155,7 @@ func NewTemplate(
 	logger *slog.Logger,
 	f *flags.Flags,
 	cfg *config.Config,
+	cfs *chartfs.ChartFS,
 	kube *k8s.Kube,
 ) *Template {
 	t := &Template{
@@ -156,6 +168,7 @@ func NewTemplate(
 		logger:        logger.WithGroup("template"),
 		flags:         f,
 		cfg:           cfg,
+		cfs:           cfs,
 		kube:          kube,
 		dep:           config.Dependency{Namespace: "default"},
 		showValues:    true,

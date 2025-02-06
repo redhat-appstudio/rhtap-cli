@@ -17,7 +17,7 @@ rhtapCLI:
       enabled: &rhdhEnabled true
       namespace: *installerNamespace
       properties:
-        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release/all.yaml
+        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/v1.4.0/all.yaml
     redHatAdvancedClusterSecurity:
       enabled: &rhacsEnabled true
       namespace: &rhacsNamespace rhtap-acs
@@ -25,10 +25,10 @@ rhtapCLI:
       enabled: &quayEnabled true
       namespace: &quayNamespace rhtap-quay
     openShiftGitOps:
-      enabled: *rhdhEnabled
+      enabled: &gitopsEnabled true
       namespace: *installerNamespace
     openShiftPipelines:
-      enabled: *rhdhEnabled
+      enabled: &pipelinesEnabled true
       # No new resources will be created in the namespace
       namespace: openshift-pipelines
   dependencies:
@@ -44,9 +44,6 @@ rhtapCLI:
     - chart: charts/rhtap-infrastructure
       namespace: *installerNamespace
       enabled: true
-    - chart: charts/rhtap-integrations
-      namespace: *installerNamespace
-      enabled: true
     - chart: charts/rhtap-backing-services
       namespace: *installerNamespace
       enabled: *tpaEnabled
@@ -55,10 +52,10 @@ rhtapCLI:
       enabled: *rhacsEnabled
     - chart: charts/rhtap-gitops
       namespace: *installerNamespace
-      enabled: *rhdhEnabled
+      enabled: *gitopsEnabled
     - chart: charts/rhtap-pipelines
       namespace: *installerNamespace
-      enabled: *rhdhEnabled
+      enabled: *pipelinesEnabled
     - chart: charts/rhtap-quay
       namespace: *quayNamespace
       enabled: *quayEnabled
@@ -68,6 +65,15 @@ rhtapCLI:
     - chart: charts/rhtap-tpa
       namespace: *trustedProfileAnalyzerNamespace
       enabled: *tpaEnabled
+    - chart: charts/rhtap-app-namespaces
+      namespace: *installerNamespace
+      enabled: *pipelinesEnabled
     - chart: charts/rhtap-dh
       namespace: *installerNamespace
       enabled: *rhdhEnabled
+    - chart: charts/rhtap-acs-test
+      namespace: *rhacsNamespace
+      enabled: *rhacsEnabled
+    - chart: charts/rhtap-integrations
+      namespace: *installerNamespace
+      enabled: true

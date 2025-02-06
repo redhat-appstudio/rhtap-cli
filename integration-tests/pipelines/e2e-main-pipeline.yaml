@@ -1,3 +1,4 @@
+---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
@@ -33,7 +34,7 @@ spec:
           value: $(context.pipelineRun.name)
     - name: get-pict-file
       runAfter:
-      - test-metadata
+        - test-metadata
       taskSpec:
         results:
           - name: pict-file
@@ -46,12 +47,15 @@ spec:
                 value: $(tasks.test-metadata.results.job-spec)
             script: |
               #!/usr/bin/env bash
-              FORK=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
+              ## Download the pict file from the repository under directory integration-tests/pict-models/default.pict
+              GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
+              REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
               BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
-              curl -o $(results.pict-file.path) https://raw.githubusercontent.com/$FORK/rhtap-cli/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
+
+              curl -o $(results.pict-file.path) https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
     - name: generate-configs
       runAfter:
-      - get-pict-file
+        - get-pict-file
       taskSpec:
         results:
           - name: configs-json
@@ -75,53 +79,116 @@ spec:
         steps:
           - name: start-pipeline
             image: quay.io/openshift-pipeline/ci
-            env: 
+            env:
               - name: SNAPSHOT
                 value: $(params.SNAPSHOT)
               - name: JOB_SPEC
                 value: $(tasks.test-metadata.results.job-spec)
               - name: CONFIGS_JSON
                 value: $(tasks.generate-configs.results.configs-json)
+              - name: KONFLUX_APPLICATION_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.labels['appstudio.openshift.io/application']
+              - name: KONFLUX_COMPONENT_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.labels['appstudio.openshift.io/component']
+              - name: KONFLUX_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
             script: |
               #!/usr/bin/env bash
-              set -x
+              set -euo pipefail
+
+              GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
+              KONFLUX_TENANT="${KONFLUX_NAMESPACE%-tenant}"
+
+              if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
+                REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
+                BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+              else
+                REPO_ORG="redhat-appstudio"
+                BRANCH="main"
+              fi
+
               echo "Running tests for OCP versions:"
               echo "$CONFIGS_JSON" | jq -r '.[][] | select(.key == "OCP").value'
-              pids=()
 
-              while IFS= read -r version; do
-                (
-                pipeline_run_name=$(tkn pipeline start -f https://raw.githubusercontent.com/redhat-appstudio/rhtap-cli/refs/heads/main/integration-tests/pipelines/rhtap-cli-e2e.yaml \
-                  --param ocp-version="$version"\
+              PIPELINERUNS_ARRAY=()
+
+              while IFS= read -r config; do
+                OCP_VERSION=$(echo "$config" | jq -r '.[] | select(.key == "OCP").value')
+                ACS=$(echo "$config" | jq -r '.[] | select(.key == "ACS").value')
+                REGISTRY=$(echo "$config" | jq -r '.[] | select(.key == "Registry").value')
+                TPA=$(echo "$config" | jq -r '.[] | select(.key == "TPA").value')
+                SCM=$(echo "$config" | jq -r '.[] | select(.key == "SCM").value')
+                PIPELINE=$(echo "$config" | jq -r '.[] | select(.key == "Pipeline").value')
+                AUTH=$(echo "$config" | jq -r '.[] | select(.key == "AUTH").value')
+
+                pipeline_run_name=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                  --param ocp-version="$OCP_VERSION"\
                   --param job-spec="$JOB_SPEC"\
                   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
+                  --param acs_config="$ACS" \
+                  --param registry_config="$REGISTRY" \
+                  --param tpa_config="$TPA" \
+                  --param scm_config="$SCM" \
+                  --param pipeline_config="$PIPELINE" \
+                  --param auth_config="$AUTH" \
                   --use-param-defaults \
-                  --labels "appstudio.openshift.io/component=rhtap-cli" \
-                  --labels "appstudio.openshift.io/application=rhtap-cli" \
+                  --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
+                  --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
                   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
                   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                  --prefix-name "e2e-$version"\
+                  --prefix-name "e2e-$OCP_VERSION"\
                   -o name)
-                  
-                  tkn pipelinerun logs  "$pipeline_run_name" -f | sed "s/^/$pipeline_run_name: /"
 
-                  pipelinerun_status=$(tkn pipelinerun describe "$pipeline_run_name" -o jsonpath='{.status.conditions[0].status}')
-                  if [ "$pipelinerun_status" != "True" ]; then
-                    echo "Pipelinerun $pipeline_run_name failed"
-                    exit 1
+                  echo "Started new pipelinerun: https://console.redhat.com/application-pipeline/workspaces/${KONFLUX_TENANT}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${pipeline_run_name}"
+
+                  PIPELINERUNS_ARRAY+=($pipeline_run_name)
+
+              done < <(echo "$CONFIGS_JSON" | jq -c '.[]')
+
+              #Serialize plrs array to be able to export it as var
+              export PIPELINERUNS_ARRAY_SERIALIZED="${PIPELINERUNS_ARRAY[*]}"
+
+
+              # Wait for all PLRs to finish
+              timeout --foreground 120m /bin/bash -c '
+                  #deserialize plrs array
+                  read -r -a PIPELINERUNS_ARRAY <<< "$PIPELINERUNS_ARRAY_SERIALIZED"
+                  echo "${PIPELINERUNS_ARRAY[*]}"
+                  while true; do
+                    ARE_PIPELINES_RUNNING=false
+                    for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
+                      if [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Unknown" ]]; then
+                        #something is still running. Break this cycle and wait one minute.
+                        ARE_PIPELINES_RUNNING=true
+                        break
+                      fi
+                    done
+                    if $ARE_PIPELINES_RUNNING ; then
+                      echo "Nested pipelines are still running. Waiting 1 minute"
+                      sleep 60
+                    else
+                      echo "All nested pipelines finished"
+                      break
+                    fi
+                  done
+              '
+              ## Explore and report status of all failed pipelineruns. Fail if anything failed
+              SOME_PIPELINE_FAILED=false
+              for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
+                if [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "False" ]]; then
+                  if ! $SOME_PIPELINE_FAILED ; then
+                    echo "List of failed PLRs:"
                   fi
-
-                ) &
-                pid="$!"
-                pids+=("$pid")
-              done < <(echo "$CONFIGS_JSON" | jq -r '.[][] | select(.key == "OCP").value');
-              for pid in "${pids[@]}"; do
-                wait "$pid"
-                return_code=$?
-                if [ ! $return_code -eq 0 ]; then
-                  echo "One or more pipelineruns failed. Exiting with non-zero code."
-                  oc get pipelineruns
-                  exit 1
+                  echo "https://console.redhat.com/application-pipeline/workspaces/${KONFLUX_TENANT}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                  SOME_PIPELINE_FAILED=true
                 fi
               done
-
+              if $SOME_PIPELINE_FAILED ; then
+                exit 1
+              fi

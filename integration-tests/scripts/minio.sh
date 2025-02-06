@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # ROSA HCP workaround for Docker limits
 # for namespaces 'minio-operator'
 set -o errexit

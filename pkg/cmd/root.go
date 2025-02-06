@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/redhat-appstudio/rhtap-cli/pkg/chartfs"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/constants"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/flags"
@@ -14,10 +15,11 @@ import (
 
 // RootCmd is the root command.
 type RootCmd struct {
-	cmd   *cobra.Command // root command
-	flags *flags.Flags   // global flags
-	cfg   *config.Config // installer configuration
-	kube  *k8s.Kube      // kubernetes client
+	cmd   *cobra.Command   // root command
+	flags *flags.Flags     // global flags
+	cfg   *config.Config   // installer configuration
+	cfs   *chartfs.ChartFS // embedded filesystem
+	kube  *k8s.Kube        // kubernetes client
 }
 
 // Cmd exposes the root command, while instantiating the subcommand and their
@@ -28,8 +30,8 @@ func (r *RootCmd) Cmd() *cobra.Command {
 	r.cmd.AddCommand(subcmd.NewIntegration(logger, r.cfg, r.kube))
 
 	for _, sub := range []subcmd.Interface{
-		subcmd.NewDeploy(logger, r.flags, r.cfg, r.kube),
-		subcmd.NewTemplate(logger, r.flags, r.cfg, r.kube),
+		subcmd.NewDeploy(logger, r.flags, r.cfg, r.cfs, r.kube),
+		subcmd.NewTemplate(logger, r.flags, r.cfg, r.cfs, r.kube),
 		subcmd.NewInstaller(r.flags),
 	} {
 		r.cmd.AddCommand(subcmd.NewRunner(sub).Cmd())
@@ -38,9 +40,15 @@ func (r *RootCmd) Cmd() *cobra.Command {
 }
 
 // NewRootCmd instantiates the root command, setting up the global flags.
-func NewRootCmd() *RootCmd {
+func NewRootCmd() (*RootCmd, error) {
 	f := flags.NewFlags()
-	cfg := config.NewConfig()
+
+	cfs, err := chartfs.NewChartFSForCWD()
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := config.NewConfig(cfs)
 	r := &RootCmd{
 		flags: f,
 		cmd: &cobra.Command{
@@ -52,10 +60,11 @@ func NewRootCmd() *RootCmd {
 			SilenceUsage: true,
 		},
 		cfg:  cfg,
+		cfs:  cfs,
 		kube: k8s.NewKube(f),
 	}
 	p := r.cmd.PersistentFlags()
 	r.flags.PersistentFlags(p)
 	r.cfg.PersistentFlags(p)
-	return r
+	return r, nil
 }

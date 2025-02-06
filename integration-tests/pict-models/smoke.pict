@@ -7,7 +7,8 @@ ACS: Enabled(hosted), Enabled(deploy new)
 Registry: Quay(hosted), Quay(deploy new), Artifactory
 TPA: Enabled, Disabled
 SCM: Gitlab, GitHub, BitBucket
-Pipeline/CI: Tekton, Jenkins, Gitlab-CI 
+Pipeline/CI: Tekton, Jenkins, Gitlab-CI
+AUTH: github, gitlab
 
 if [SCM] = "GitHub" then [Pipeline/CI] in {"Tekton", "Jenkins"};
 if [SCM] = "BitBucket" then [Pipeline/CI] in {"Tekton", "Jenkins"};

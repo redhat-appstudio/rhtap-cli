@@ -43,10 +43,18 @@ var ErrUpgradeFailed = errors.New("upgrade failed")
 
 // printRelease prints the Helm release information.
 func (h *Helm) printRelease(rel *release.Release) {
+	// In debug mode, print the configuration values using key-value pairs.
+	if !h.flags.DryRun && h.flags.Debug {
+		printer.ValuesPrinter("Config", rel.Config)
+	}
 	printer.HelmReleasePrinter(rel)
-	if h.flags.Debug {
+	// Print extended release information only in dry-run or debug mode. This
+	// allows rendering chart templates (dry-run) while inspecting the release
+	// manifests.
+	if h.flags.DryRun || h.flags.Debug {
 		printer.HelmExtendedReleasePrinter(rel)
 	}
+	printer.HelmReleaseNotesPrinter(rel)
 }
 
 // helmInstall equivalent to "helm install" command.
@@ -60,7 +68,7 @@ func (h *Helm) helmInstall(vals chartutil.Values) (*release.Release, error) {
 	c.DryRun = h.flags.DryRun
 	c.ClientOnly = h.flags.DryRun
 	if h.flags.DryRun {
-		c.DryRunOption = "client"
+		c.DryRunOption = "server"
 	}
 
 	ctx := backgroundContext(func() {
@@ -82,7 +90,7 @@ func (h *Helm) helmUpgrade(vals chartutil.Values) (*release.Release, error) {
 
 	c.DryRun = h.flags.DryRun
 	if h.flags.DryRun {
-		c.DryRunOption = "client"
+		c.DryRunOption = "server"
 	}
 
 	ctx := backgroundContext(func() {

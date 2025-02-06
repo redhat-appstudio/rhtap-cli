@@ -29,11 +29,11 @@ plugins:
   # CI
   #
   - disabled: false
-    package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-tekton
+    package: ./dynamic-plugins/dist/backstage-community-plugin-tekton
     pluginConfig:
       dynamicPlugins:
         frontend:
-          janus-idp.backstage-plugin-tekton:
+          backstage-community.plugin-tekton:
             mountPoints:
               - config:
                   if:
@@ -46,7 +46,7 @@ plugins:
                 mountPoint: entity.page.ci/cards
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
   - disabled: false
-    package: ./dynamic-plugins/dist/backstage-plugin-github-actions
+    package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions
 {{- end }}
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
   - disabled: false
@@ -56,11 +56,11 @@ plugins:
 {{- end }}
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
   - disabled: false
-    package: ./dynamic-plugins/dist/backstage-plugin-jenkins
+    package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins
     pluginConfig:
       dynamicPlugins:
         frontend:
-          backstage.plugin-jenkins:
+          backstage-community.plugin-jenkins:
             mountPoints:
               - mountPoint: entity.page.ci/cards
                 importName: EntityJenkinsContent
@@ -71,7 +71,7 @@ plugins:
                     allOf:
                       - isJenkinsAvailable
   - disabled: false
-    package: ./dynamic-plugins/dist/backstage-plugin-jenkins-backend-dynamic
+    package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins-backend-dynamic
 {{- end }}
   #
   # Git
@@ -88,15 +88,15 @@ plugins:
   #
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-artifactory-integration") }}
   - disabled: false
-    package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-jfrog-artifactory
+    package: ./dynamic-plugins/dist/backstage-community-plugin-jfrog-artifactory
 {{- end }}
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
   - disabled: false
-    package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-nexus-repository-manager
+    package: ./dynamic-plugins/dist/backstage-community-plugin-nexus-repository-manager
 {{- end }}
 {{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
   - disabled: false
-    package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-quay
+    package: ./dynamic-plugins/dist/backstage-community-plugin-quay
 {{- end }}
   #
   # Kubernetes
@@ -131,7 +131,7 @@ plugins:
         serviceLocatorMethod:
           type: multiTenant
   - disabled: false
-    package: ./dynamic-plugins/dist/janus-idp-backstage-plugin-topology
+    package: ./dynamic-plugins/dist/backstage-community-plugin-topology
   #
   # Tech Docs
   #

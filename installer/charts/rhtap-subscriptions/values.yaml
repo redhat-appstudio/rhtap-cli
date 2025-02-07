@@ -6,7 +6,7 @@ subscriptions:
     apiResource: kafkas.kafka.strimzi.io
     namespace: openshift-operators
     name: amq-streams
-    channel: amq-streams-2.7.x
+    channel: amq-streams-2.8.x
     source: redhat-operators
     sourceNamespace: openshift-marketplace
   crunchyData:

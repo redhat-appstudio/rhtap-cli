@@ -1,18 +1,19 @@
 {{- define "rhtap-dh.app-conf" }}
+{{- $integrationNamespace := .Values.developerHub.integrationSecrets.namespace }}
 app:
   title: Red Hat Developer Hub
   baseUrl: ${BACKEND_URL}
 # Lookup for all the required secrets
-{{- $argocdSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-argocd-integration") }}
+{{- $argocdSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-argocd-integration") }}
 {{- $argocdSecretData := ($argocdSecretObj.data | default dict) }}
-{{- $bbSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-bitbucket-integration") }}
-{{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
-{{- $gitlabSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
-{{- $jenkinsSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
-{{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
+{{- $bbSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-bitbucket-integration") }}
+{{- $githubSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-github-integration") }}
+{{- $gitlabSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-gitlab-integration") }}
+{{- $jenkinsSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-jenkins-integration") }}
+{{- $quaySecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-quay-integration") }}
 {{- $quaySecretData := ($quaySecretObj.data | default dict) }}
-{{- $nexusSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
-{{- $artifactorySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-artifactory-integration") }}
+{{- $nexusSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-nexus-integration") }}
+{{- $artifactorySecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-artifactory-integration") }}
 {{- $artifactorySecretData := ($artifactorySecretObj.data | default dict) }}
 
 {{- if $argocdSecretData }}
@@ -35,25 +36,23 @@ auth:
   environment: production
   providers:
   {{- $signInPage := "" }}
-  {{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
-  {{- if $ghSecretObj }}
+  {{- if $githubSecretObj }}
     {{- $signInPage = "github" }}
     github:
       production:
         clientId: ${GITHUB__APP__CLIENT__ID}
         clientSecret: ${GITHUB__APP__CLIENT__SECRET}
-      {{- if ne ($ghSecretObj.data.host | b64dec) "github.com" }}
+      {{- if ne ($githubSecretObj.data.host | b64dec) "github.com" }}
         enterpriseInstanceUrl: ${GITHUB__URL}
       {{- end }}
   {{- end }}
-  {{- $glSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
-  {{- $glSecretData := ($glSecretObj.data | default dict) }}
-  {{- if $glSecretData }}
-    {{- if and $glSecretData.clientId $glSecretData.clientSecret }}
+  {{- $gitlabSecretData := ($gitlabSecretObj.data | default dict) }}
+  {{- if $gitlabSecretData }}
+    {{- if and $gitlabSecretData.clientId $gitlabSecretData.clientSecret }}
     {{- $signInPage = "gitlab" }}
     gitlab:
       production:
-      {{- if ne ($glSecretData.host | b64dec) "gitlab.com" }}
+      {{- if ne ($gitlabSecretData.host | b64dec) "gitlab.com" }}
         audience: ${GITLAB__URL}
       {{- end }}
         clientId: ${GITLAB__APP__CLIENT__ID}
@@ -90,7 +89,7 @@ integrations:
     - appPassword: ${BITBUCKET__APP_PASSWORD}
       username: ${BITBUCKET__USERNAME}
 {{- end }}
-{{- if $ghSecretObj }}
+{{- if $githubSecretObj }}
   github:
     - host: ${GITHUB__HOST}
       token: ${GITHUB__TOKEN}
@@ -108,7 +107,7 @@ integrations:
       apiBaseUrl: https://${GITLAB__HOST}/api/v4
       token: ${GITLAB__TOKEN}
 {{- end }}
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
+{{- if $jenkinsSecretObj }}
 jenkins:
   instances:
     - name: default

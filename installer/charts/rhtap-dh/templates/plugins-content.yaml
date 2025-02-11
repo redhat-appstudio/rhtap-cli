@@ -1,10 +1,11 @@
 {{- define "rhtap-dh.plugins-conf" }}
+{{- $integrationNamespace := .Values.developerHub.integrationSecrets.namespace }}
 includes:
   - dynamic-plugins.default.yaml
 plugins:
   # Installed plugins can be listed at:
   # https://DH_HOSTNAME/api/dynamic-plugins-info/loaded-plugins
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-argocd-integration") }}
+{{- if (lookup "v1" "Secret" $integrationNamespace "rhtap-argocd-integration") }}
   #
   # ArgoCD
   #
@@ -44,17 +45,17 @@ plugins:
                     gridRowStart: 1
                 importName: TektonCI
                 mountPoint: entity.page.ci/cards
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
+{{- if (lookup "v1" "Secret" $integrationNamespace "rhtap-github-integration") }}
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions
 {{- end }}
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") }}
+{{- if (lookup "v1" "Secret" $integrationNamespace "rhtap-gitlab-integration") }}
   - disabled: false
     package: ./dynamic-plugins/dist/immobiliarelabs-backstage-plugin-gitlab
   - disabled: false
     package: ./dynamic-plugins/dist/immobiliarelabs-backstage-plugin-gitlab-backend-dynamic
 {{- end }}
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
+{{- if (lookup "v1" "Secret" $integrationNamespace "rhtap-jenkins-integration") }}
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins
     pluginConfig:
@@ -86,15 +87,15 @@ plugins:
   #
   # Image Registry
   #
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-artifactory-integration") }}
+{{- if (lookup "v1" "Secret" $integrationNamespace "rhtap-artifactory-integration") }}
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-community-plugin-jfrog-artifactory
 {{- end }}
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
+{{- if (lookup "v1" "Secret" $integrationNamespace "rhtap-nexus-integration") }}
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-community-plugin-nexus-repository-manager
 {{- end }}
-{{- if (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
+{{- if (lookup "v1" "Secret" $integrationNamespace "rhtap-quay-integration") }}
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-community-plugin-quay
 {{- end }}

@@ -21,6 +21,8 @@ patch_serviceaccount() {
     local NAMESPACE="$1"
     local SA="$2"
 
+    echo -n "- Patching ServiceAccount '$SA' in '$NAMESPACE': "
+
     # Wait until the ServiceAccount is available and get the definition
     until "$KUBECTL" get serviceaccounts --namespace "$NAMESPACE" "$SA" >/dev/null 2>&1; do
         echo -n "_"
@@ -44,14 +46,12 @@ patch_serviceaccount() {
         fi
     done
 
-    if [ -e "$SA_DEFINITION_UPDATED" ]; then
-        echo -n "- Patching ServiceAccount '$SA' in '$NAMESPACE': "
-        "$KUBECTL" apply -f "$SA_DEFINITION_UPDATED"
-    fi
+    echo "OK"
+    "$KUBECTL" apply -f "$SA_DEFINITION_UPDATED"
 }
 
 app_namespaces() {
-    NAMESPACE="$INSTALLER__DEVELOPERHUB__NAMESPACE"
+    NAMESPACE="$INSTALLER__QUAY__SECRET__NAMESPACE"
 
     for env in "development" "prod" "stage"; do
         for SA in "default" "pipeline"; do

@@ -1,4 +1,5 @@
 {{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
+{{- $integrationNamespace := .Values.developerHub.integrationSecrets.namespace -}}
 ---
 apiVersion: v1
 kind: Pod
@@ -8,7 +9,8 @@ metadata:
     helm.sh/hook-delete-policy: hook-succeeded
   labels:
     {{- include "rhtap-dh.labels" . | nindent 4 }}
-  name: {{ $name }} 
+  name: {{ $name }}
+  namespace: {{ $integrationNamespace }}
 spec:
   restartPolicy: Never
   serviceAccountName: rhdh-kubernetes-plugin

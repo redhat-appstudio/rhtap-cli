@@ -21,9 +21,9 @@ rhtapCLI:
         manageSubscription: true
     redHatDeveloperHub:
       enabled: &rhdhEnabled true
-      namespace: *installerNamespace
+      namespace: &rhdhNamespace rhtap-dh
       properties:
-        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/v1.4.0/all.yaml
+        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/main/all.yaml
         manageSubscription: true
     redHatAdvancedClusterSecurity:
       enabled: &rhacsEnabled true
@@ -37,7 +37,7 @@ rhtapCLI:
         manageSubscription: true
     openShiftGitOps:
       enabled: &gitopsEnabled true
-      namespace: *installerNamespace
+      namespace: &gitopsNamespace rhtap-gitops
       properties:
         manageSubscription: true
     openShiftPipelines:
@@ -66,7 +66,7 @@ rhtapCLI:
       namespace: *rhacsNamespace
       enabled: *rhacsEnabled
     - chart: charts/rhtap-gitops
-      namespace: *installerNamespace
+      namespace: *gitopsNamespace
       enabled: *gitopsEnabled
     - chart: charts/rhtap-pipelines
       namespace: *installerNamespace
@@ -84,7 +84,7 @@ rhtapCLI:
       namespace: *installerNamespace
       enabled: *pipelinesEnabled
     - chart: charts/rhtap-dh
-      namespace: *installerNamespace
+      namespace: *rhdhNamespace
       enabled: *rhdhEnabled
     - chart: charts/rhtap-acs-test
       namespace: *rhacsNamespace

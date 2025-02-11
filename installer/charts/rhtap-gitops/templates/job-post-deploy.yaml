@@ -71,9 +71,9 @@ spec:
           image: quay.io/codeready-toolchain/oc-client-base:latest
           env:
             - name: SECRET_NAME
-              value: {{ $argoCD.secretName }}
+              value: {{ $argoCD.integrationSecret.name }}
             - name: NAMESPACE
-              value: {{ $argoCD.namespace }}
+              value: {{ $argoCD.integrationSecret.namespace }}
             - name: ARGOCD_ENV_FILE
               value: {{ $argoCDEnvFile }}
           command:

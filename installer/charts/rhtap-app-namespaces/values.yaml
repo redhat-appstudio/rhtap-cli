@@ -1,4 +1,4 @@
 ---
-argoCD:
-  # ArgoCD instance name controlling the namespace
-  name: __OVERWRITE_ME__
+appNamespaces:
+  argoCD:
+    name: __OVERWRITE_ME__

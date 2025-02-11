@@ -1,4 +1,4 @@
 OpenShift Projects:
-{{- range $p := .Values.openshift.projects }}
+{{- range $p := .Values.openshift.projects | sortAlpha }}
   - {{ $p | quote }}
 {{- end }}

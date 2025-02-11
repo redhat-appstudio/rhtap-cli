@@ -6,3 +6,5 @@ developerHub:
   instanceName: developer-hub
   catalogURL: __OVERWRITE_ME__
   ingressDomain: __OVERWRITE_ME__
+  integrationSecrets:
+    namespace: __OVERWRITE_ME__

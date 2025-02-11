@@ -1,3 +1,4 @@
+{{- $integrationNamespace := .Values.developerHub.integrationSecrets.namespace -}}
 ---
 apiVersion: v1
 kind: Secret
@@ -13,7 +14,7 @@ data:
     BACKEND_SECRET: {{ randAlphaNum 16 | b64enc }}
     BACKEND_URL: {{ printf "https://backstage-developer-hub-%s.%s" .Release.Namespace .Values.developerHub.ingressDomain | b64enc }}
     NODE_TLS_REJECT_UNAUTHORIZED:  {{ "0" | b64enc }}
-{{- $argocdSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-argocd-integration") }}
+{{- $argocdSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-argocd-integration") }}
 {{- $argocdSecretData := ($argocdSecretObj.data | default dict) }}
 {{- if $argocdSecretData }}
     ARGOCD__API_TOKEN: {{ $argocdSecretData.ARGOCD_API_TOKEN }}
@@ -21,13 +22,13 @@ data:
     ARGOCD__URL: {{ print "https://" ($argocdSecretData.ARGOCD_HOSTNAME | b64dec) | b64enc }}
     ARGOCD__USER: {{ $argocdSecretData.ARGOCD_USER }}
 {{- end }}
-{{- $artifactorySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-artifactory-integration") }}
+{{- $artifactorySecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-artifactory-integration") }}
 {{- $artifactorySecretData := ($artifactorySecretObj.data | default dict) }}
 {{- if $artifactorySecretData }}
     ARTIFACTORY__API_TOKEN: {{ $artifactorySecretData.token }}
     ARTIFACTORY__URL: {{ $artifactorySecretData.url }}
 {{- end }}
-{{- $bbSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-bitbucket-integration") }}
+{{- $bbSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-bitbucket-integration") }}
 {{- $bbSecretData := ($bbSecretObj.data | default dict) }}
 {{- if $bbSecretData }}
     BITBUCKET__APP_PASSWORD:  {{ $bbSecretData.appPassword }}
@@ -36,7 +37,7 @@ data:
     DEVELOPER_HUB__CATALOG__URL: {{
         required ".developerHub.catalogURL is required" .Values.developerHub.catalogURL | b64enc
     }}
-{{- $ghSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-github-integration") }}
+{{- $ghSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-github-integration") }}
 {{- $ghSecretData := ($ghSecretObj.data | default dict) }}
 {{- if $ghSecretData }}
     GITHUB__APP__ID: {{ $ghSecretData.id }}
@@ -53,7 +54,7 @@ data:
     GITHUB__URL: {{ print "https://" ($ghSecretData.host | b64dec) | b64enc }}
     {{- end }}
 {{- end }}
-{{- $glSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") -}}
+{{- $glSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-gitlab-integration") -}}
 {{- $glSecretData := ($glSecretObj.data | default dict) -}}
 {{- if $glSecretData }}
     GITLAB__HOST: {{ $glSecretData.host }}
@@ -64,24 +65,24 @@ data:
     GITLAB__APP__CLIENT__SECRET: {{ $glSecretData.clientSecret }}
     {{- end }}
 {{- end }}
-{{- $jenkinsSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-jenkins-integration") }}
+{{- $jenkinsSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-jenkins-integration") }}
 {{- $jenkinsSecretData := ($jenkinsSecretObj.data | default dict) }}
 {{- if $jenkinsSecretData }}
     JENKINS__BASEURL: {{ $jenkinsSecretData.baseUrl }}
     JENKINS__USERNAME: {{ $jenkinsSecretData.username }}
     JENKINS__TOKEN: {{ $jenkinsSecretData.token }}
 {{- end }}
-{{- $k8sSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-k8s-integration") }}
+{{- $k8sSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-k8s-integration") }}
 {{- $k8sSecretData := ($k8sSecretObj.data | default dict) }}
 {{- if $k8sSecretData }}
     K8S_SERVICEACCOUNT_TOKEN: {{ $k8sSecretData.token }}
 {{- end }}
-{{- $nexusSecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
+{{- $nexusSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-nexus-integration") }}
 {{- $nexusSecretData := ($nexusSecretObj.data | default dict) }}
 {{- if $nexusSecretData }}
     NEXUS__URL: {{ $nexusSecretData.url }}
 {{- end }}
-{{- $quaySecretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
+{{- $quaySecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-quay-integration") }}
 {{- $quaySecretData := ($quaySecretObj.data | default dict) }}
 {{- if $quaySecretData }}
     {{- if $quaySecretData.token }}

@@ -9,9 +9,10 @@ argoCD:
   namespace: __OVERWRITE_ME__
   # The domain for the ArgoCD instance, used to define the final route.
   ingressDomain: __OVERWRITE_ME__
-  # The secret name to store the ArgoCD API credentials, this secret is later on
+  # The secret namespace to store the ArgoCD API credentials, this secret is later on
   # used for integration with other services.
-  secretName: __OVERWRITE_ME__
+  integrationSecret:
+    namespace: __OVERWRITE_ME__
   # Route configuration for all ArgoCD components.
   route:
     # Toggles the route for the ArgoCD components.

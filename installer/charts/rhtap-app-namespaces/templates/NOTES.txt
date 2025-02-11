@@ -1,0 +1,5 @@
+{{- $namespace := .Release.Namespace -}}
+OpenShift Projects:
+{{- range tuple "development" "prod" "stage" }}
+  - "{{ $namespace }}-app-{{ . }}"
+{{- end }}

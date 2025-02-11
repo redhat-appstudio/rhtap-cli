@@ -31,6 +31,9 @@ openshift:
     - rhacs-operator
     {{- end }}
 {{- end }}
+{{- if $gitops.Enabled }}
+    - {{ $gitops.Namespace }}
+{{- end }}
 {{- if $quay.Enabled }}
     - {{ $quay.Namespace }}
 {{- end }}
@@ -49,8 +52,6 @@ openshift:
 # rhtap-subscriptions
 #
 
-{{- $argoCDNamespace := .Installer.Namespace }}
-
 subscriptions:
   amqStreams:
     enabled: {{ $tpa.Enabled }}
@@ -62,7 +63,7 @@ subscriptions:
     enabled: {{ $gitops.Enabled }}
     managed: {{ and $gitops.Enabled $gitops.Properties.manageSubscription }}
     config:
-      argoCDClusterNamespace: {{ $argoCDNamespace }}
+      argoCDClusterNamespace: {{ $gitops.Namespace }}
   openshiftKeycloak:
     enabled: {{ $keycloak.Enabled }}
     managed: {{ and $keycloak.Enabled $keycloak.Properties.manageSubscription }}
@@ -103,6 +104,8 @@ minIOOperator:
 {{- $quayMinIOSecretName := "quay-minio-root-user"  }}
 
 infrastructure:
+  developerHub:
+    namespace: {{ $rhdh.Namespace }}
   kafkas:
     tpa:
       enabled: {{ $tpa.Enabled }}
@@ -142,7 +145,7 @@ infrastructure:
     patchClusterTektonConfig:
       annotations:
         meta.helm.sh/release-name: rhtap-backing-services
-        meta.helm.sh/release-namespace: {{ $argoCDNamespace }}
+        meta.helm.sh/release-namespace: {{ .Installer.Namespace }}
       labels:
         app.kubernetes.io/managed-by: Helm
 
@@ -152,7 +155,7 @@ infrastructure:
 
 {{- $keycloakRouteTLSSecretName := "keycloak-tls" }}
 {{- $keycloakRouteHost := printf "sso.%s" $ingressDomain }}
-{{- $argoCDName := "argocd" }}
+{{- $argoCDName := printf "%s-gitops" .Installer.Namespace }}
 {{- $quayMinIOHost := printf "minio-%s.%s" $quay.Namespace $ingressDomain }}
 
 backingServices:
@@ -178,11 +181,11 @@ backingServices:
       annotations:
         service.beta.openshift.io/serving-cert-secret-name: {{ $keycloakRouteTLSSecretName }}
   argoCD:
-    enabled: {{ $rhdh.Enabled }}
+    enabled: {{ $gitops.Enabled }}
     name: {{ $argoCDName }}
-    namespace: {{ $argoCDNamespace }}
-    # TODO: link this secret name with RHDH configuration.
-    secretName: rhtap-argocd-integration
+    namespace: {{ $gitops.Namespace }}
+    integrationSecret:
+      namespace: {{ .Installer.Namespace }}
     ingressDomain: {{ $ingressDomain }}
 
 #
@@ -201,14 +204,23 @@ acs: &acs
 acsTest: *acs
 
 #
+# rhtap-app-namespaces
+#
+appNamespaces:
+  argoCD:
+    name: {{ $argoCDName }}
+
+#
 # rhtap-gitops
 #
 
 argoCD:
   enabled: {{ $rhdh.Enabled }}
   name: {{ $argoCDName }}
-  namespace: {{ $argoCDNamespace }}
-  secretName: rhtap-argocd-integration
+  namespace: {{ $gitops.Namespace }}
+  integrationSecret:
+    name: rhtap-argocd-integration
+    namespace: {{ .Installer.Namespace }}
   ingressDomain: {{ $ingressDomain }}
 
 #
@@ -277,6 +289,8 @@ developerHub:
   namespace: {{ $rhdh.Namespace }}
   ingressDomain: {{ $ingressDomain }}
   catalogURL: {{ $catalogURL }}
+  integrationSecrets:
+    namespace: {{ .Installer.Namespace }}
 
 #
 # rhtap-tpa

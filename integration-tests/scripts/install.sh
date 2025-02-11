@@ -257,8 +257,8 @@ install_rhtap() {
   cat "$tpl_file"
   ./bin/rhtap-cli deploy --timeout 35m --config "$config_file" --values-template "$tpl_file" --kube-config "$KUBECONFIG" --debug --log-level=debug
 
-  homepage_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')
-  callback_url=https://$(kubectl -n rhtap get route backstage-developer-hub -o  'jsonpath={.spec.host}')/api/auth/${auth_config}/handler/frame
+  homepage_url=https://$(kubectl -n rhtap-dh get route backstage-developer-hub -o  'jsonpath={.spec.host}')
+  callback_url=https://$(kubectl -n rhtap-dh get route backstage-developer-hub -o  'jsonpath={.spec.host}')/api/auth/${auth_config}/handler/frame
   webhook_url=https://$(kubectl -n openshift-pipelines get route pipelines-as-code-controller -o 'jsonpath={.spec.host}')
 
   echo "[INFO]homepage_url=$homepage_url"

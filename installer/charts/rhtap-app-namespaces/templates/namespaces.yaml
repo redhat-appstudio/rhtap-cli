@@ -1,6 +1,6 @@
 {{ $namespace := .Release.Namespace }}
 {{ $argoCD := .Values.appNamespaces.argoCD.name }}
-{{- range tuple "development" "prod" "stage" }}
+{{- range tuple "ci" "development" "prod" "stage" }}
 ---
 apiVersion: v1
 kind: Namespace

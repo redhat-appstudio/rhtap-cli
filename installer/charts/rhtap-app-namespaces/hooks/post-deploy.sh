@@ -53,10 +53,9 @@ patch_serviceaccount() {
 app_namespaces() {
     NAMESPACE="$INSTALLER__QUAY__SECRET__NAMESPACE"
 
-    for env in "development" "prod" "stage"; do
-        for SA in "default" "pipeline"; do
-            patch_serviceaccount "$NAMESPACE-app-$env" "$SA"
-        done
+    patch_serviceaccount "$NAMESPACE-app-ci" "pipeline"
+    for env in "ci" "development" "prod" "stage"; do
+        patch_serviceaccount "$NAMESPACE-app-$env" "default"
     done
 }
 

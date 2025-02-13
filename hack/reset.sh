@@ -18,6 +18,8 @@ Usage:
     ${0##*/} [options]
 
 Optional arguments:
+    -a, --all
+        Reset the cluster and integration services.
     -c, --cluster
         Reset all RHTAP namespaces in the cluster.
     -e, --env-file
@@ -26,7 +28,7 @@ Optional arguments:
         Delete the specified namespace. The option can be repeated
         to delete multiple namespaces.
     -i, --integration INTEGRATION
-        Service to reset [dh, github, gitlab]. The option can be repeated
+        Service to reset [github, gitlab]. The option can be repeated
         to reset multiple services.
     -d, --debug
         Activate tracing/debug mode.
@@ -43,20 +45,20 @@ parse_args() {
     NAMESPACES=()
     while [[ $# -gt 0 ]]; do
         case $1 in
+        -a|--all)
+            CLUSTER=1
+            GITHUB=1
+            GITLAB=1
+            ;;
         -c|--cluster)
             CLUSTER=1
             ;;
         -e | --env-file)
-            ENVFILE="$2"
+            ENVFILE="$(readlink -e "$2")"
             shift
             ;;
         -i|--integration)
             case $2 in
-            dh)
-                if kubectl get backstages.rhdh.redhat.com --ignore-not-found 2>/dev/null; then
-                    DH=1
-                fi
-                ;;
             github)
                 GITHUB=1
                 ;;
@@ -120,7 +122,7 @@ action() {
         for ns in "${NAMESPACES[@]}"; do
             kubectl delete namespace "$ns" &
             echo "Deleting namespace $ns..."
-            for cr in "applications.argoproj.io" "kafkatopics.kafka.strimzi.io"; do
+            for cr in "applications.argoproj.io" "kafkatopics.kafka.strimzi.io" "persistentvolumeclaims"; do
                 sleep 3
                 while [ "$(oc get "$cr" -n "$ns" -o name | wc -l)" != "0" ]; do
                     for kt in $(oc get "$cr" -n "$ns" -o name); do
@@ -131,12 +133,6 @@ action() {
         done
         wait
         echo "✓ Deleted all namespaces"
-        echo
-    fi
-    if [ -n "${DH:-}" ]; then
-        echo '# Developer Hub'
-        kubectl delete backstages.rhdh.redhat.com -n "$NAMESPACE" developer-hub --ignore-not-found --wait=true
-        kubectl delete persistentvolumeclaims -n "$NAMESPACE" data-backstage-psql-developer-hub-0 --ignore-not-found --wait=true
         echo
     fi
     if [ -n "${GITHUB:-}" ]; then

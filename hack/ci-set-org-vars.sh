@@ -37,7 +37,7 @@ parse_args() {
     while [[ $# -gt 0 ]]; do
         case $1 in
         -e | --env-file)
-            ENVFILE="$2"
+            ENVFILE="$(readlink -e "$2")"
             shift
             ;;
         -n | --namespace)

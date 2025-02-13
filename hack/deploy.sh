@@ -55,7 +55,7 @@ parse_args() {
             shift
             ;;
         -e | --env-file)
-            ENVFILE="$2"
+            ENVFILE="$(readlink -e "$2")"
             shift
             ;;
         -i|--integration)

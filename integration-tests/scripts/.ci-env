@@ -17,6 +17,7 @@ export GITLAB__TOKEN=
 # When using gitlab as auth provider(auth_config="github"), you also need to set the following values
 export GITLAB__APP__ID=
 export GITLAB__APP_SECRET=
+export GITLAB__GROUP=
 
 
 #### Quay.io

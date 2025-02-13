@@ -263,6 +263,9 @@ quay:
 integrations:
   acs:
     enabled: {{ $acs.Enabled }}
+  argoCD:
+    enabled: {{ $gitops.enabled }}
+    namespace: {{ $gitops.Namespace }}
   quay:
     enabled: {{ $quay.Enabled }}
 #   github:

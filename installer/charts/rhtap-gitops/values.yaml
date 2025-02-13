@@ -12,6 +12,7 @@ argoCD:
   # The secret namespace to store the ArgoCD API credentials, this secret is later on
   # used for integration with other services.
   integrationSecret:
+    name: __OVERWRITE_ME__
     namespace: __OVERWRITE_ME__
   # Route configuration for all ArgoCD components.
   route:

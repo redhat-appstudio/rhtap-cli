@@ -148,7 +148,7 @@ githubSetVar() {
 gitlabGetValues() {
     SECRET="rhtap-gitlab-integration"
     GIT_TOKEN="$(oc get secrets -n "$NAMESPACE" "$SECRET" -o json | yq '.data.token | @base64d')"
-    GIT_ORG="$GITLAB__ORG"
+    GIT_ORG="$GITLAB__GROUP"
     URL="https://$(oc get secrets -n "$NAMESPACE" "$SECRET" -o json | yq '.data.host | @base64d')"
     PID=$(curl -s -L --header "PRIVATE-TOKEN: $GIT_TOKEN" "$URL/api/v4/groups/$GIT_ORG" | jq ".id")
 }

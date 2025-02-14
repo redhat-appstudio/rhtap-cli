@@ -8,7 +8,7 @@ kind: Job
 metadata:
   annotations:
     helm.sh/hook: post-install,post-upgrade
-    {{- include "rhtap-infrastructure.labels" $root | nindent 4 }}
+    {{- include "common.labels" $root | nindent 4 }}
   namespace: {{ $v.namespace }}
   name: {{ printf "post-deploy-%s" $k }}
 spec:

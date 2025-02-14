@@ -10,7 +10,7 @@ metadata:
     helm.sh/hook: test
     helm.sh/hook-delete-policy: hook-succeeded
   labels:
-    {{- include "rhtap-tas.labels" . | nindent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
   name: {{ $name }} 
 spec:
   restartPolicy: Never

@@ -16,7 +16,7 @@ metadata:
   annotations:
     helm.sh/hook: post-install,post-upgrade
   labels:
-    {{- include "rhtap-gitops.labels" . | nindent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
   namespace: {{ $argoCD.namespace }}
   name: {{ $name }}
 spec:

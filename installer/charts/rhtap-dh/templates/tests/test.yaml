@@ -8,7 +8,7 @@ metadata:
     helm.sh/hook: test
     helm.sh/hook-delete-policy: hook-succeeded
   labels:
-    {{- include "rhtap-dh.labels" . | nindent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
   name: {{ $name }}
   namespace: {{ $integrationNamespace }}
 spec:

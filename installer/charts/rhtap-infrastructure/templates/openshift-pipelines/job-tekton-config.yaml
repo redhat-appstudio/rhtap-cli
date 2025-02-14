@@ -12,7 +12,7 @@ metadata:
     helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-weight: "1"
   labels:
-    {{- include "rhtap-infrastructure.labels" . | nindent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
   namespace: {{ $osp.namespace }}
   name: {{ printf "patch-tekton-%s" $osp.name }}
 spec:

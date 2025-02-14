@@ -7,8 +7,8 @@ metadata:
     helm.sh/hook: test
     helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
   labels:
-    {{- include "rhtap-acs-test.labels" . | nindent 4 }}
-  name: {{ .Chart.Name }}-rollout-test 
+    {{- include "common.labels" . | nindent 4 }}
+  name: {{ .Chart.Name }}-rollout-test
 spec:
   restartPolicy: Never
   serviceAccountName: {{ .Release.Name }}

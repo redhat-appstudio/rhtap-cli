@@ -15,7 +15,7 @@ metadata:
   annotations:
     helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
   labels:
-    {{- include "rhtap-integrations.labels" . | nindent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
   name: rhtap-acs-integrations
 spec:
   template:

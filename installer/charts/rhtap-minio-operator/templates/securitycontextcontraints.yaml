@@ -8,7 +8,7 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: minio-operator
-    {{- include "rhtap-minio-operator.labels" . | nindent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
   name: {{ $saAdmin }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -24,7 +24,7 @@ kind: SecurityContextConstraints
 metadata:
   labels:
     app: minio-operator
-    {{- include "rhtap-minio-operator.labels" . | nindent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
   name: {{ $sa }}
 allowPrivilegedContainer: false
 runAsUser:

@@ -237,10 +237,12 @@ integrations() {
             rhtap_cli integration gitlab --force \
                 --app-id='"$GITLAB__APP__CLIENT__ID"' \
                 --app-secret='"$GITLAB__APP__CLIENT__SECRET"' \
+                --group='"$GITLAB__GROUP"' \
                 --host='"$GITLAB__HOST"' \
                 --token='"$GITLAB__TOKEN"'
         else
             rhtap_cli integration gitlab --force \
+                --group='"$GITLAB__GROUP"' \
                 --host='"$GITLAB__HOST"' \
                 --token='"$GITLAB__TOKEN"'
         fi

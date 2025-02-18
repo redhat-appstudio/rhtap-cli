@@ -4,7 +4,7 @@ apiVersion: operator.tekton.dev/v1alpha1
 kind: TektonConfig
 metadata:
   labels:
-    {{- include "rhtap-pipelines.labels" . | nindent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
   name: config
 spec:
   addon:

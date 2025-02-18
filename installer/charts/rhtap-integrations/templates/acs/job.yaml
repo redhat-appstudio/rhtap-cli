@@ -27,7 +27,7 @@ spec:
         # Copying the scripts that will be used on the subsequent containers, the
         # scripts are shared via the "/scripts" volume.
         #
-  {{- include "integrations.copyScripts" . | nindent 8 }}
+  {{- include "common.copyScripts" . | nindent 8 }}
       containers:
       {{- $secretArtifactory := (lookup "v1" "Secret" .Release.Namespace "rhtap-artifactory-integration") }}
       {{- if and $integrations.acs.enabled $secretArtifactory }}

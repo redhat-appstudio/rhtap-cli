@@ -11,7 +11,7 @@ metadata:
     helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
   labels:
-    {{- include "rhtap-acs.labels" . | nindent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
   name: {{ $name }}
 spec:
   template:

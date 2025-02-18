@@ -163,7 +163,7 @@ spec:
                   while true; do
                     ARE_PIPELINES_RUNNING=false
                     for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
-                      if [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Unknown" ]]; then
+                      if ! oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} &>/dev/null || [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Unknown" ]]; then
                         #something is still running. Break this cycle and wait one minute.
                         ARE_PIPELINES_RUNNING=true
                         break

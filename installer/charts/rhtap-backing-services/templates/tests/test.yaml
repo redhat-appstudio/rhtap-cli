@@ -1,24 +1,6 @@
-{{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
 {{- if .Values.backingServices.keycloak -}}
 ---
-apiVersion: v1
-kind: Pod
-metadata:
-  annotations:
-    helm.sh/hook: test
-    helm.sh/hook-delete-policy: hook-succeeded
-  labels:
-    {{- include "common.labels" . | nindent 4 }}
-  name: {{ $name }} 
-spec:
-  restartPolicy: Never
-  serviceAccountName: {{ .Release.Name }}
-  initContainers:
-    #
-    # Copying the scripts that will be used on the subsequent containers, the
-    # scripts are shared via the "/scripts" volume.
-    #
-{{- include "common.copyScripts" . | nindent 4 }}
+{{- include "common.test" . }}
   containers:
 {{- if .Values.backingServices.keycloak.enabled }}
     #
@@ -27,7 +9,7 @@ spec:
   {{- $keycloak := .Values.backingServices.keycloak }}
   {{- $keycloakName := include "backingServices.keycloak.name" . }}
     - name: {{ printf "keycloak-%s" $keycloakName }}
-      image: quay.io/codeready-toolchain/oc-client-base:latest
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
       env:
         - name: NAMESPACE
           value: {{ $keycloak.namespace }}
@@ -45,8 +27,7 @@ spec:
           mountPath: /scripts
       securityContext:
         allowPrivilegeEscalation: false
+{{- else }}
+{{- include "common.noOp" . | nindent 4 }}
 {{- end }}
-  volumes:
-    - name: scripts
-      emptyDir: {}
 {{- end }}

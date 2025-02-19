@@ -1,27 +1,9 @@
-{{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
 ---
-apiVersion: v1
-kind: Pod
-metadata:
-  annotations:
-    helm.sh/hook: test
-    helm.sh/hook-delete-policy: hook-succeeded
-  labels:
-    {{- include "common.labels" . | nindent 4 }}
-  name: {{ $name }} 
-spec:
-  restartPolicy: Never
-  serviceAccountName: {{ .Release.Name }}
-  initContainers:
-    #
-    # Copying the scripts that will be used on the subsequent containers, the
-    # scripts are shared via the "/scripts" volume.
-    #
-{{- include "common.copyScripts" . | nindent 4 }}
+{{- include "common.test" . }}
   containers:
 {{- range $k, $v := include "infrastructure.kafkas.enabled" . | fromYaml }}
-    - name: {{ printf "%s-kafka-topics-%s" $name $k }}
-      image: quay.io/codeready-toolchain/oc-client-base:latest
+    - name: {{ printf "kafka-topics-%s-test" $k }}
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
       env:
         - name: NAMESPACE
           value: {{ $v.namespace }}
@@ -38,8 +20,8 @@ spec:
         allowPrivilegeEscalation: false
 {{- end }}
 {{- range $k, $v := include "infrastructure.minIOTenants.enabled" . | fromYaml }}
-    - name: {{ printf "%s-minio-tentant-%s" $name $k }}
-      image: quay.io/codeready-toolchain/oc-client-base:latest
+    - name: {{ printf "minio-tentant-%s-test" $k }}
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
       env:
         - name: NAMESPACE
           value: {{ $v.namespace }}
@@ -56,8 +38,8 @@ spec:
         allowPrivilegeEscalation: false
 {{- end }}
 {{- range $k, $v := include "infrastructure.postgresClusters.enabled" . | fromYaml }}
-    - name: {{ printf "%s-postgrescluster-%s" $name $k }}
-      image: quay.io/codeready-toolchain/oc-client-base:latest
+    - name: {{ printf "postgrescluster-%s-test" $k }}
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
       env:
         - name: NAMESPACE
           value: {{ $v.namespace }}
@@ -84,7 +66,7 @@ spec:
     #
   {{- $osp := .Values.infrastructure.openShiftPipelines }}
     - name: {{ printf "openshift-pipelines-%s" $osp.name }}
-      image: quay.io/codeready-toolchain/oc-client-base:latest
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
       env:
         - name: NAMESPACE
           value: {{ $osp.namespace }}
@@ -100,6 +82,3 @@ spec:
       securityContext:
         allowPrivilegeEscalation: false
 {{- end }}
-  volumes:
-    - name: scripts
-      emptyDir: {}

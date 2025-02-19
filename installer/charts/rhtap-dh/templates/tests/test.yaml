@@ -1,41 +1,12 @@
-{{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
-{{- $integrationNamespace := .Values.developerHub.integrationSecrets.namespace -}}
 ---
-apiVersion: v1
-kind: Pod
-metadata:
-  annotations:
-    helm.sh/hook: test
-    helm.sh/hook-delete-policy: hook-succeeded
-  labels:
-    {{- include "common.labels" . | nindent 4 }}
-  name: {{ $name }}
-  namespace: {{ $integrationNamespace }}
-spec:
-  restartPolicy: Never
-  serviceAccountName: rhdh-kubernetes-plugin
-  initContainers:
-    - name: copy-scripts
-      image: registry.access.redhat.com/ubi8/ubi-minimal:latest
-      workingDir: /scripts
-      command:
-        - /bin/bash
-        - -c
-        - |
-          set -x -e
-  {{- range $path, $content := .Files.Glob "scripts/*.sh" -}}
-   {{- $name := trimPrefix "scripts/" $path }}
-          printf '%s' "{{ $content | toString | b64enc }}" | base64 -d >{{ $name }}
-          chmod +x {{ $name }}
-  {{- end }}
-      volumeMounts:
-        - name: scripts
-          mountPath: /scripts
-      securityContext:
-        allowPrivilegeEscalation: false
+{{- $pod := dict
+  "namespace" .Values.developerHub.integrationSecrets.namespace
+  "serviceAccount" "rhdh-kubernetes-plugin"
+}}
+{{- include "common.test" (merge $pod .) }}
   containers:
-    - name: {{ printf "%s-deployments" $name }}
-      image: quay.io/codeready-toolchain/oc-client-base:latest
+    - name: rollout-status-test
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
       env:
         - name: NAMESPACE
           value: {{ .Release.Namespace }}
@@ -50,6 +21,3 @@ spec:
           mountPath: /scripts
       securityContext:
         allowPrivilegeEscalation: false
-  volumes:
-    - name: scripts
-      emptyDir: {}

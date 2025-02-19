@@ -35,7 +35,7 @@ spec:
         # Create the Artifactory integration.
         #
         - name: artifactory-integration
-          image: quay.io/codeready-toolchain/oc-client-base:latest
+          image: registry.redhat.io/openshift4/ose-tools-rhel9
           env:
             - name: ROX_API_TOKEN
               valueFrom:
@@ -62,7 +62,7 @@ spec:
         # Create the Nexus integration.
         #
         - name: nexus-integration
-          image: quay.io/codeready-toolchain/oc-client-base:latest
+          image: registry.redhat.io/openshift4/ose-tools-rhel9
           env:
             - name: ROX_API_TOKEN
               valueFrom:
@@ -89,7 +89,7 @@ spec:
         # Create the Quay integration.
         #
         - name: quay-integration
-          image: quay.io/codeready-toolchain/oc-client-base:latest
+          image: registry.redhat.io/openshift4/ose-tools-rhel9
           env:
             - name: ROX_API_TOKEN
               valueFrom:
@@ -114,7 +114,7 @@ spec:
         # Make sure there's at least one container
         #
         - name: no-op
-          image: quay.io/codeready-toolchain/oc-client-base:latest
+          image: registry.redhat.io/openshift4/ose-tools-rhel9
           command:
             - bash
             - -c

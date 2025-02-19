@@ -1,41 +1,11 @@
 ---
-apiVersion: v1
-kind: Pod
-metadata:
-  annotations:
-    helm.sh/hook: test
-    helm.sh/hook-delete-policy: hook-succeeded
-  labels:
-    {{- include "common.labels" . | nindent 4 }}
-  name: {{ printf "%s-test-%d" .Chart.Name .Release.Revision }} 
-spec:
-  restartPolicy: Never
-  serviceAccountName: {{ .Release.Name }}
-  initContainers:
-    - name: copy-scripts
-      image: registry.access.redhat.com/ubi8/ubi-minimal:latest
-      workingDir: /scripts
-      command:
-        - /bin/bash
-        - -c
-        - |
-          set -x -e
-{{- range $path, $content := .Files.Glob "scripts/*.sh" -}}
-  {{- $name := trimPrefix "scripts/" $path }}
-          printf '%s' "{{ $content | toString | b64enc }}" | base64 -d >{{ $name }}
-          chmod +x {{ $name }}
-{{- end }}
-      volumeMounts:
-        - name: scripts
-          mountPath: /scripts
-      securityContext:
-        allowPrivilegeEscalation: false
+{{- include "common.test" . }}
   containers:
     #
     # Tests the subcriptions CRDs.
     #
     - name: test-subscriptions
-      image: quay.io/codeready-toolchain/oc-client-base:latest
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
       command:
         - /scripts/test-subscriptions.sh
       args:
@@ -52,7 +22,7 @@ spec:
     # Tests the {{ $sub.name }} rollout status.
     #
     - name: {{ printf "test-%s" ($sub.name | lower) }} 
-      image: quay.io/codeready-toolchain/oc-client-base:latest
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
       env:
         - name: NAMESPACE
           value: {{ $sub.namespace }}
@@ -70,6 +40,3 @@ spec:
       securityContext:
         allowPrivilegeEscalation: false
 {{- end }}
-  volumes:
-    - name: scripts
-      emptyDir: {}

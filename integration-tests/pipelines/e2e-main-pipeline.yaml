@@ -155,6 +155,7 @@ spec:
 
               while IFS= read -r config; do
                 OCP_VERSION=$(echo "$config" | jq -r '.[] | select(.key == "OCP").value')
+                OCP_VERSION_SANITIZED=$(echo "$OCP_VERSION" | tr -d '.')
                 ACS=$(echo "$config" | jq -r '.[] | select(.key == "ACS").value')
                 REGISTRY=$(echo "$config" | jq -r '.[] | select(.key == "Registry").value')
                 TPA=$(echo "$config" | jq -r '.[] | select(.key == "TPA").value')
@@ -178,7 +179,7 @@ spec:
                   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
                   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
                   --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
-                  --prefix-name "e2e-$OCP_VERSION"\
+                  --prefix-name "e2e-$OCP_VERSION_SANITIZED"\
                   -o name)
 
                   echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"

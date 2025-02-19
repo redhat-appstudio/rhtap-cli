@@ -180,7 +180,7 @@ spec:
               - name: PASSWORD_PATH
                 value: "$(steps.get-kubeconfig.results.passwordPath)"
             volumeMounts:
-              - name: "$(params.credentials)"
+              - name: credentials
                 mountPath: /credentials
             results:
               - name: ocp-login-command

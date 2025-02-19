@@ -177,14 +177,19 @@ spec:
                 value: $(steps.get-kubeconfig.results.apiServerURL)
               - name: USERNAME
                 value: $(steps.get-kubeconfig.results.username)
-              - name: PASSWORD
-                value: $(steps.get-kubeconfig.results.password)
+              - name: PASSWORD_PATH
+                value: $(steps.get-kubeconfig.results.passwordPath)
+              volumeMounts:
+              - name: "$(params.credentials)"
+                mountPath: /credentials
             results:
               - name: ocp-login-command
                 description: "Ocp login command"
             script: |
               #!/usr/bin/env bash
-              echo "oc login $API_SERVER -u $USERNAME -p $PASSWORD"
+              echo $API_SERVER
+              echo $USERNAME
+              echo "oc login $API_SERVER -u $USERNAME -p $(cat /credentials/$PASSWORD_PATH)" > step.results.ocp-login-command.path
 
 
     # - name: provision-rosa

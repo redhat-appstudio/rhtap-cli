@@ -179,7 +179,7 @@ spec:
                 value: $(steps.get-kubeconfig.results.username)
               - name: PASSWORD_PATH
                 value: $(steps.get-kubeconfig.results.passwordPath)
-              volumeMounts:
+            volumeMounts:
               - name: "$(params.credentials)"
                 mountPath: /credentials
             results:

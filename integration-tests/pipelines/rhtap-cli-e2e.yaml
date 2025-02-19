@@ -83,6 +83,8 @@ spec:
         - name: oci-container-tag
           value: $(context.pipelineRun.name)
     - name: provision-eaas-space
+      runAfter:
+        - create-oci-container
       taskRef:
         resolver: git
         params:

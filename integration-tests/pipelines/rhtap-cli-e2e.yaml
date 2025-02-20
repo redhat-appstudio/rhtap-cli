@@ -189,35 +189,7 @@ spec:
               #!/usr/bin/env bash
               echo $API_SERVER
               echo $USERNAME
-              echo "TEST" > step.results.ocp-login-command.path
-
-
-    # - name: provision-rosa
-    #   runAfter:
-    #     - rosa-hcp-metadata
-    #     - create-oci-container
-    #   taskRef:
-    #     resolver: git
-    #     params:
-    #       - name: url
-    #         value: https://github.com/konflux-ci/konflux-qe-definitions.git
-    #       - name: revision
-    #         value: main
-    #       - name: pathInRepo
-    #         value: common/tasks/rosa/hosted-cp/rosa-hcp-provision/rosa-hcp-provision.yaml
-    #   params:
-    #     - name: cluster-name
-    #       value: "$(tasks.rosa-hcp-metadata.results.cluster-name)"
-    #     - name: ocp-version
-    #       value: "$(params.ocp-version)"
-    #     - name: replicas
-    #       value: "$(params.replicas)"
-    #     - name: machine-type
-    #       value: "$(params.machine-type)"
-    #     - name: konflux-test-infra-secret
-    #       value: "$(params.konflux-test-infra-secret)"
-    #     - name: cloud-credential-key
-    #       value: "$(params.cloud-credential-key)"
+              echo "oc login $API_SERVER -u $USERNAME -p $(cat /credentials/$PASSWORD_PATH)" > $(step.results.ocp-login-command.path)
     - name: rhtap-install
       runAfter:
         - provision-cluster
@@ -297,31 +269,6 @@ spec:
         - name: ocp-version
           value: "$(params.ocp-version)"
   finally:
-    # - name: deprovision-rosa-collect-artifacts
-    #   taskRef:
-    #     resolver: git
-    #     params:
-    #       - name: url
-    #         value: https://github.com/konflux-ci/tekton-integration-catalog.git
-    #       - name: revision
-    #         value: main
-    #       - name: pathInRepo
-    #         value: common/tasks/rosa/hosted-cp/rosa-hcp-deprovision/rosa-hcp-deprovision.yaml
-    #   params:
-    #     - name: test-name
-    #       value: $(context.pipelineRun.name)
-    #     - name: ocp-login-command
-    #       value: "$(tasks.provision-rosa.results.ocp-login-command)"
-    #     - name: oci-container
-    #       value: "$(tasks.create-oci-container.results.oci-container)"
-    #     - name: cluster-name
-    #       value: "$(tasks.rosa-hcp-metadata.results.cluster-name)"
-    #     - name: konflux-test-infra-secret
-    #       value: "$(params.konflux-test-infra-secret)"
-    #     - name: cloud-credential-key
-    #       value: "$(params.cloud-credential-key)"
-    #     - name: pipeline-aggregate-status
-    #       value: "$(tasks.status)"
     - name: sprayproxy-deprovision
       when:
         - input: "$(tasks.sprayproxy-provision.status)"

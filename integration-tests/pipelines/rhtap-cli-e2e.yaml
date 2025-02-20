@@ -153,6 +153,8 @@ spec:
                 value: $(tasks.provision-eaas-space.results.secretRef)
               - name: version
                 value: "$(steps.pick-version.results.version)"
+              - name: instanceType
+                value: "m5.2xlarge"
           - name: get-kubeconfig
             ref:
               resolver: git

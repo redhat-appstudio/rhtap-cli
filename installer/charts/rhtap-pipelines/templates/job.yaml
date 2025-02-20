@@ -21,7 +21,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: update-tektonconfig
-          image: quay.io/codeready-toolchain/oc-client-base:latest
+          image: registry.redhat.io/openshift4/ose-tools-rhel9
           resources:
             limits:
               cpu: 125m

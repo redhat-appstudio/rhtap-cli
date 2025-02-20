@@ -26,7 +26,7 @@ spec:
         # Initializing the Quay integration.
         #
         - name: quay-integration
-          image: quay.io/codeready-toolchain/oc-client-base:latest
+          image: registry.redhat.io/openshift4/ose-tools-rhel9
           env:
             - name: QUAY_HOSTNAME
               value: {{ include "quay.registryHostname" . }}

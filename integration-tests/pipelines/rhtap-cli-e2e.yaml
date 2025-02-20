@@ -189,7 +189,7 @@ spec:
               #!/usr/bin/env bash
               echo $API_SERVER
               echo $USERNAME
-              echo "oc login $API_SERVER -u $USERNAME -p $(cat /credentials/$PASSWORD_PATH)" > $(step.results.ocp-login-command.path)
+              echo "oc login --insecure-skip-tls-verify=true $API_SERVER -u $USERNAME -p $(cat /credentials/$PASSWORD_PATH)" > $(step.results.ocp-login-command.path)
     - name: rhtap-install
       runAfter:
         - provision-cluster

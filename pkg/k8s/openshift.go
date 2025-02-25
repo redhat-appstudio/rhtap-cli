@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"log/slog"
 	"time"
@@ -12,10 +13,27 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // ErrIngressDomainNotFound returned when the OpenShift ingress domain is empty.
 var ErrIngressDomainNotFound = fmt.Errorf("ingress domain not found")
+
+// GetOpenShiftIngressRouteCA returns base64-encoded root certificate for openshift-ingress route
+func GetOpenShiftIngressRouteCA(ctx context.Context, kube *Kube) (string, error) {
+	secret, err := GetSecret(ctx, kube, types.NamespacedName{
+		Namespace: "openshift-ingress-operator",
+		Name:      "router-ca",
+	})
+	if err != nil {
+		return "", err
+	}
+	certData, ok := secret.Data["tls.crt"]
+	if !ok {
+		return "", fmt.Errorf("tls.crt key not found in router-ca secret")
+	}
+	return base64.StdEncoding.EncodeToString(certData), nil
+}
 
 // GetOpenShiftIngressDomain returns the OpenShift Ingress domain.
 func GetOpenShiftIngressDomain(ctx context.Context, kube *Kube) (string, error) {

@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"time"
 
+	v1 "github.com/openshift/api/operator/v1"
 	projectv1 "github.com/openshift/api/project/v1"
 	operatorv1client "github.com/openshift/client-go/operator/clientset/versioned/typed/operator/v1"
 	projectv1client "github.com/openshift/client-go/project/clientset/versioned/typed/project/v1"
@@ -19,15 +20,73 @@ import (
 // ErrIngressDomainNotFound returned when the OpenShift ingress domain is empty.
 var ErrIngressDomainNotFound = fmt.Errorf("ingress domain not found")
 
-// GetOpenShiftIngressRouteCA returns base64-encoded root certificate for openshift-ingress route
-func GetOpenShiftIngressRouteCA(ctx context.Context, kube *Kube) (string, error) {
-	secret, err := GetSecret(ctx, kube, types.NamespacedName{
-		Namespace: "openshift-ingress-operator",
-		Name:      "router-ca",
-	})
+// Returns `default` IngressController CR if exists.
+func getIngressControllerCR(ctx context.Context, kube *Kube) (*v1.IngressController, error) {
+	objectRef := &corev1.ObjectReference{
+		APIVersion: "operator.openshift.io/v1",
+		Namespace:  "openshift-ingress-operator",
+		Name:       "default",
+	}
+
+	restConfig, err := kube.RESTClientGetter(objectRef.Namespace).ToRESTConfig()
+	if err != nil {
+		return nil, err
+	}
+	operatorClient, err := operatorv1client.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	ingressController, err := operatorClient.
+		IngressControllers(objectRef.Namespace).
+		Get(ctx, objectRef.Name, metav1.GetOptions{})
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil, ErrIngressDomainNotFound
+		}
+		return nil, err
+	}
+	return ingressController, nil
+}
+
+// Returns name of the defaultCertificate as specified in default IngressController
+func getIngressControllerDefaultCertificate(ctx context.Context, kube *Kube) (string, error) {
+	ingressController, err := getIngressControllerCR(ctx, kube)
 	if err != nil {
 		return "", err
 	}
+	if ingressController.Spec.DefaultCertificate == nil {
+		return "", nil
+	}
+	ingressCertSecretName := ingressController.Spec.DefaultCertificate.Name
+
+	return ingressCertSecretName, nil
+}
+
+// GetOpenShiftIngressRouteCA returns base64-encoded root certificate for openshift-ingress route.
+// Uses either what's defines in spec->defaultCertificate of IngressController or if that's not defined
+// uses `router-ca` secret from `openshift-ingress-operator` namespace.
+// Related documentation: https://docs.openshift.com/container-platform/4.18/security/certificates/replacing-default-ingress-certificate.html#replacing-default-ingress
+func GetOpenShiftIngressRouteCA(ctx context.Context, kube *Kube) (string, error) {
+	defaultCertSecretName, err := getIngressControllerDefaultCertificate(ctx, kube)
+	if err != nil {
+		return "", err
+	}
+	secretNamespacedName := types.NamespacedName{
+		Namespace: "openshift-ingress-operator",
+		Name:      "router-ca",
+	}
+	if defaultCertSecretName != "" { // if defaultCertificate is specified, us that instead
+		secretNamespacedName = types.NamespacedName{
+			Namespace: "openshift-ingress",
+			Name:      defaultCertSecretName,
+		}
+	}
+	secret, err := GetSecret(ctx, kube, secretNamespacedName)
+	if err != nil {
+		return "", err
+	}
+
 	certData, ok := secret.Data["tls.crt"]
 	if !ok {
 		return "", fmt.Errorf("tls.crt key not found in router-ca secret")
@@ -37,28 +96,8 @@ func GetOpenShiftIngressRouteCA(ctx context.Context, kube *Kube) (string, error)
 
 // GetOpenShiftIngressDomain returns the OpenShift Ingress domain.
 func GetOpenShiftIngressDomain(ctx context.Context, kube *Kube) (string, error) {
-	objectRef := &corev1.ObjectReference{
-		APIVersion: "operator.openshift.io/v1",
-		Namespace:  "openshift-ingress-operator",
-		Name:       "default",
-	}
-
-	restConfig, err := kube.RESTClientGetter(objectRef.Namespace).ToRESTConfig()
+	ingressController, err := getIngressControllerCR(ctx, kube)
 	if err != nil {
-		return "", err
-	}
-	operatorClient, err := operatorv1client.NewForConfig(restConfig)
-	if err != nil {
-		return "", err
-	}
-
-	ingressController, err := operatorClient.
-		IngressControllers(objectRef.Namespace).
-		Get(ctx, objectRef.Name, metav1.GetOptions{})
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return "", ErrIngressDomainNotFound
-		}
 		return "", err
 	}
 

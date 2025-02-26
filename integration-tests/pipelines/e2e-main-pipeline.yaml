@@ -142,6 +142,7 @@ spec:
                   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
                   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
                   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
+                  --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
                   --prefix-name "e2e-$OCP_VERSION"\
                   -o name)
 

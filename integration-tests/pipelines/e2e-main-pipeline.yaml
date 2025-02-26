@@ -143,7 +143,8 @@ spec:
                   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
                   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
                   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                  --prefix-name "e2e-$OCP_VERSION_SANITIZED"\
+                  --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
+                  --prefix-name "e2e-$OCP_VERSION"\
                   -o name)
 
                   echo "Started new pipelinerun: https://console.redhat.com/application-pipeline/workspaces/${KONFLUX_TENANT}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${pipeline_run_name}"

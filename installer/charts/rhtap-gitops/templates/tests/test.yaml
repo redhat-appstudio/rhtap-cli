@@ -1,23 +1,5 @@
-{{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
 ---
-apiVersion: v1
-kind: Pod
-metadata:
-  annotations:
-    helm.sh/hook: test
-    helm.sh/hook-delete-policy: hook-succeeded
-  labels:
-    {{- include "common.labels" . | nindent 4 }}
-  name: {{ $name }} 
-spec:
-  restartPolicy: Never
-  serviceAccountName: {{ .Release.Name }}
-  initContainers:
-    #
-    # Copying the scripts that will be used on the subsequent containers, the
-    # scripts are shared via the "/scripts" volume.
-    #
-{{- include "common.copyScripts" . | nindent 4 }}
+{{- include "common.test" . }}
   containers:
 {{- if .Values.argoCD.enabled }}
   {{- $argoCD := .Values.argoCD }}
@@ -25,7 +7,7 @@ spec:
     # Test the ArgoCD rollout status.
     #
     - name: {{ printf "argocd-%s" $argoCD.name }}
-      image: quay.io/codeready-toolchain/oc-client-base:latest
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
       env:
         - name: NAMESPACE
           value: {{ $argoCD.namespace }}
@@ -45,6 +27,3 @@ spec:
     #
   {{- include "argoCD.testArgoCDLogin" . | nindent 4 }}
 {{- end }}
-  volumes:
-    - name: scripts
-      emptyDir: {}

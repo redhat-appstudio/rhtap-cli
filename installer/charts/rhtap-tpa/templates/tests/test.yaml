@@ -1,41 +1,10 @@
-{{- $name := printf "%s-test-%d" .Chart.Name .Release.Revision -}}
-{{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport -}}
 ---
-apiVersion: v1
-kind: Pod
-metadata:
-  annotations:
-    helm.sh/hook: test
-    helm.sh/hook-delete-policy: hook-succeeded
-  labels:
-    {{- include "common.labels" . | nindent 4 }}
-  name: {{ $name }} 
-spec:
-  restartPolicy: Never
-  serviceAccountName: {{ .Release.Name }}
-  initContainers:
-    - name: copy-scripts
-      image: registry.access.redhat.com/ubi8/ubi-minimal:latest
-      workingDir: /scripts
-      command:
-        - /bin/bash
-        - -c
-        - |
-          set -x -e
-{{- range $path, $content := .Files.Glob "scripts/*.sh" -}}
-  {{- $name := trimPrefix "scripts/" $path }}
-          printf '%s' "{{ $content | toString | b64enc }}" | base64 -d >{{ $name }}
-          chmod +x {{ $name }}
-{{- end }}
-      volumeMounts:
-        - name: scripts
-          mountPath: /scripts
-      securityContext:
-        allowPrivilegeEscalation: false
-{{- if $keycloak.enabled }}
+{{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport -}}
+{{- include "common.test" . }}
   containers:
-    - name: {{ $name }}
-      image: quay.io/codeready-toolchain/oc-client-base:latest
+{{- if $keycloak.enabled }}
+    - name: keycloak-realm-import-test
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
       env:
         - name: NAMESPACE
           value: {{ $keycloak.keycloakCR.namespace }}
@@ -48,7 +17,6 @@ spec:
           mountPath: /scripts
       securityContext:
         allowPrivilegeEscalation: false
+{{- else }}
+{{- include "common.noOp" . | nindent 4 }}
 {{- end }}
-  volumes:
-    - name: scripts
-      emptyDir: {}

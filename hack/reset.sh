@@ -28,7 +28,7 @@ Optional arguments:
         Delete the specified namespace. The option can be repeated
         to delete multiple namespaces.
     -i, --integration INTEGRATION
-        Service to reset [github, gitlab]. The option can be repeated
+        Service to reset [bitbucket, github, gitlab]. The option can be repeated
         to reset multiple services.
     -d, --debug
         Activate tracing/debug mode.
@@ -47,6 +47,7 @@ parse_args() {
         case $1 in
         -a|--all)
             CLUSTER=1
+            BITBUCKET=1
             GITHUB=1
             GITLAB=1
             ;;
@@ -59,6 +60,9 @@ parse_args() {
             ;;
         -i|--integration)
             case $2 in
+            bitbucket)
+                BITBUCKET=1
+                ;;
             github)
                 GITHUB=1
                 ;;
@@ -133,6 +137,24 @@ action() {
         done
         wait
         echo "✓ Deleted all namespaces"
+        echo
+    fi
+    if [ -n "${BITBUCKET:-}" ]; then
+        echo '# Bitbucket'
+        CURL=(
+            "curl"
+            "--fail"
+            "--header" "Authorization: Basic $(echo -n "$BITBUCKET__USERNAME:$BITBUCKET__APP_PASSWORD" | base64)" \
+            "--header" "Content-Type: application/json"
+            "--silent"
+        )
+        URL="https://api.$BITBUCKET__HOST/2.0"
+
+        mapfile -t REPO_LIST < <( "${CURL[@]}" "$URL/repositories/$BITBUCKET__WORKSPACE" | yq ".values[] | .slug" )
+        for REPO in "${REPO_LIST[@]}"; do
+            "${CURL[@]}" --request DELETE "$URL/repositories/$BITBUCKET__WORKSPACE/$REPO"
+            echo "✓ Deleted repository $REPO"
+        done
         echo
     fi
     if [ -n "${GITHUB:-}" ]; then

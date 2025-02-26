@@ -32,7 +32,7 @@ spec:
         # Patch the Tekton Config with the provided annotations.
         #
         - name: patch-annotations
-          image: quay.io/codeready-toolchain/oc-client-base:latest
+          image: registry.redhat.io/openshift4/ose-tools-rhel9
           env:
             - name: KIND
               value: tektonconfig
@@ -56,7 +56,7 @@ spec:
         # Patch the Tekton Config with the provided labels.
         #
         - name: patch-labels
-          image: quay.io/codeready-toolchain/oc-client-base:latest
+          image: registry.redhat.io/openshift4/ose-tools-rhel9
           env:
             - name: KIND
               value: tektonconfig

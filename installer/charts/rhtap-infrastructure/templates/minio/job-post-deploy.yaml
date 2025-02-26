@@ -26,7 +26,7 @@ spec:
         # Waiting for the MinIO Tenant to be ready.
         #
         - name: {{ printf "test-minio-tentant-%s" $k }}
-          image: quay.io/codeready-toolchain/oc-client-base:latest
+          image: registry.redhat.io/openshift4/ose-tools-rhel9
           env:
             - name: NAMESPACE
               value: {{ $v.namespace }}

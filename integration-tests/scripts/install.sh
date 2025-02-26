@@ -187,18 +187,34 @@ install_rhtap() {
   quayio_integration
   artifactory_integration
   nexus_integration
-  # for debugging purpose
-  echo "[INFO] Print out the content of values.yaml.tpl"
+
+  echo "[INFO] Showing the local configuration"
+  set -x
+  cat "$config_file"
+  set +x
+
+  echo "[INFO] Applying the cluster configuration, and showing the 'config.yaml'"
+  set -x
+  ./bin/rhtap-cli config --kube-config "$KUBECONFIG" --log-level=debug --get --create "$config_file"
+  set +x
+
+  echo "[INFO] Print out the content of 'values.yaml.tpl'"
+  set -x
   cat "$tpl_file"
-  ./bin/rhtap-cli deploy --timeout 35m --config "$config_file" --values-template "$tpl_file" --kube-config "$KUBECONFIG" --debug --log-level=debug
+  set +x
+
+  echo "[INFO] Running 'rhtap-cli deploy' command..."
+  set -x
+  ./bin/rhtap-cli deploy --timeout 35m --values-template "$tpl_file" --kube-config "$KUBECONFIG" --debug --log-level=debug
+  set +x
 
   homepage_url=https://$(kubectl -n rhtap-dh get route backstage-developer-hub -o  'jsonpath={.spec.host}')
   callback_url=https://$(kubectl -n rhtap-dh get route backstage-developer-hub -o  'jsonpath={.spec.host}')/api/auth/${auth_config}/handler/frame
   webhook_url=https://$(kubectl -n openshift-pipelines get route pipelines-as-code-controller -o 'jsonpath={.spec.host}')
 
-  echo "[INFO]homepage_url=$homepage_url"
-  echo "[INFO]callback_url=$callback_url"
-  echo "[INFO]webhook_url=$webhook_url"
+  echo "[INFO] homepage_url=$homepage_url"
+  echo "[INFO] callback_url=$callback_url"
+  echo "[INFO] webhook_url=$webhook_url"
 
 }
 

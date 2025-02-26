@@ -39,4 +39,19 @@ func TestNewConfigFromFile(t *testing.T) {
 		g.Expect(feature).NotTo(o.BeNil())
 		g.Expect(feature.GetNamespace()).NotTo(o.BeEmpty())
 	})
+
+	t.Run("MarshallYAML and UnmarshalYAML", func(t *testing.T) {
+		payload, err := cfg.MarshallYAML()
+		g.Expect(err).To(o.Succeed())
+		g.Expect(string(payload)).To(o.ContainSubstring("rhtapCLI:"))
+
+		err = cfg.UnmarshalYAML(payload)
+		g.Expect(err).To(o.Succeed())
+	})
+
+	t.Run("String", func(t *testing.T) {
+		payload, err := cfg.String()
+		g.Expect(err).To(o.Succeed())
+		g.Expect(string(payload)).To(o.ContainSubstring("rhtapCLI:"))
+	})
 }

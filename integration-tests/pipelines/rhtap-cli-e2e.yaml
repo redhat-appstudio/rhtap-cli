@@ -252,9 +252,9 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/redhat-appstudio/rhtap-e2e.git
+            value: https://github.com/rhopp/rhtap-e2e.git
           - name: revision
-            value: main
+            value: disable_tls
           - name: pathInRepo
             value: integration-tests/tasks/rhtap-e2e.yaml
       params:

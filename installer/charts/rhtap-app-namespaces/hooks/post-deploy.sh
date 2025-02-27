@@ -47,7 +47,9 @@ patch_serviceaccount() {
     done
 
     echo "OK"
-    "$KUBECTL" apply -f "$SA_DEFINITION_UPDATED"
+    if [ -e "$SA_DEFINITION_UPDATED" ]; then
+        "$KUBECTL" apply -f "$SA_DEFINITION_UPDATED"
+    fi
 }
 
 app_namespaces() {

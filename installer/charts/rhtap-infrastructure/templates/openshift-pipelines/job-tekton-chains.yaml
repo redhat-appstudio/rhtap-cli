@@ -29,7 +29,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: tekton-chains-cosign
-          image: ghcr.io/sigstore/cosign/cosign:latest
+          image: registry.redhat.io/rhtas/cosign-rhel9:1.1.1
           env:
             - name: COSIGN_PASSWORD
               value: {{ randAlphaNum 32 }}

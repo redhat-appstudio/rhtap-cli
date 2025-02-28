@@ -191,6 +191,41 @@ nexus_integration() {
   fi
 }
 
+wait_for() {
+    local command="${1}"
+    local description="${2}"
+    local timeout="${3}"
+    local interval="${4}"
+    printf "Waiting for %s for %s...\n" "${description}" "${timeout}"
+    timeout --foreground "${timeout}" bash -c "
+    until ${command}
+    do
+        printf \"Waiting for %s... Trying again in ${interval}s\n\" \"${description}\"
+        sleep ${interval}
+    done
+    " || return 1
+    printf "%s finished!\n" "${description}"
+}
+
+updateCert() {
+  set -x 
+  certSecretName=$(oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.spec.defaultCertificate.name}')
+  if [ -z "$certSecretName" ]; then
+    oc get secret router-ca -n openshift-ingress-operator -o jsonpath="{.data.tls\.crt}" |base64 -d > cert.crt
+  else
+    oc get secret $certSecretName -n openshift-ingress -o jsonpath="{.data.tls\.crt}" |base64 -d > cert.crt
+  fi
+  cat cert.crt
+  kubectl create configmap user-ca-bundle -n openshift-config --from-file=cert.crt
+  oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"user-ca-bundle"}}}'
+
+  sleep 5
+  oc get co
+  wait_for "kubectl get clusteroperators -A" "cluster operators to be accessible" "10m" "30"
+  echo "[INFO] Cluster operators were updated."
+  set +x
+}
+
 install_rhtap() {
   echo "[INFO] Start installing RHTAP"
   echo "[INFO] Building binary"
@@ -237,6 +272,8 @@ install_rhtap() {
   echo "[INFO] webhook_url=$webhook_url"
 
 }
+
+updateCert
 
 ci_enabled
 update_dh_catalog_url

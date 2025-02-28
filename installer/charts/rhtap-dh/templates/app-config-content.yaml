@@ -15,6 +15,8 @@ app:
 {{- $nexusSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-nexus-integration") }}
 {{- $artifactorySecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-artifactory-integration") }}
 {{- $artifactorySecretData := ($artifactorySecretObj.data | default dict) }}
+{{- $azureSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-azure-integration") }}
+{{- $azureSecretData := ($azureSecretObj.data | default dict) }}
 
 {{- if $argocdSecretData }}
 argocd:
@@ -32,10 +34,25 @@ argocd:
 artifactory:
   uiUrl: ${ARTIFACTORY__URL}
 {{- end }}
+{{- if $azureSecretObj }}
+azureDevOps:
+  host: ${AZURE__HOST}
+  organization: ${AZURE__ORG}
+{{- end }}
 auth:
   environment: production
   providers:
   {{- $signInPage := "" }}
+  {{- if $azureSecretData }}
+    {{- if and $azureSecretData.clientId $azureSecretData.clientSecret $azureSecretData.tenantId }}
+    {{- $signInPage = "microsoft" }}
+    microsoft:
+      production:
+        clientId: ${AZURE__CLIENT__ID}
+        clientSecret: ${AZURE__CLIENT__SECRET}
+        tenantId: ${AZURE__TENANT__ID}
+    {{- end }}
+  {{- end }}
   {{- if $githubSecretObj }}
     {{- $signInPage = "github" }}
     github:
@@ -84,6 +101,21 @@ catalog:
       - API
 dangerouslyAllowSignInWithoutUserInCatalog: true
 integrations:
+{{- if $azureSecretObj }}
+  azure:
+    - host: ${AZURE__HOST}
+      credentials:
+      # If both personal token and client ID exist, use personal token
+      {{- if $azureSecretData.token }}
+        - personalAccessToken: ${AZURE__TOKEN}
+      {{- else }}
+        - clientId: ${AZURE__CLIENT__ID}
+        {{- if and $azureSecretData.clientSecret $azureSecretData.tenantId }}
+          clientSecret: ${AZURE__CLIENT__SECRET}
+          tenantId: ${AZURE__TENANT__ID}
+        {{- end }}
+      {{- end }}
+{{- end }}
 {{- if $bbSecretObj }}
   bitbucketCloud:
     - appPassword: ${BITBUCKET__APP_PASSWORD}

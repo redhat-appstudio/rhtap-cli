@@ -172,6 +172,56 @@ nexus_integration() {
   fi
 }
 
+configure_rhtap_for_prerelease_versions(){
+  RHDH_INSTALL_SCRIPT="https://raw.githubusercontent.com/janus-idp/operator/main/.rhdh/scripts/install-rhdh-catalog-source.sh"
+  curl -sSLO $RHDH_INSTALL_SCRIPT
+  chmod +x install-rhdh-catalog-source.sh
+
+  # Comment out lines to apply subscription as the rhtap-cli will do this.
+  sed -i.bak '/# Create OperatorGroup/,$ s/^/#/' install-rhdh-catalog-source.sh
+
+  # Add line to script to store IIB_IMAGE
+  echo 'echo ${IIB_IMAGE} | tee "$SHARED_DIR/installed_versions.txt"' >> install-rhdh-catalog-source.sh
+
+  ./install-rhdh-catalog-source.sh --next --install-operator rhdh
+
+  PRODUCT="rhdh"
+  NEW_OPERATOR_CHANNEL="fast"
+  NEW_SOURCE="rhdh-fast"
+
+
+  # Prepare for pre-release install capabilities
+  # Define the file path
+  subscription_values_file="installer/charts/rhtap-subscriptions/values.yaml"
+
+  # Function to update the values
+  update_values() {
+    local section=$1
+    local channel=$2
+    local source=$3
+
+    sed -i "/$section:/,/sourceNamespace:/ {
+      /^ *channel:/ s/: .*/: $channel/
+      /^ *source:/ s/: .*/: $source/
+    }" $subscription_values_file
+  }
+
+  echo "Check the PRODUCT variable and update the corresponding section"
+  if [ "$PRODUCT" == "gitops" ]; then
+    update_values "openshiftGitOps" "$NEW_OPERATOR_CHANNEL" "$NEW_SOURCE"
+  elif [ "$PRODUCT" == "rhdh" ]; then
+    update_values "redHatDeveloperHub" "$NEW_OPERATOR_CHANNEL" "$NEW_SOURCE"
+  elif [ "$PRODUCT" == "pipelines" ]; then
+    update_values "openshiftPipelines" "$NEW_OPERATOR_CHANNEL" "$NEW_SOURCE"
+  else
+    echo "No prerelease product specified nothing needs doing."
+  fi
+  
+  echo "Show subscription values"
+  cat $subscription_values_file
+
+}
+
 install_rhtap() {
   echo "[INFO] Start installing RHTAP"
   echo "[INFO] Building binary"
@@ -187,6 +237,7 @@ install_rhtap() {
   quayio_integration
   artifactory_integration
   nexus_integration
+  configure_rhtap_for_prerelease_versions
   # for debugging purpose
   echo "[INFO] Print out the content of values.yaml.tpl"
   cat "$tpl_file"

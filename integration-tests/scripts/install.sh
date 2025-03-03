@@ -25,6 +25,11 @@ echo "[INFO] auth_config=$auth_config"
 
 tpl_file="installer/charts/values.yaml.tpl"
 config_file="installer/config.yaml"
+subscription_values_file="installer/charts/rhtap-subscriptions/values.yaml"
+
+git restore $tpl_file
+git restore $config_file
+git restore $subscription_values_file
 
 ci_enabled() {
   echo "[INFO] Turn ci to true, this is required when you perform rhtap-e2e automation test against RHTAP"
@@ -90,7 +95,7 @@ gitlab_integration() {
     GITLAB__APP_SECRET="${GITLAB__APP_SECRET:-$(cat /usr/local/rhtap-cli-install/gitlab-app-secret)}"
     GITLAB__GROUP="${GITLAB__GROUP:-$(cat /usr/local/rhtap-cli-install/gitlab-group)}"
 
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" gitlab --token="${GITLAB__TOKEN}" --app-id="${GITLAB__APP__ID}" --app-secret="${GITLAB__APP_SECRET}" --group="${GITLAB__GROUP}"
+    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" gitlab --token="${GITLAB__TOKEN}" --app-id="${GITLAB__APP__ID}" --app-secret="${GITLAB__APP_SECRET}" --group="${GITLAB__GROUP}" --force
   fi
 }
 
@@ -112,7 +117,7 @@ quayio_integration() {
     QUAY__DOCKERCONFIGJSON="${QUAY__DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/quay-dockerconfig-json)}"
     QUAY__API_TOKEN="${QUAY__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/quay-api-token)}"
 
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" quay --url="https://quay.io" --dockerconfigjson="${QUAY__DOCKERCONFIGJSON}" --token="${QUAY__API_TOKEN}"
+    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" quay --url="https://quay.io" --dockerconfigjson="${QUAY__DOCKERCONFIGJSON}" --token="${QUAY__API_TOKEN}" --force
   fi
 
 }
@@ -133,7 +138,7 @@ acs_integration() {
     ACS__CENTRAL_ENDPOINT="${ACS__CENTRAL_ENDPOINT:-$(cat /usr/local/rhtap-cli-install/acs-central-endpoint)}"
     ACS__API_TOKEN="${ACS__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/acs-api-token)}"
 
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" acs --endpoint="${ACS__CENTRAL_ENDPOINT}" --token="${ACS__API_TOKEN}"
+    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" acs --endpoint="${ACS__CENTRAL_ENDPOINT}" --token="${ACS__API_TOKEN}" --force
   fi
 }
 
@@ -177,7 +182,7 @@ artifactory_integration() {
     ARTIFACTORY_URL="${ARTIFACTORY_URL:-$(cat /usr/local/rhtap-cli-install/artifactory-url)}"
     ARTIFACTORY_TOKEN="${ARTIFACTORY_TOKEN:-$(cat /usr/local/rhtap-cli-install/artifactory-token)}"
     ARTIFACTORY_DOCKERCONFIGJSON="${ARTIFACTORY_DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/artifactory-dockerconfig-json)}"
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" artifactory --url="${ARTIFACTORY_URL}" --token="${ARTIFACTORY_TOKEN} " --dockerconfigjson="${ARTIFACTORY_DOCKERCONFIGJSON}"
+    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" artifactory --url="${ARTIFACTORY_URL}" --token="${ARTIFACTORY_TOKEN} " --dockerconfigjson="${ARTIFACTORY_DOCKERCONFIGJSON}" --force
   fi
 }
 
@@ -191,11 +196,76 @@ nexus_integration() {
   fi
 }
 
+configure_rhtap_for_prerelease_versions_pipelines(){
+  export PRODUCT="pipelines"
+  export NEW_OPERATOR_CHANNEL="latest"
+  export NEW_SOURCE="pipelines-iib"
+  export PIPELINES_IMAGE="quay.io/openshift-pipeline/openshift-pipelines-pipelines-operator-bundle-container-index"
+  export PIPELINES_IMAGE_TAG="v4.17-candidate"
+  pwd
+  ./integration-tests/scripts/pre-release/pipelines-prerelease-install.sh
+}
+
+configure_rhtap_for_prerelease_versions_rhdh(){
+  RHDH_INSTALL_SCRIPT="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/main/.rhdh/scripts/install-rhdh-catalog-source.sh"
+  curl -sSLO $RHDH_INSTALL_SCRIPT
+  chmod +x install-rhdh-catalog-source.sh
+
+  export SHARED_DIR=$(pwd)
+
+  ./install-rhdh-catalog-source.sh --latest --install-operator rhdh
+  export PRODUCT="rhdh"
+  export NEW_OPERATOR_CHANNEL="fast-1.6"
+  export NEW_SOURCE="rhdh-fast"
+}
+
+configure_rhtap_for_prerelease_versions_gitops(){
+  export PRODUCT="gitops"
+  export NEW_OPERATOR_CHANNEL="latest"
+  export NEW_SOURCE="gitops-iib"
+  export GITOPS_IIB_IMAGE="quay.io/rhtap_qe/gitops-iib:782137"
+  ./integration-tests/scripts/pre-release/gitops-prerelease-install.sh
+}
+
+configure_rhtap_for_prerelease_versions(){
+  # Prepare for pre-release install capabilities
+  # Function to update the values
+  update_values() {
+    local section=$1
+    local channel=$2
+    local source=$3
+
+    sed -i "/$section:/,/sourceNamespace:/ {
+      /^ *channel:/ s/: .*/: $channel/
+      /^ *source:/ s/: .*/: $source/
+    }" $subscription_values_file
+  }
+
+  echo "Check the PRODUCT variable and update the corresponding section"
+  if [ "$PRODUCT" == "gitops" ]; then
+    update_values "openshiftGitOps" "$NEW_OPERATOR_CHANNEL" "$NEW_SOURCE"
+  elif [ "$PRODUCT" == "rhdh" ]; then
+    update_values "redHatDeveloperHub" "$NEW_OPERATOR_CHANNEL" "$NEW_SOURCE"
+  elif [ "$PRODUCT" == "pipelines" ]; then
+    update_values "openshiftPipelines" "$NEW_OPERATOR_CHANNEL" "$NEW_SOURCE"
+  else
+    echo "No prerelease product specified nothing needs doing."
+  fi
+  
+  echo "Show subscription values"
+  cat $subscription_values_file
+}
+
 install_rhtap() {
   echo "[INFO] Start installing RHTAP"
   echo "[INFO] Building binary"
   make build
 
+  echo "[INFO] Preparing RHTAP for pre release testing"
+  #configure_rhtap_for_prerelease_versions_pipelines# works?
+  configure_rhtap_for_prerelease_versions_rhdh
+  #configure_rhtap_for_prerelease_versions_gitops
+  configure_rhtap_for_prerelease_versions
   echo "[INFO] Installing RHTAP"
 
   echo "[INFO] Showing the local configuration"

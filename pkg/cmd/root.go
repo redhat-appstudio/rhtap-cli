@@ -27,6 +27,7 @@ type RootCmd struct {
 func (r *RootCmd) Cmd() *cobra.Command {
 	logger := r.flags.GetLogger(os.Stdout)
 
+	// TODO: Remove me.
 	r.cmd.AddCommand(subcmd.NewIntegration(logger, r.cfg, r.kube))
 
 	for _, sub := range []subcmd.Interface{

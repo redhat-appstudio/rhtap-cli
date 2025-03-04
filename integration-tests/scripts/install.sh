@@ -211,16 +211,17 @@ wait_for() {
 
 updateCert() {
   set -x 
-  certSecretName=$(oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.spec.defaultCertificate.name}')
-  if [ -z "$certSecretName" ]; then
-    oc get secret router-ca -n openshift-ingress-operator -o jsonpath="{.data.tls\.crt}" |base64 -d > cert.crt
-  else
-    oc get secret $certSecretName -n openshift-ingress -o jsonpath="{.data.tls\.crt}" |base64 -d > cert.crt
-  fi
-  cat cert.crt
-  kubectl create configmap user-ca-bundle -n openshift-config --from-file=ca-bundle.crt=./cert.crt
-  kubectl get configmap user-ca-bundle -n openshift-config -o yaml
-  oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"user-ca-bundle"}}}'
+  # certSecretName=$(oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.spec.defaultCertificate.name}')
+  # oc get secret 
+  # if [ -z "$certSecretName" ]; then
+  #   oc get secret router-ca -n openshift-ingress-operator -o jsonpath="{.data.tls\.crt}" |base64 -d > cert.crt
+  # else
+  #   oc get secret $certSecretName -n openshift-ingress -o jsonpath="{.data.tls\.crt}" |base64 -d > cert.crt
+  # fi
+  # cat cert.crt
+  # kubectl create configmap user-ca-bundle -n openshift-config --from-file=ca-bundle.crt=./cert.crt
+  kubectl get configmap "kube-root-ca.crt" -n openshift-config -o yaml
+  oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"kube-root-ca.crt"}}}'
 
   sleep 5
   oc get co

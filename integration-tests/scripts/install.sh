@@ -198,11 +198,13 @@ wait_for() {
     local interval="${4}"
     printf "Waiting for %s for %s...\n" "${description}" "${timeout}"
     timeout --foreground "${timeout}" bash -c "
+    set -x
     until ${command}
     do
         printf \"Waiting for %s... Trying again in ${interval}s\n\" \"${description}\"
         sleep ${interval}
     done
+    set +x
     " || return 1
     printf "%s finished!\n" "${description}"
 }
@@ -216,7 +218,8 @@ updateCert() {
     oc get secret $certSecretName -n openshift-ingress -o jsonpath="{.data.tls\.crt}" |base64 -d > cert.crt
   fi
   cat cert.crt
-  kubectl create configmap user-ca-bundle -n openshift-config --from-file=cert.crt
+  kubectl create configmap user-ca-bundle -n openshift-config --from-file=ca-bundle.crt=./cert.crt
+  kubectl get configmap user-ca-bundle -n openshift-config -o yaml
   oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"user-ca-bundle"}}}'
 
   sleep 5

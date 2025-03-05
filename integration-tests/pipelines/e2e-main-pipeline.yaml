@@ -181,6 +181,7 @@ spec:
               '
               ## Explore and report status of all failed pipelineruns. Fail if anything failed
               SOME_PIPELINE_FAILED=false
+              SOME_PIPELINE_SUCCEEDED=false
               for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
                 if [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "False" ]]; then
                   if ! $SOME_PIPELINE_FAILED ; then
@@ -188,8 +189,13 @@ spec:
                   fi
                   echo "https://console.redhat.com/application-pipeline/workspaces/${KONFLUX_TENANT}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
                   SOME_PIPELINE_FAILED=true
+                elif [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "True" ]]; then
+                  SOME_PIPELINE_SUCCEEDED=true
                 fi
               done
+              if $SOME_PIPELINE_SUCCEEDED ; then
+                exit 0
+              fi
               if $SOME_PIPELINE_FAILED ; then
                 exit 1
               fi

@@ -221,9 +221,10 @@ updateCert() {
   # cat cert.crt
   # kubectl create configmap user-ca-bundle -n openshift-config --from-file=ca-bundle.crt=./cert.crt
   kubectl create configmap root-ca -n openshift-config --from-literal=ca-bundle.crt="$(kubectl get configmap "kube-root-ca.crt" -o=json |jq -r '.data["ca.crt"]')"
+  kubectl create configmap root-ca-image -n openshift-config --from-literal=ca-bundle.crt="$(kubectl get configmap "kube-root-ca.crt" -o=json |jq -r '.data["ca.crt"]')"
   kubectl get cm root-ca -n openshift-config
   oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"root-ca"}}}'
-  oc patch image.config/cluster --type=merge --patch='{"spec":{"additionalTrustedCA":{"name":"root-ca"}}}'
+  oc patch image.config/cluster --type=merge --patch='{"spec":{"additionalTrustedCA":{"name":"root-ca-image"}}}'
 
   sleep 5
   oc get co

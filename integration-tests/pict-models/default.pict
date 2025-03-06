@@ -12,8 +12,8 @@
 
 OCP: 4.17, 4.16
 AUTH: github
-ACS: new            
-Registry: quay      
-TPA: new           
-SCM: github         
-Pipeline: tekton 
+ACS: new
+Registry: quay.io
+TPA: new
+SCM: github
+Pipeline: tekton

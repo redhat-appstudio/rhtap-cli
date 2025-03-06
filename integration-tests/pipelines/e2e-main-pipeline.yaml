@@ -182,55 +182,9 @@ spec:
               #Serialize plrs array to be able to export it as var
               export PIPELINERUNS_ARRAY_SERIALIZED="${PIPELINERUNS_ARRAY[*]}"
 
-              waitFor "! oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} &>/dev/null" "Pipelines are still starting. Waiting 1 minute" "All pipelines have started"
-              waitFor "[[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Unknown" ]]" "Nested pipelines are still running. Waiting 1 minute" "All nested pipelines finished"
+              waitFor '! oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} &>/dev/null' "Pipelines are still starting. Waiting 1 minute" "All pipelines have started"
+              waitFor '[[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Unknown" ]]'' "Nested pipelines are still running. Waiting 1 minute" "All nested pipelines finished"
 
-              # Wait for all PLRs to start
-              # timeout --foreground 120m /bin/bash -c '
-              #     #deserialize plrs array
-              #     read -r -a PIPELINERUNS_ARRAY <<< "$PIPELINERUNS_ARRAY_SERIALIZED"
-              #     while true; do
-              #       PIPELINES_STARTING=false
-              #       for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
-              #         if ! oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} &>/dev/null; then
-              #           #Not started yet
-              #           PIPELINES_STARTING=true
-              #           break
-              #         fi
-              #       done
-              #       it $PIPELINES_STARTING ; then
-              #         echo "Pipelines are still starting. Waiting 1 minute"
-              #         sleep 60
-              #       else
-              #         echo "All pipelines have started"
-              #         break
-              #       fi
-              #     done
-              # '
-
-              # Wait for all PLRs to finish
-              # timeout --foreground 120m /bin/bash -c '
-              #     #deserialize plrs array
-              #     read -r -a PIPELINERUNS_ARRAY <<< "$PIPELINERUNS_ARRAY_SERIALIZED"
-              #     echo "${PIPELINERUNS_ARRAY[*]}"
-              #     while true; do
-              #       ARE_PIPELINES_RUNNING=false
-              #       for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
-              #         if ! oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} &>/dev/null || [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Unknown" ]]; then
-              #           #something is still running. Break this cycle and wait one minute.
-              #           ARE_PIPELINES_RUNNING=true
-              #           break
-              #         fi
-              #       done
-              #       if $ARE_PIPELINES_RUNNING ; then
-              #         echo "Nested pipelines are still running. Waiting 1 minute"
-              #         sleep 60
-              #       else
-              #         echo "All nested pipelines finished"
-              #         break
-              #       fi
-              #     done
-              # '
               ## Explore and report status of all failed pipelineruns. Fail if anything failed
               SOME_PIPELINE_FAILED=false
               SOME_PIPELINE_SUCCEEDED=false

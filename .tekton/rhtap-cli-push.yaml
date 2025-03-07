@@ -27,6 +27,8 @@ spec:
     value: quay.io/rhtap/rhtap-cli:{{revision}}
   - name: dockerfile
     value: Dockerfile
+  - name: image-expires-after
+    value: 5d
   pipelineSpec:
     finally:
     - name: show-sbom

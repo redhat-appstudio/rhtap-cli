@@ -138,6 +138,15 @@ spec:
         - name: auth_config
           value: $(params.auth_config)
     - name: sprayproxy-provision
+      when:
+        - input: "$(params.pipeline_config)"
+          operator: in
+          values:
+            - "tekton"
+        - input: "$(params.scm_config)"
+          operator: in
+          values:
+            - "github"
       runAfter:
         - rhtap-install
       taskRef:
@@ -204,6 +213,15 @@ spec:
         - name: pipeline-aggregate-status
           value: "$(tasks.status)"
     - name: sprayproxy-deprovision
+      when:
+        - input: "$(params.pipeline_config)"
+          operator: in
+          values:
+            - "tekton"
+        - input: "$(params.scm_config)"
+          operator: in
+          values:
+            - "github"
       taskRef:
         resolver: git
         params:

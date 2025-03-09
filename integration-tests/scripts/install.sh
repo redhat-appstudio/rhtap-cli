@@ -172,6 +172,49 @@ nexus_integration() {
   fi
 }
 
+wait_for() {
+    local command="${1}"
+    local description="${2}"
+    local timeout="${3}"
+    local interval="${4}"
+    printf "Waiting for %s for %s...\n" "${description}" "${timeout}"
+    timeout --foreground "${timeout}" bash -c "
+    set -x
+    until ${command}
+    do
+        printf \"Waiting for %s... Trying again in ${interval}s\n\" \"${description}\"
+        sleep ${interval}
+    done
+    set +x
+    " || return 1
+    printf "%s finished!\n" "${description}"
+}
+
+updateCert() {
+  set -x 
+  # certSecretName=$(oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.spec.defaultCertificate.name}')
+  # oc get secret 
+  # if [ -z "$certSecretName" ]; then
+  #   oc get secret router-ca -n openshift-ingress-operator -o jsonpath="{.data.tls\.crt}" |base64 -d > cert.crt
+  # else
+  #   oc get secret $certSecretName -n openshift-ingress -o jsonpath="{.data.tls\.crt}" |base64 -d > cert.crt
+  # fi
+  # cat cert.crt
+  # kubectl create configmap user-ca-bundle -n openshift-config --from-file=ca-bundle.crt=./cert.crt
+  kubectl create configmap root-ca -n openshift-config --from-literal=ca-bundle.crt="$(kubectl get configmap "kube-root-ca.crt" -o=json |jq -r '.data["ca.crt"]')"
+  REGISTRY=$(oc get routes/rhtap-quay-quay -n rhtap-quay -o jsonpath="{.spec.host}")
+  kubectl create configmap root-ca-image -n openshift-config --from-literal=$REGISTRY="$(kubectl get configmap "kube-root-ca.crt" -o=json |jq -r '.data["ca.crt"]')"
+  kubectl get cm root-ca -n openshift-config
+  oc patch proxy/cluster --type=merge --patch='{"spec":{"trustedCA":{"name":"root-ca"}}}'
+  oc patch image.config/cluster --type=merge --patch='{"spec":{"additionalTrustedCA":{"name":"root-ca-image"}}}'
+
+  sleep 5
+  oc get co
+  wait_for "kubectl get clusteroperators -A" "cluster operators to be accessible" "10m" "30"
+  echo "[INFO] Cluster operators were updated."
+  set +x
+}
+
 install_rhtap() {
   echo "[INFO] Start installing RHTAP"
   echo "[INFO] Building binary"
@@ -201,6 +244,8 @@ install_rhtap() {
   echo "[INFO]webhook_url=$webhook_url"
 
 }
+
+updateCert
 
 ci_enabled
 update_dh_catalog_url

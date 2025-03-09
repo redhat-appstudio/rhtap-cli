@@ -52,12 +52,20 @@ patch_serviceaccount() {
     fi
 }
 
-app_namespaces() {
-    NAMESPACE="$INSTALLER__QUAY__SECRET__NAMESPACE"
+get_namespaces() {
+    read -r -a NAMESPACES <<<"$(
+        "$KUBECTL" get namespaces --selector "argocd.argoproj.io/managed-by=$INSTALLER__ARGOCD__NAME" -o name \
+        | cut -d/ -f2 | sed "s:-[^-]*$::" | sort -u \
+        | tr "\n" " " \
+    )"
+}
 
-    patch_serviceaccount "$NAMESPACE-app-ci" "pipeline"
-    for env in "ci" "development" "prod" "stage"; do
-        patch_serviceaccount "$NAMESPACE-app-$env" "default"
+setup_namespaces() {
+    for NAMESPACE in "${NAMESPACES[@]}"; do
+        patch_serviceaccount "$NAMESPACE-ci" "pipeline"
+        for env in "ci" "development" "prod" "stage"; do
+            patch_serviceaccount "$NAMESPACE-$env" "default"
+        done
     done
 }
 
@@ -68,7 +76,8 @@ main() {
     TEMP_DIR="$(mktemp -d)"
     cd "$TEMP_DIR"
     get_binaries
-    app_namespaces
+    get_namespaces
+    setup_namespaces
     cd - >/dev/null
     rm -rf "$TEMP_DIR"
     echo

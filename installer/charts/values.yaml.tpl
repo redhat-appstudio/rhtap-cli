@@ -209,6 +209,10 @@ acsTest: *acs
 appNamespaces:
   argoCD:
     name: {{ $argoCDName }}
+  namespace_prefixes:
+  {{- range ($rhdh.Properties.namespacePrefixes | default (tuple (printf "%s-app" .Installer.Namespace))) }}
+    - {{ . }}
+  {{- end }}
 
 #
 # rhtap-gitops

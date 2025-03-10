@@ -1,5 +1,7 @@
-{{- $namespace := .Release.Namespace -}}
 OpenShift Projects:
-{{- range tuple "ci" "development" "prod" "stage" }}
-  - "{{ $namespace }}-app-{{ . }}"
+{{- range .Values.appNamespaces.namespace_prefixes }}
+  {{- $namespace := . }}
+  {{- range tuple "ci" "development" "prod" "stage" }}
+  - "{{ $namespace }}-{{ . }}"
+  {{- end }}
 {{- end }}

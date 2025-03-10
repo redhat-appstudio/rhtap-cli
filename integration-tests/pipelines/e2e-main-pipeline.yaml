@@ -137,8 +137,8 @@ spec:
                 REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
                 BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
               else
-                REPO_ORG="redhat-appstudio"
-                BRANCH="main"
+                REPO_ORG="xinredhat"
+                BRANCH="test_ci"
               fi
 
               echo "Running tests for OCP versions:"

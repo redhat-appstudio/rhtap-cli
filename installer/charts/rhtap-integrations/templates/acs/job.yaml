@@ -57,7 +57,7 @@ spec:
             allowPrivilegeEscalation: false
       {{- end }}
       {{- $secretNexus := (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
-      {{- if and $integrations.acs.enabled $secretArtifactory }}
+      {{- if and $integrations.acs.enabled $secretNexus }}
         #
         # Create the Nexus integration.
         #

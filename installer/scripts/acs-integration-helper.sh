@@ -92,11 +92,13 @@ get_variables() {
     fi
 
     if [ -z "${REGISTRY_ENDPOINT:-}" ]; then
-        REGISTRY_ENDPOINT="$(oc get secrets -n "$NAMESPACE" "$REGISTRY_SECRET" -o json | jq -r '.data.url | @base64d')"
+        REGISTRY_ENDPOINT="$(
+            oc get secrets -n "$NAMESPACE" "$REGISTRY_SECRET" -o json \
+            | jq -r '.data.".dockerconfigjson" | @base64d' \
+            | jq -r '.auths | to_entries[0].key'
+        )"
     fi
-    if [ -z "${REGISTRY_HOST:-}" ]; then
-        REGISTRY_HOST="${REGISTRY_ENDPOINT//https:\/\//}"
-    fi
+    
     if [ -z "${REGISTRY_USERNAME:-}" ]; then
         REGISTRY_USERNAME="$(
             oc get secrets -n "$NAMESPACE" "$REGISTRY_SECRET" -o json \
@@ -117,7 +119,6 @@ get_variables() {
     case "$REGISTRY" in
         quay)
             INTEGRATION_TYPE="quay"
-            REGISTRY_ENDPOINT="$REGISTRY_HOST"
             REGISTRY_CREDENTIALS='"registryRobotCredentials": {
             "username": "'"$REGISTRY_USERNAME"'",
             "password": "'"$REGISTRY_PASSWORD"'"
@@ -125,7 +126,7 @@ get_variables() {
             ;;
         *)
             INTEGRATION_TYPE="docker"
-            REGISTRY_CREDENTIALS='            "username": "'"$REGISTRY_USERNAME"'",
+            REGISTRY_CREDENTIALS='"username": "'"$REGISTRY_USERNAME"'",
             "password": "'"$REGISTRY_PASSWORD"'"'
             ;;
     esac
@@ -142,7 +143,7 @@ integration() {
     "categories": ["REGISTRY"],
     "clusterId": "",
     "id": "",
-    "name": "'"${REGISTRY_HOST}"'",
+    "name": "'"${REGISTRY_ENDPOINT}"'",
     "'"${INTEGRATION_TYPE}"'": {
         "endpoint": "'"${REGISTRY_ENDPOINT}"'",
         "insecure": '"$INSECURE"',

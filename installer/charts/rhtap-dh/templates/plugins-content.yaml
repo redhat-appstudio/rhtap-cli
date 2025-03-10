@@ -45,6 +45,12 @@ plugins:
                     gridRowStart: 1
                 importName: TektonCI
                 mountPoint: entity.page.ci/cards
+{{- if (lookup "v1" "Secret" $integrationNamespace "rhtap-azure-integration") }}
+  - disabled: false
+    package: ./dynamic-plugins/dist/backstage-community-plugin-azure-devops-backend-dynamic
+  - disabled: false
+    package: ./dynamic-plugins/dist/backstage-community-plugin-azure-devops
+{{- end }}
 {{- if (lookup "v1" "Secret" $integrationNamespace "rhtap-github-integration") }}
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions

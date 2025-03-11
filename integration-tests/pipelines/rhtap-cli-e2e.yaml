@@ -125,19 +125,19 @@ spec:
           #   params:
           #     - name: eaasSpaceSecretRef
           #       value: $(tasks.provision-eaas-space.results.secretRef)
-          - name: pick-version
-            ref:
-              resolver: git
-              params:
-                - name: url
-                  value: https://github.com/konflux-ci/build-definitions.git
-                - name: revision
-                  value: main
-                - name: pathInRepo
-                  value: stepactions/eaas-get-latest-openshift-version-by-prefix/0.1/eaas-get-latest-openshift-version-by-prefix.yaml
-            params:
-              - name: prefix
-                value: "$(params.ocp-version)."
+          # - name: pick-version
+          #   ref:
+          #     resolver: git
+          #     params:
+          #       - name: url
+          #         value: https://github.com/konflux-ci/build-definitions.git
+          #       - name: revision
+          #         value: main
+          #       - name: pathInRepo
+          #         value: stepactions/eaas-get-latest-openshift-version-by-prefix/0.1/eaas-get-latest-openshift-version-by-prefix.yaml
+          #   params:
+          #     - name: prefix
+          #       value: "$(params.ocp-version)."
           - name: create-cluster
             ref:
               resolver: git
@@ -152,7 +152,7 @@ spec:
               - name: eaasSpaceSecretRef
                 value: $(tasks.provision-eaas-space.results.secretRef)
               - name: version
-                value: "$(steps.pick-version.results.version)"
+                value: "4.16.37"
               - name: instanceType
                 value: "m5.2xlarge"
           - name: get-kubeconfig

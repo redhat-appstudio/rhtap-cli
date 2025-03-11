@@ -285,7 +285,6 @@ spec:
           1. **Collect Artifacts**: Gathers artifacts if the pipeline did not succeed.
           2. **Inspect and Upload Artifacts**: Checks for sensitive information in the artifacts and uploads them to the OCI container registry.
         params:
-            description: The name of the test being executed.
           - name: ocp-login-command
             type: string
             description: Command to log in to the OpenShift cluster.

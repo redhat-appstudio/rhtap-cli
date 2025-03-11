@@ -10,7 +10,7 @@ metadata:
     helm.sh/hook: post-install,post-upgrade
     {{- include "common.labels" $root | nindent 4 }}
   namespace: {{ $v.namespace }}
-  name: {{ printf "post-deploy-%s" $k }}
+  name: {{ printf "minio-post-deploy-%s" $k }}
 spec:
   template:
     spec:

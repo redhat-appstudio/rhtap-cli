@@ -2,6 +2,22 @@
 {{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport -}}
 {{- include "common.test" . }}
   containers:
+    - name: deployments-test
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
+      env:
+        - name: NAMESPACE
+          value: {{ .Release.Namespace }}
+        - name: RESOURCE_TYPE
+          value: "deployment"
+      command:
+        - /scripts/test-rollout-status.sh
+      args:
+        - {{ printf "app.kubernetes.io/instance=%s" .Release.Name }}
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
 {{- if $keycloak.enabled }}
     - name: keycloak-realm-import-test
       image: registry.redhat.io/openshift4/ose-tools-rhel9
@@ -17,6 +33,4 @@
           mountPath: /scripts
       securityContext:
         allowPrivilegeEscalation: false
-{{- else }}
-{{- include "common.noOp" . | nindent 4 }}
 {{- end }}

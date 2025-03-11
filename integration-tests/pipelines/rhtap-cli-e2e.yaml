@@ -271,6 +271,95 @@ spec:
         - name: ocp-version
           value: "$(params.ocp-version)"
   finally:
+    - name: collect-artifacts
+      params:
+        - name: ocp-login-command
+          value: "$(tasks.provision-cluster.results.ocp-login-command)"
+        - name: oci-container
+          value: "$(tasks.create-oci-container.results.oci-container)"
+        - name: pipeline-aggregate-status
+          value: "$(tasks.status)"
+      taskSpec: 
+        description: |
+          This Tekton Task handles the collection of test artifacts and deprovisions the OpenShift cluster. The task performs the following steps:
+          1. **Collect Artifacts**: Gathers artifacts if the pipeline did not succeed.
+          2. **Inspect and Upload Artifacts**: Checks for sensitive information in the artifacts and uploads them to the OCI container registry.
+        params:
+            description: The name of the test being executed.
+          - name: ocp-login-command
+            type: string
+            description: Command to log in to the OpenShift cluster.
+          - name: oci-container
+            type: string
+            description: The ORAS container registry URI where artifacts will be stored.
+          - name: pipeline-aggregate-status
+            type: string
+            description: The status of the pipeline (e.g., Succeeded, Failed, Completed, None).
+            default: None
+        volumes:
+          - name: konflux-test-infra-volume
+            secret:
+              secretName: konflux-test-infra
+        steps:
+          - name: collect-artifacts
+            workingDir: /workspace/cluster-artifacts
+            onError: continue
+            image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
+            script: |
+              #!/bin/sh
+              $(params.ocp-login-command)
+
+              if [[ $(params.pipeline-aggregate-status) == "Succeeded" ]]; then
+                echo "[INFO]: Pipeline finished successfully. Skipping artifacts collection..."
+                exit 0
+              fi
+
+              curl -sSL https://raw.githubusercontent.com/konflux-ci/konflux-qe-definitions/main/scripts/gather-extra.sh | bash
+          - name: inspect-upload-artifacts
+            workingDir: /workspace
+            onError: continue
+            image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
+            volumeMounts:
+              - name: konflux-test-infra-volume
+                mountPath: /usr/local/konflux-test-infra
+            script: |
+              #!/bin/sh
+
+              if [[ "$(params.pipeline-aggregate-status)" == "Succeeded" ]]; then
+                  echo -e "[INFO]: Pipeline finished successfully. Skipping artifacts inspection..."
+                  exit 0
+              fi
+
+              leaktk scan --kind Files --resource /workspace | leaktk-remove-files /workspace
+
+              OCI_STORAGE_USERNAME="$(jq -r '."quay-username"' /usr/local/konflux-test-infra/oci-storage)"
+              OCI_STORAGE_TOKEN="$(jq -r '."quay-token"' /usr/local/konflux-test-infra/oci-storage)"
+              OCI_STORAGE_CONTAINER="$(params.oci-container)"
+              TEMP_ANNOTATION_FILE="$(mktemp)"
+
+              # Fetch the manifest annotations for the container
+              MANIFESTS=$(oras manifest fetch "$OCI_STORAGE_CONTAINER" | jq .annotations) || {
+                  echo -e "[ERROR]: Failed to fetch manifest from $OCI_STORAGE_CONTAINER"
+                  exit 1
+              }
+
+              # Create and save the JSON object
+              jq -n --argjson manifest "$MANIFESTS" '{ "$manifest": $manifest }' > "${TEMP_ANNOTATION_FILE}"
+
+              oras pull "$OCI_STORAGE_CONTAINER"
+
+              attempt=1
+              while ! oras push "$OCI_STORAGE_CONTAINER" --username="${OCI_STORAGE_USERNAME}" --password="${OCI_STORAGE_TOKEN}" --annotation-file "${TEMP_ANNOTATION_FILE}" ./:application/vnd.acme.rocket.docs.layer.v1+tar; do
+                  if [[ $attempt -ge 5 ]]; then
+                      echo -e "[ERROR]: oras push failed after $attempt attempts."
+                      rm -f "${TEMP_ANNOTATION_FILE}"
+                      exit 1
+                  fi
+                  echo -e "[WARNING]: oras push failed (attempt $attempt). Retrying in 5 seconds..."
+                  sleep 5
+                  ((attempt++))
+              done
+
     - name: sprayproxy-deprovision
       when:
         - input: "$(tasks.sprayproxy-provision.status)"

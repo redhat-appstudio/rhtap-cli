@@ -25,6 +25,8 @@ rhtapCLI:
       properties:
         catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/main/all.yaml
         manageSubscription: true
+        # namespacePrefixes:
+        #   - rhtap-app
     redHatAdvancedClusterSecurity:
       enabled: &rhacsEnabled true
       namespace: &rhacsNamespace rhtap-acs

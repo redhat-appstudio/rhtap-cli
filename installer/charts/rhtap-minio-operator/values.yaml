@@ -21,6 +21,8 @@ operator:
         value: "OpenShift"
       - name: OPERATOR_STS_ENABLED
         value: "off"
+      - name: MINIO_OPERATOR_IMAGE
+        value: quay.io/minio/operator:v5.0.17
     securityContext: &operatorSecurityContext
       runAsUser: 1000
       runAsGroup: 1000
@@ -52,8 +54,6 @@ operator:
     env:
       - name: MINIO_OPERATOR_RUNTIME
         value: "OpenShift"
-      - name: MINIO_OPERATOR_IMAGE
-        value: quay.io/minio/operator:v5.0.17
     securityContext: *operatorSecurityContext
     containerSecurityContext: *operatorContainerSecurityContext
     resources:

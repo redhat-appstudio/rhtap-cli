@@ -162,7 +162,7 @@ rhtap_cli() {
 }
 
 run_bin() {
-    eval "$PROJECT_DIR/bin/rhtap-cli --config='$CONFIG' $*"
+    eval "$PROJECT_DIR/bin/rhtap-cli $*"
 }
 
 run_container() {
@@ -172,9 +172,9 @@ run_container() {
         --publish "$CLI_PORT:$CLI_PORT" \
         --rm \
         --volume="$KUBECONFIG:/rhtap-cli/.kube/config:Z,U" \
-        --volume="$CONFIG:/rhtap-cli/my-config.yaml:Z,U" \
+        --volume="$CONFIG:/rhtap-cli/$CONFIG:Z,U" \
         "$CLI_IMAGE" \
-        -c "rhtap-cli --config=my-config.yaml $*"
+        -c "rhtap-cli $*"
     unshare
 }
 
@@ -209,6 +209,7 @@ configure() {
     if [[ -n "${TPA:-}" ]]; then
         yq -i '.rhtapCLI.features.trustedProfileAnalyzer.enabled=false' "$CONFIG"
     fi
+    rhtap_cli config --force --create "$CONFIG"
 }
 
 integrations() {

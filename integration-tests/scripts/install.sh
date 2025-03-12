@@ -178,15 +178,6 @@ install_rhtap() {
   make build
 
   echo "[INFO] Installing RHTAP"
-  jenkins_integration
-  tpa_integration
-  acs_integration
-  github_integration
-  gitlab_integration
-  bitbucket_integration
-  quayio_integration
-  artifactory_integration
-  nexus_integration
 
   echo "[INFO] Showing the local configuration"
   set -x
@@ -202,6 +193,16 @@ install_rhtap() {
   set -x
   cat "$tpl_file"
   set +x
+
+  jenkins_integration
+  tpa_integration
+  acs_integration
+  github_integration
+  gitlab_integration
+  bitbucket_integration
+  quayio_integration
+  artifactory_integration
+  nexus_integration
 
   echo "[INFO] Running 'rhtap-cli deploy' command..."
   set -x

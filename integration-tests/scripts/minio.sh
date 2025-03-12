@@ -19,6 +19,7 @@ oc registry login --registry=docker.io --auth-basic="$DOCKER_IO_AUTH" --to=./glo
 
 namespace_sa_names=$(cat << 'EOF'
 minio-operator|minio-operator-e2e
+rhtap-tpa|minio-operator-tpa
 EOF
 )
 while IFS='|' read -r ns sa_name; do

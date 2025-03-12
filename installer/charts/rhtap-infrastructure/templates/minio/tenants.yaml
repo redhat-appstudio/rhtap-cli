@@ -12,6 +12,7 @@ metadata:
   namespace: {{ $v.namespace }}
   name: {{ $k }}
 spec:
+  image: 'quay.io/minio/minio:RELEASE.2024-08-03T04-33-23Z'
   serviceAccountName: {{ printf "minio-tenant-%s" $k }}
   configuration:
     name: {{ $v.rootSecretName }}

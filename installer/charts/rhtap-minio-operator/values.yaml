@@ -52,6 +52,8 @@ operator:
     env:
       - name: MINIO_OPERATOR_RUNTIME
         value: "OpenShift"
+      - name: MINIO_OPERATOR_IMAGE
+        value: quay.io/minio/operator:v5.0.17
     securityContext: *operatorSecurityContext
     containerSecurityContext: *operatorContainerSecurityContext
     resources:

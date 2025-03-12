@@ -90,13 +90,17 @@ get_variables() {
     if [ -z "${ROX_API_TOKEN:-}" ]; then
         ROX_API_TOKEN="$(oc get secrets -n "$NAMESPACE" "$ACS_SECRET" -o json | jq -r '.data.token | @base64d')"
     fi
-
+    # For Nexus and Artifactory, they have two urls, one for UI and one for image registry. When RHTAP integrate with them, 
+    # it needs to pass UI url as `--url` parameter to the integration command. If passing image registry url as `--url` parameter,
+    # images pushed to Nexus and Artifactory will not apear in the Image Registry page.
     if [ -z "${REGISTRY_ENDPOINT:-}" ]; then
-        REGISTRY_ENDPOINT="$(oc get secrets -n "$NAMESPACE" "$REGISTRY_SECRET" -o json | jq -r '.data.url | @base64d')"
+        REGISTRY_ENDPOINT="$(
+            oc get secrets -n "$NAMESPACE" "$REGISTRY_SECRET" -o json \
+            | jq -r '.data.".dockerconfigjson" | @base64d' \
+            | jq -r '.auths | to_entries[0].key'
+        )"
     fi
-    if [ -z "${REGISTRY_HOST:-}" ]; then
-        REGISTRY_HOST="${REGISTRY_ENDPOINT//https:\/\//}"
-    fi
+    
     if [ -z "${REGISTRY_USERNAME:-}" ]; then
         REGISTRY_USERNAME="$(
             oc get secrets -n "$NAMESPACE" "$REGISTRY_SECRET" -o json \
@@ -117,7 +121,6 @@ get_variables() {
     case "$REGISTRY" in
         quay)
             INTEGRATION_TYPE="quay"
-            REGISTRY_ENDPOINT="$REGISTRY_HOST"
             REGISTRY_CREDENTIALS='"registryRobotCredentials": {
             "username": "'"$REGISTRY_USERNAME"'",
             "password": "'"$REGISTRY_PASSWORD"'"
@@ -125,7 +128,7 @@ get_variables() {
             ;;
         *)
             INTEGRATION_TYPE="docker"
-            REGISTRY_CREDENTIALS='            "username": "'"$REGISTRY_USERNAME"'",
+            REGISTRY_CREDENTIALS='"username": "'"$REGISTRY_USERNAME"'",
             "password": "'"$REGISTRY_PASSWORD"'"'
             ;;
     esac
@@ -142,7 +145,7 @@ integration() {
     "categories": ["REGISTRY"],
     "clusterId": "",
     "id": "",
-    "name": "'"${REGISTRY_HOST}"'",
+    "name": "'"${REGISTRY_ENDPOINT}"'",
     "'"${INTEGRATION_TYPE}"'": {
         "endpoint": "'"${REGISTRY_ENDPOINT}"'",
         "insecure": '"$INSECURE"',

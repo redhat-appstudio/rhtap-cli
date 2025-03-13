@@ -39,6 +39,8 @@ update_dh_catalog_url() {
   fi
 }
 
+# Workaround: This function has to be called before rhtap-cli import "installer/config.yaml" into cluster.
+# Currently, the rhtap-cli `config` subcommand lacks the ability to modify property values stored in config.yaml.
 github_integration() {
   # if scm_config is "github", then perform the github integration
   if [[ "${scm_config}" == "github" || "$auth_config" == "github" ]]; then
@@ -92,11 +94,19 @@ gitlab_integration() {
   fi
 }
 
+# Workaround: This function has to be called before rhtap-cli import "installer/config.yaml" into cluster.
+# Currently, the rhtap-cli `config` subcommand lacks the ability to modify property values stored in cluster
+disable_quay() {
+  # if registry_config is not "quay", then disable Quay installation
+  if [[ "${registry_config}" != "quay" ]]; then
+  
+    echo "[INFO] Disable Quay installation"
+    yq e '.rhtapCLI.features.redHatQuay.enabled = false' -i "${config_file}"
+  fi
+}
+
 quayio_integration() {
   if [[ "${registry_config}" == "quay.io" ]]; then
-    # disable Quay installation
-    yq e '.rhtapCLI.features.redHatQuay.enabled = false' -i "${config_file}"
-
     echo "[INFO] Configure quay.io integration into RHTAP"
 
     QUAY__DOCKERCONFIGJSON="${QUAY__DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/quay-dockerconfig-json)}"
@@ -107,11 +117,17 @@ quayio_integration() {
 
 }
 
+# Workaround: This function has to be called before rhtap-cli import "installer/config.yaml" into cluster.
+# Currently, the rhtap-cli `config` subcommand lacks the ability to modify property values stored in cluster
+disable_acs() {
+  if [[ "${acs_config}" == "hosted" ]]; then
+    echo "[INFO] Disable ACS installation"
+    yq e '.rhtapCLI.features.redHatAdvancedClusterSecurity.enabled = false' -i "${config_file}"
+  fi
+}
+
 acs_integration() {
   if [[ "${acs_config}" == "hosted" ]]; then
-    # disable ACS installation
-    yq e '.rhtapCLI.features.redHatAdvancedClusterSecurity.enabled = false' -i "${config_file}"
-
     echo "[INFO] Configure an existing intance of ACS integration into RHTAP"
 
     ACS__CENTRAL_ENDPOINT="${ACS__CENTRAL_ENDPOINT:-$(cat /usr/local/rhtap-cli-install/acs-central-endpoint)}"
@@ -132,6 +148,15 @@ bitbucket_integration() {
   fi
 }
 
+# Workaround: This function has to be called before rhtap-cli import "installer/config.yaml" into cluster.
+# Currently, the rhtap-cli `config` subcommand lacks the ability to modify property values stored in cluster
+disable_tpa() {
+  if [[ "${tpa_config}" == "hosted" ]]; then
+    echo "[INFO] Disable TPA installation"
+    yq e '.rhtapCLI.features.trustedProfileAnalyzer.enabled = false' -i "${config_file}"
+  fi
+}
+
 tpa_integration() {
   if [[ "${tpa_config}" == "hosted" ]]; then
     echo "[INFO] Configure a hosted TPA integration into RHTAP"
@@ -141,8 +166,6 @@ tpa_integration() {
     OIDC_CLIENT_SECRET="${OIDC_CLIENT_SECRET:-$(cat /usr/local/rhtap-cli-install/oidc-client-secret)}"
     OIDC_ISSUER_URL="${OIDC_ISSUER_URL:-$(cat /usr/local/rhtap-cli-install/oidc-issuer-url)}"
 
-    # disable TPA installation
-    yq e '.rhtapCLI.features.trustedProfileAnalyzer.enabled = false' -i "${config_file}"
     ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" trustification --bombastic-api-url="${BOMBASTIC_API_URL}" --oidc-client-id="${OIDC_CLIENT_ID}" --oidc-client-secret="${OIDC_CLIENT_SECRET}" --oidc-issuer-url="${OIDC_ISSUER_URL}" --supported-cyclonedx-version="${SUPPORTED_CYCLONEDX_VERSION}"
   fi
 }
@@ -150,8 +173,6 @@ tpa_integration() {
 artifactory_integration() {
   if [[ "${registry_config}" == "artifactory" ]]; then
     echo "[INFO] Configure Artifactory integration into RHTAP"
-    # disable Quay installation
-    yq e '.rhtapCLI.features.redHatQuay.enabled = false' -i "${config_file}"
 
     ARTIFACTORY_URL="${ARTIFACTORY_URL:-$(cat /usr/local/rhtap-cli-install/artifactory-url)}"
     ARTIFACTORY_TOKEN="${ARTIFACTORY_TOKEN:-$(cat /usr/local/rhtap-cli-install/artifactory-token)}"
@@ -163,8 +184,6 @@ artifactory_integration() {
 nexus_integration() {
   if [[ "${registry_config}" == "nexus" ]]; then
     echo "[INFO] Configure Nexus integration into RHTAP"
-    # disable Quay installation
-    yq e '.rhtapCLI.features.redHatQuay.enabled = false' -i "${config_file}"
 
     NEXUS_URL="${NEXUS_URL:-$(cat /usr/local/rhtap-cli-install/nexus-ui-url)}"
     NEXUS_DOCKERCONFIGJSON="${NEXUS_DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/nexus-dockerconfig-json)}"
@@ -221,4 +240,7 @@ install_rhtap() {
 
 ci_enabled
 update_dh_catalog_url
+disable_quay
+disable_acs
+disable_tpa
 install_rhtap

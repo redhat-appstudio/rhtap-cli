@@ -1,6 +1,7 @@
 module github.com/redhat-appstudio/rhtap-cli
 
 go 1.22.5
+toolchain go1.23.7
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
@@ -132,8 +133,8 @@ require (
 	go.opentelemetry.io/otel/metric v1.31.0 // indirect
 	go.opentelemetry.io/otel/trace v1.31.0 // indirect
 	go.starlark.net v0.0.0-20240314022150-ee8ed142361c // indirect
-	golang.org/x/crypto v0.33.0 // indirect
-	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect

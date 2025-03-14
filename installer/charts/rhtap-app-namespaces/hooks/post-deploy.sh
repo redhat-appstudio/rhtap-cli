@@ -32,19 +32,18 @@ patch_serviceaccount() {
     SA_DEFINITION_UPDATED="$SA_DEFINITION.patch.yaml"
     "$KUBECTL" get serviceaccount "$SA" --namespace "$NAMESPACE" -o json >"$SA_DEFINITION"
 
-    # Check for artifactory-auth, nexus-auth and quay-auth secrets and patch if present
+    # Check for rhtap-image-registry-auth secret and patch if present
     [ -e "$SA_DEFINITION_UPDATED" ] && rm "$SA_DEFINITION_UPDATED"
-    for SECRET_NAME in artifactory-auth nexus-auth quay-auth; do
-        SECRET=$("$KUBECTL" get secret "$SECRET_NAME" --namespace "$NAMESPACE" --ignore-not-found)
-        if [ -n "$SECRET" ]; then
-            echo -n "."
-            jq --arg NAME "$SECRET_NAME" '
-                .secrets |= (. + [{"name": $NAME}] | unique) |
-                .imagePullSecrets |= (. + [{"name": $NAME}] | unique)
-            ' "$SA_DEFINITION" >"$SA_DEFINITION_UPDATED"
-            cp "$SA_DEFINITION_UPDATED" "$SA_DEFINITION"
-        fi
-    done
+    SECRET_NAME="rhtap-image-registry-auth"
+    SECRET=$("$KUBECTL" get secret "$SECRET_NAME" --namespace "$NAMESPACE" --ignore-not-found)
+    if [ -n "$SECRET" ]; then
+        echo -n "."
+        jq --arg NAME "$SECRET_NAME" '
+            .secrets |= (. + [{"name": $NAME}] | unique) |
+            .imagePullSecrets |= (. + [{"name": $NAME}] | unique)
+        ' "$SA_DEFINITION" >"$SA_DEFINITION_UPDATED"
+        cp "$SA_DEFINITION_UPDATED" "$SA_DEFINITION"
+    fi
 
     echo "OK"
     if [ -e "$SA_DEFINITION_UPDATED" ]; then

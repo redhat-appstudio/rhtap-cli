@@ -34,6 +34,14 @@ declare -r SECRET_NAME="${SECRET_NAME:-}"
 # set with the user's access token obtained from Quay.
 declare ACCESS_TOKEN=""
 
+# Quay repository name to create
+declare QUAY_REPOSITORY="${QUAY_REPOSITORY:-default}"
+
+# Quay robot account for register
+declare QUAY_ROBOT_SHORT_NAME="${QUAY_ROBOT_SHORT_NAME:-rhtap_rw}"
+declare QUAY_ROBOT_USERNAME=""
+declare QUAY_ROBOT_TOKEN=""
+
 #
 # Functions
 #
@@ -112,8 +120,7 @@ quay_initialize_super_user() {
     # contain the expected "access_token", the script should fail completely.
     token=$(echo "${init_response}" | jq --raw-output '.access_token')
     if [[ -z "${token}" || "${token}" == "null" ]]; then
-        warn "Failed to initialize Quay super-user!"
-        return 1
+        fail "Failed to initialize Quay super-user!"
     fi
 
     info "Quay access token obtained successfully!"
@@ -146,11 +153,9 @@ quay_create_organization() {
             "${quay_url}"
     )
     if [[ -z "${create_response}" || "${create_response}" != *"Created"* ]]; then
-        warn "Failed to create organization!"
-        return 1
+        fail "Failed to create organization!"
     fi
     info "Organization created successfully!"
-    return 0
 }
 
 # Creates a "docker-registry" secret in the namespace configured location, uses
@@ -162,15 +167,14 @@ quay_create_secret() {
         oc create secret docker-registry "${SECRET_NAME}" \
             --namespace="${NAMESPACE}" \
             --docker-server="${QUAY_HOSTNAME}" \
-            --docker-username="${QUAY_USERNAME}" \
-            --docker-password="${QUAY_PASSWORD}" \
+            --docker-username="${QUAY_ROBOT_USERNAME}" \
+            --docker-password="${QUAY_ROBOT_TOKEN}" \
             --docker-email="${QUAY_EMAIL}" \
             --dry-run=client \
             --output=yaml |
             oc apply -f -
     ); then
-        warn "Failed to create secret!"
-        return 1
+        fail "Failed to create secret!"
     fi
     info "Secret created/updated successfully!"
 
@@ -199,6 +203,120 @@ quay_create_secret() {
     return 1
 }
 
+# Create a repository in organization with the name informed via environment,
+# using the super-user's ACCESS_TOKEN to authorize the request.
+quay_create_repository() {
+    local quay_url="https://${QUAY_HOSTNAME}/api/v1/repository"
+    local data=(
+        "{"
+        "\"repository\": \"${QUAY_REPOSITORY}\","
+        "\"visibility\": \"public\","
+        "\"namespace\": \"${QUAY_ORGANIZATION}\","
+        "\"description\": \"Default RHTAP repository for ${QUAY_ORGANIZATION}. Safe to remove is unused.\""
+        "}"
+    )
+    local create_response
+
+    info "Creating repository in organization ${QUAY_ORGANIZATION}..."
+    create_response=$(
+        curl \
+            --silent \
+            --insecure \
+            --location \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+            --data "${data[*]}" \
+            "${quay_url}"
+    )
+
+    if [[ -z "${create_response}" || "${create_response}" != *"${QUAY_REPOSITORY}"* ]]; then
+        fail "Failed to create repository!"
+    fi
+
+    info "Repository created successfully!"
+}
+
+# Create a robot account in organization with the name informed via environment,
+# using the super-user's ACCESS_TOKEN to authorize the request.
+quay_create_robot_account() {
+    local quay_url="https://${QUAY_HOSTNAME}/api/v1/organization/${QUAY_ORGANIZATION}/robots/${QUAY_ROBOT_SHORT_NAME}"
+    local data=(
+        "{"
+        "\"description\": \"Quay robot account for ${QUAY_ORGANIZATION}\","
+        "\"unstructured_metadata\": {}"
+        "}"
+    )
+    local create_response token
+
+    info "Creating Quay robot account ${QUAY_ROBOT_SHORT_NAME}..."
+    create_response=$(
+        curl \
+            --silent \
+            --insecure \
+            --location \
+            --request PUT \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+            --data "${data[*]}" \
+            "${quay_url}"
+    )
+
+    if [[ -z "${create_response}" || "${create_response}" != *"created"* ]]; then
+        fail "Failed to create robot account!"
+    fi
+
+    info "Extracting token from the response..."
+    # When response doesn't contain the expected "token", the script should
+    # fail completely.
+    token=$(echo "${create_response}" | jq --raw-output '.token')
+    if [[ -z "${token}" || "${token}" == "null" ]]; then
+        fail "Failed to get robot account token!"
+    fi
+
+    info "Robot account created successfully!"
+    export QUAY_ROBOT_TOKEN="${token}"
+    export QUAY_ROBOT_USERNAME="${QUAY_ORGANIZATION}+${QUAY_ROBOT_SHORT_NAME}"
+}
+
+# Create a new permission prototype in organization, that will automatically
+# grant admin permission of repositories to robot account
+quay_create_permission_prototype() {
+    local quay_url="https://${QUAY_HOSTNAME}/api/v1/organization/${QUAY_ORGANIZATION}/prototypes"
+    local data=(
+        "{"
+        "\"role\": \"admin\","
+        "\"activating_user\": {"
+            "\"name\": \"\""
+            "},"
+        "\"delegate\": {"
+            "\"name\": \"${QUAY_ROBOT_USERNAME}\","
+            "\"kind\": \"user\""
+            "}"
+        "}"
+    )
+    local create_response
+
+    info "Creating new permission prototype in organization ${QUAY_ORGANIZATION}..."
+    create_response=$(
+        curl \
+            --silent \
+            --insecure \
+            --location \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+            --data "${data[*]}" \
+            "${quay_url}"
+    )
+
+    if [[ -z "${create_response}" || "${create_response}" != *"${QUAY_ROBOT_USERNAME}"* ]]; then
+        fail "Failed to create new permission prototype!"
+    fi
+
+    info "Create new permission prototype successfully!"
+}
+
 # Initializes the Quay super-user and creates a "docker-registry" secret with the
 # credentials informed via environment variables.
 quay_helper() {
@@ -220,13 +338,13 @@ quay_helper() {
         return 0
     fi
 
+    quay_create_organization
+    quay_create_robot_account
+    quay_create_permission_prototype
+    quay_create_repository
+
     quay_create_secret || {
         warn "Failed to create secret!"
-        return 1
-    }
-
-    quay_create_organization || {
-        warn "Failed to create organization!"
         return 1
     }
 

@@ -62,9 +62,6 @@ get_namespaces() {
 setup_namespaces() {
     for NAMESPACE in "${NAMESPACES[@]}"; do
         patch_serviceaccount "$NAMESPACE-ci" "pipeline"
-        for env in "ci" "development" "prod" "stage"; do
-            patch_serviceaccount "$NAMESPACE-$env" "default"
-        done
     done
 }
 

@@ -146,4 +146,19 @@ plugins:
     package: ./dynamic-plugins/dist/backstage-plugin-techdocs
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
+
+  #
+  # RBAC
+  #
+  {{- $githubSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-github-integration") }}
+  {{- if and .Values.developerHub.enableRBAC $githubSecretObj }}
+  - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
+    disabled: false
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
+    disabled: false
+    pluginConfig:
+      catalog:
+        githubOrg:
+          githubUrl: ${GITHUB__URL}
+  {{- end}}
 {{- end }}

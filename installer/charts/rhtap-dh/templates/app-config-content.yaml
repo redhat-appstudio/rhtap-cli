@@ -87,6 +87,17 @@ backend:
   cors:
     origin: ${BACKEND_URL}
 catalog:
+  {{- if and .Values.developerHub.enableRBAC $githubSecretObj }}
+  providers:
+    githubOrg:
+      id: production
+      githubUrl: ${GITHUB__URL}
+      orgs: ['${GITHUB__ORG}']
+      schedule:
+        initialDelay: { seconds: 30 }
+        frequency: { minutes: 15 }
+        timeout: { minutes: 5 }
+  {{- end }}
   locations:
     - target: ${DEVELOPER_HUB__CATALOG__URL}
       type: url
@@ -95,6 +106,7 @@ catalog:
       - Component
       - System
       - Group
+      - User
       - Resource
       - Location
       - Template
@@ -151,9 +163,19 @@ jenkins:
 nexus:
   uiUrl: ${NEXUS__URL}
 {{- end }}
+{{- if .Values.developerHub.enableRBAC }}
 permission:
-  # Disable RBACs
+  enabled: true
+  {{- if $githubSecretObj }}
+  rbac:
+    admin:
+      users:
+      - name: user:default/${GITHUB__USERNAME}
+  {{- end}}
+{{- else }}
+permission:
   enabled: false
+{{- end }}
 proxy:
   endpoints:
   {{- if $artifactorySecretObj }}

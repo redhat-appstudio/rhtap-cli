@@ -294,6 +294,7 @@ integrations:
 
 developerHub:
   namespace: {{ $rhdh.Namespace }}
+  enableRBAC: {{ $rhdh.Properties.enableRBAC }}
   ingressDomain: {{ $ingressDomain }}
   catalogURL: {{ $catalogURL }}
   integrationSecrets:

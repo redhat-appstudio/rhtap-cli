@@ -30,9 +30,8 @@ Tekton Pipelines as Code:
     {{- if $secretData }}
 
 Tekton Chains:
-  - cosign private key (encoded): {{ get $secretData "cosign.key" }}
-  - cosign public key (encoded): {{ get $secretData "cosign.pub" }}
-  - cosign password (encoded): {{ get $secretData "cosign.password" }}
+  - cosign private key (encoded): {{ get $secretData "x509.pem" }}
+  - cosign public key (encoded): {{ get $secretData "x509-pub.pem" }}
     {{- else }}
 
 Tekton Chains: not installed

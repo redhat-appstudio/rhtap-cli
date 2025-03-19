@@ -34,9 +34,6 @@ declare -r SECRET_NAME="${SECRET_NAME:-}"
 # set with the user's access token obtained from Quay.
 declare ACCESS_TOKEN=""
 
-# Quay repository name to create
-declare QUAY_REPOSITORY="${QUAY_REPOSITORY:-default}"
-
 # Quay robot account for register
 declare QUAY_ROBOT_SHORT_NAME="${QUAY_ROBOT_SHORT_NAME:-rhtap_rw}"
 declare QUAY_ROBOT_USERNAME=""
@@ -202,40 +199,6 @@ quay_create_secret() {
         return 0
     fi
     return 1
-}
-
-# Create a repository in organization with the name informed via environment,
-# using the super-user's ACCESS_TOKEN to authorize the request.
-quay_create_repository() {
-    local quay_url="https://${QUAY_HOSTNAME}/api/v1/repository"
-    local data=(
-        "{"
-        "\"repository\": \"${QUAY_REPOSITORY}\","
-        "\"visibility\": \"public\","
-        "\"namespace\": \"${QUAY_ORGANIZATION}\","
-        "\"description\": \"Default RHTAP repository for ${QUAY_ORGANIZATION}. Safe to remove is unused.\""
-        "}"
-    )
-    local create_response
-
-    info "Creating repository in organization ${QUAY_ORGANIZATION}..."
-    create_response=$(
-        curl \
-            --silent \
-            --insecure \
-            --location \
-            --request POST \
-            --header 'Content-Type: application/json' \
-            --header "Authorization: Bearer ${ACCESS_TOKEN}" \
-            --data "${data[*]}" \
-            "${quay_url}"
-    )
-
-    if [[ -z "${create_response}" || (${create_response} != *"${QUAY_REPOSITORY}"* && ${create_response} != *"Repository already exists"*) ]]; then
-        fail "Failed to create repository!"
-    fi
-
-    info "Repository created successfully!"
 }
 
 # Create a robot account in organization with the name informed via environment,
@@ -409,7 +372,6 @@ quay_helper() {
     quay_create_permission_prototype
     quay_create_team
     quay_assign_robot_to_team
-    quay_create_repository
 
     quay_create_secret || {
         warn "Failed to create secret!"

@@ -152,7 +152,8 @@ quay_create_organization() {
             --data "${data[*]}" \
             "${quay_url}"
     )
-    if [[ -z "${create_response}" || "${create_response}" != *"Created"* ]]; then
+
+    if [[ -z "${create_response}" || (${create_response} != *"Created"* && ${create_response} != *"already exists"*) ]]; then
         fail "Failed to create organization!"
     fi
     info "Organization created successfully!"
@@ -230,7 +231,7 @@ quay_create_repository() {
             "${quay_url}"
     )
 
-    if [[ -z "${create_response}" || "${create_response}" != *"${QUAY_REPOSITORY}"* ]]; then
+    if [[ -z "${create_response}" || (${create_response} != *"${QUAY_REPOSITORY}"* && ${create_response} != *"Repository already exists"*) ]]; then
         fail "Failed to create repository!"
     fi
 
@@ -262,7 +263,14 @@ quay_create_robot_account() {
             "${quay_url}"
     )
 
-    if [[ -z "${create_response}" || "${create_response}" != *"created"* ]]; then
+    # When robot account already exists, the script should continue without failing.
+    if [[ -z "${create_response}" || "${create_response}" == *"Existing robot"* ]]; then
+        warn "Robot account already exists!"
+        return 0
+    fi
+
+    # When robot account creation fails, the script should fail completely.
+    if [[ -z "${create_response}" || ("${create_response}" != *"created"*) ]]; then
         fail "Failed to create robot account!"
     fi
 
@@ -317,6 +325,64 @@ quay_create_permission_prototype() {
     info "Create new permission prototype successfully!"
 }
 
+# Create a new team in organization with creator role
+quay_create_team() {
+    local team_name="${QUAY_ORGANIZATION}-creator"
+    local quay_url="https://${QUAY_HOSTNAME}/api/v1/organization/${QUAY_ORGANIZATION}/team/${team_name}"
+    local data=(
+        "{"
+        "\"role\": \"creator\","
+        "\"description\": \"Team with creator role for ${QUAY_ORGANIZATION}\""
+        "}"
+    )
+    local create_response
+
+    info "Creating new team with creator role in organization ${QUAY_ORGANIZATION}..."
+    create_response=$(
+        curl \
+            --silent \
+            --insecure \
+            --location \
+            --request PUT \
+            --header 'Accept: application/json' \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+            --data "${data[*]}" \
+            "${quay_url}"
+    )
+
+    if [[ -z "${create_response}" || "${create_response}" != *"${team_name}"* ]]; then
+        fail "Failed to create new team with creator role!"
+    fi
+
+    info "Create new team with creator role successfully!"
+}
+
+## Assign the robot account to the team with creator role
+quay_assign_robot_to_team() {
+    local team_name="${QUAY_ORGANIZATION}-creator"
+    local quay_url="https://${QUAY_HOSTNAME}/api/v1/organization/${QUAY_ORGANIZATION}/team/${team_name}/members/${QUAY_ROBOT_USERNAME}"
+
+    local create_response
+
+    info "Assigning robot account to team ${team_name}..."
+    create_response=$(
+        curl \
+            --silent \
+            --insecure \
+            --location \
+            --request PUT \
+            --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+            "${quay_url}"
+    )
+
+    if [[ -z "${create_response}" || "${create_response}" != *"${QUAY_ROBOT_USERNAME}"* ]]; then
+        fail "Failed to assign robot account to team!"
+    fi
+
+    info "Assign robot account to team successfully!"
+}
+
 # Initializes the Quay super-user and creates a "docker-registry" secret with the
 # credentials informed via environment variables.
 quay_helper() {
@@ -341,6 +407,8 @@ quay_helper() {
     quay_create_organization
     quay_create_robot_account
     quay_create_permission_prototype
+    quay_create_team
+    quay_assign_robot_to_team
     quay_create_repository
 
     quay_create_secret || {
@@ -362,9 +430,13 @@ retry_quay_helper() {
         info "[${i}/30] Waiting for ${wait} seconds before retrying..."
         sleep ${wait}
 
-        info "Trying to initialize Quay super-user..."
-        quay_helper &&
+        info "Trying to initialize Quay super-user..."  
+        #Using subshell to contain the failure
+        if ( quay_helper ); then
             return 0
+        fi
+
+        info "Attempt ${i} failed, retrying..."
     done
     return 1
 }

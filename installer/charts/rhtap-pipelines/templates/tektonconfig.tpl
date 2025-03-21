@@ -22,6 +22,7 @@ spec:
     artifacts.taskrun.format: in-toto
     artifacts.taskrun.storage: oci
     disabled: false
+    generateSigningSecret: true
     transparency.enabled: 'true'
     transparency.url: http://rekor-server.rhtap-tas.svc
   config: {}

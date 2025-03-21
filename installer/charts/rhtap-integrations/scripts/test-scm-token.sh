@@ -1,1 +1,0 @@
-../../../scripts/test-scm-token.sh

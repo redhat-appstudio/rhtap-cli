@@ -8,3 +8,7 @@ developerHub:
   ingressDomain: __OVERWRITE_ME__
   integrationSecrets:
     namespace: __OVERWRITE_ME__
+  RBAC:
+    adminUsers: __OVERWRITE_ME__
+    enabled: __OVERWRITE_ME__
+    orgs: __OVERWRITE_ME__

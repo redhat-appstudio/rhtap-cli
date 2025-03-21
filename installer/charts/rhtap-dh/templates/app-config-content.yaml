@@ -87,12 +87,13 @@ backend:
   cors:
     origin: ${BACKEND_URL}
 catalog:
-  {{- if and .Values.developerHub.enableRBAC $githubSecretObj }}
+  {{- if and .Values.developerHub.RBAC.enabled $githubSecretObj }}
   providers:
     githubOrg:
       id: production
       githubUrl: ${GITHUB__URL}
-      orgs: ['${GITHUB__ORG}']
+      orgs:
+{{ .Values.developerHub.RBAC.orgs | toYaml | indent 8 }}
       schedule:
         initialDelay: { seconds: 30 }
         frequency: { minutes: 15 }
@@ -163,14 +164,16 @@ jenkins:
 nexus:
   uiUrl: ${NEXUS__URL}
 {{- end }}
-{{- if .Values.developerHub.enableRBAC }}
+{{- if .Values.developerHub.RBAC.enabled }}
 permission:
   enabled: true
   {{- if $githubSecretObj }}
   rbac:
     admin:
       users:
-      - name: user:default/${GITHUB__USERNAME}
+      {{- range .Values.developerHub.RBAC.adminUsers }}
+        - name: user:default/{{ . }}
+      {{- end }}
   {{- end}}
 {{- else }}
 permission:

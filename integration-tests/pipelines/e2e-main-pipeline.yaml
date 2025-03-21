@@ -62,7 +62,7 @@ spec:
             description: Config json generated from pict file.
         steps:
           - name: pict-generate
-            image: quay.io/apodhrad/pict:latest
+            image: quay.io/xinjiang/pict:latest
             script: |
               #!/usr/bin/env bash
               echo "$(tasks.get-pict-file.results.pict-file)" > main.pict

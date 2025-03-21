@@ -24,10 +24,6 @@ export GITLAB__GROUP=
 # https://docs.redhat.com/en/documentation/red_hat_trusted_application_pipeline/1.2/html-single/installing_red_hat_trusted_application_pipeline/index#integrating_quay
 export QUAY__DOCKERCONFIGJSON=
 export QUAY__API_TOKEN=
-# When using your won quay.io account, you also need to set the following values
-export QUAY__HOST=
-export QUAY__USERNAME=
-export QUAY__PASSWORD=
 
 #### ACS
 # ACS tends to be too heavy for dev clusters, you can use an existing instance of ACS
@@ -60,14 +56,8 @@ export SUPPORTED_CYCLONEDX_VERSION="1.4"
 export ARTIFACTORY_URL=
 export ARTIFACTORY_TOKEN=
 export ARTIFACTORY_DOCKERCONFIGJSON=
-#  When ACS is installed along with RHTAP installation(acs_config="new"), you need to set the following values
-export ARTIFACTORY_USERNAME=
-export ARTIFACTORY_PASSWORD=
 
 #### Nexus
 export NEXUS_URL=
 export NEXUS_DOCKERCONFIGJSON=
-#  When ACS is installed along with RHTAP installation(acs_config="new"), you need to set the following values
-export NEXUS_USERNAME=
-export NEXUS_PASSWORD=
 

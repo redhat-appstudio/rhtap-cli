@@ -294,11 +294,16 @@ integrations:
 
 developerHub:
   namespace: {{ $rhdh.Namespace }}
-  enableRBAC: {{ $rhdh.Properties.enableRBAC }}
   ingressDomain: {{ $ingressDomain }}
   catalogURL: {{ $catalogURL }}
   integrationSecrets:
     namespace: {{ .Installer.Namespace }}
+  RBAC:
+    adminUsers:
+{{ dig "Properties" "RBAC" "adminUsers" (list "${GITHUB__USERNAME}") $rhdh | toYaml | indent 6 }}
+    enabled: {{ dig "Properties" "RBAC" "enabled" false $rhdh }}
+    orgs:
+{{ dig "Properties" "RBAC" "orgs" (list "${GITHUB__ORG}") $rhdh | toYaml | indent 6 }}
 
 #
 # rhtap-tpa

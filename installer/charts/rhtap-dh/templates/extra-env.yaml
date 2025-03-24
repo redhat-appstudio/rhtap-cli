@@ -66,8 +66,10 @@ data:
     GITHUB__HOST: {{ $ghSecretData.host }}
     GITHUB__TOKEN: {{ $ghSecretData.token }}
     GITHUB__URL: {{ print "https://" ($ghSecretData.host | b64dec) | b64enc }}
-    GITHUB__USERNAME: {{ $ghSecretData.username }}
+    {{- end }}
+    {{- if .Values.developerHub.RBAC.enabled }}
     GITHUB__ORG: {{ $ghSecretData.ownerLogin }}
+    GITHUB__USERNAME: {{ $ghSecretData.username | b64dec | lower | b64enc }}
     {{- end }}
 {{- end }}
 {{- $glSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-gitlab-integration") -}}

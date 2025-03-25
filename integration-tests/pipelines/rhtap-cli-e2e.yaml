@@ -214,14 +214,10 @@ spec:
           value: "$(tasks.status)"
     - name: sprayproxy-deprovision
       when:
-        - input: "$(params.pipeline_config)"
+        - input: "$(tasks.sprayproxy-provision.status)"
           operator: in
           values:
-            - "tekton"
-        - input: "$(params.scm_config)"
-          operator: in
-          values:
-            - "github"
+            - "Succeeded"
       taskRef:
         resolver: git
         params:

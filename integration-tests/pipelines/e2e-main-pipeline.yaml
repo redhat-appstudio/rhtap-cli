@@ -47,12 +47,15 @@ spec:
                 value: $(tasks.test-metadata.results.job-spec)
             script: |
               #!/usr/bin/env bash
+              set -x
               ## Download the pict file from the repository under directory integration-tests/pict-models/default.pict
               GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
               REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
               BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
 
-              curl -o $(results.pict-file.path) https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
+              curl -o pict.txt https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
+              ##Workaround: Base64 encode the pict file to avoid issues with removing double quotes
+              base64 -w 0 < pict.txt > $(results.pict-file.path)
     - name: generate-configs
       runAfter:
         - get-pict-file
@@ -63,9 +66,13 @@ spec:
         steps:
           - name: pict-generate
             image: quay.io/apodhrad/pict:latest
+            env:
+              - name: PICT_FILE
+                value: $(tasks.get-pict-file.results.pict-file)
             script: |
               #!/usr/bin/env bash
-              echo "$(tasks.get-pict-file.results.pict-file)" > main.pict
+              set -x
+              base64 -d <<< "$(tasks.get-pict-file.results.pict-file)" > main.pict
               cat main.pict
               pict ./main.pict -o:1 -f:json > $(results.configs-json.path)
     - name: start-nested-pipelines

@@ -247,3 +247,8 @@ infrastructure:
       annotations: {}
       # Labels to add to the resource.
       labels: {}
+    # Tekton Chains settings.
+    tektonChains:
+      # Secret name where the signing key is stored, the password is randomly
+      # generated and stored on the same secret.
+      signingSecretName: signing-secrets

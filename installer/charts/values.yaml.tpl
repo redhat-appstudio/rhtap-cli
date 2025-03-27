@@ -268,7 +268,7 @@ integrations:
   acs:
     enabled: {{ $acs.Enabled }}
   argoCD:
-    enabled: {{ $gitops.enabled }}
+    enabled: {{ $gitops.Enabled }}
     namespace: {{ $gitops.Namespace }}
   quay:
     enabled: {{ $quay.Enabled }}

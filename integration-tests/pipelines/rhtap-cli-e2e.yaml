@@ -303,14 +303,14 @@ spec:
         - name: ocp-version
           value: "$(params.ocp-version)"
   finally:
-    - name: keep-cluster-running
-      taskSpec:
-        steps:
-          - name: wait
-            image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
-            script: |
-              #!/bin/bash
-              sleep 10800 #3 hours
+    # - name: keep-cluster-running
+    #   taskSpec:
+    #     steps:
+    #       - name: wait
+    #         image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
+    #         script: |
+    #           #!/bin/bash
+    #           sleep 10800 #3 hours
     - name: collect-artifacts
       params:
         - name: ocp-login-command

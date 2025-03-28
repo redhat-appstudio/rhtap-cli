@@ -82,26 +82,27 @@ spec:
           value: $(params.oci-container-repo)
         - name: oci-container-tag
           value: $(context.pipelineRun.name)
-    - name: provision-eaas-space
-      runAfter:
-        - create-oci-container
-      taskRef:
-        resolver: git
-        params:
-          - name: url
-            value: https://github.com/konflux-ci/build-definitions.git
-          - name: revision
-            value: main
-          - name: pathInRepo
-            value: task/eaas-provision-space/0.1/eaas-provision-space.yaml
-      params:
-        - name: ownerName
-          value: $(context.pipelineRun.name)
-        - name: ownerUid
-          value: $(context.pipelineRun.uid)
+    # - name: provision-eaas-space
+    #   runAfter:
+    #     - create-oci-container
+    #   taskRef:
+    #     resolver: git
+    #     params:
+    #       - name: url
+    #         value: https://github.com/konflux-ci/build-definitions.git
+    #       - name: revision
+    #         value: main
+    #       - name: pathInRepo
+    #         value: task/eaas-provision-space/0.1/eaas-provision-space.yaml
+    #   params:
+    #     - name: ownerName
+    #       value: $(context.pipelineRun.name)
+    #     - name: ownerUid
+    #       value: $(context.pipelineRun.uid)
     - name: provision-cluster
       runAfter:
-        - provision-eaas-space
+        - create-oci-container
+        # - provision-eaas-space
       taskSpec:
         results:
           - name: clusterName
@@ -109,6 +110,9 @@ spec:
           - name: ocp-login-command
             value: "$(steps.get-login-command.results.ocp-login-command)"
         volumes:
+          - name: hive-creds-volume
+            secret:
+              secretName: rhopp-test
           - name: credentials
             emptyDir: {}
         steps:
@@ -138,60 +142,88 @@ spec:
           #   params:
           #     - name: prefix
           #       value: "$(params.ocp-version)."
-          - name: create-cluster
-            ref:
-              resolver: git
-              params:
-                - name: url
-                  value: https://github.com/konflux-ci/build-definitions.git
-                - name: revision
-                  value: main
-                - name: pathInRepo
-                  value: stepactions/eaas-create-ephemeral-cluster-hypershift-aws/0.1/eaas-create-ephemeral-cluster-hypershift-aws.yaml
-            params:
-              - name: eaasSpaceSecretRef
-                value: $(tasks.provision-eaas-space.results.secretRef)
-              - name: version
-                value: "4.16.37"
-              - name: instanceType
-                value: "m5.2xlarge"
-          - name: get-kubeconfig
-            ref:
-              resolver: git
-              params:
-                - name: url
-                  value: https://github.com/konflux-ci/build-definitions.git
-                - name: revision
-                  value: main
-                - name: pathInRepo
-                  value: stepactions/eaas-get-ephemeral-cluster-credentials/0.1/eaas-get-ephemeral-cluster-credentials.yaml
-            params:
-              - name: eaasSpaceSecretRef
-                value: $(tasks.provision-eaas-space.results.secretRef)
-              - name: clusterName
-                value: "$(steps.create-cluster.results.clusterName)"
-              - name: credentials
-                value: credentials
-          - name: get-login-command
+          # - name: create-cluster
+          #   ref:
+          #     resolver: git
+          #     params:
+          #       - name: url
+          #         value: https://github.com/konflux-ci/build-definitions.git
+          #       - name: revision
+          #         value: main
+          #       - name: pathInRepo
+          #         value: stepactions/eaas-create-ephemeral-cluster-hypershift-aws/0.1/eaas-create-ephemeral-cluster-hypershift-aws.yaml
+          #   params:
+          #     - name: eaasSpaceSecretRef
+          #       value: $(tasks.provision-eaas-space.results.secretRef)
+          #     - name: version
+          #       value: "4.16.37"
+          #     - name: instanceType
+          #       value: "m5.2xlarge"
+          # - name: get-kubeconfig
+          #   ref:
+          #     resolver: git
+          #     params:
+          #       - name: url
+          #         value: https://github.com/konflux-ci/build-definitions.git
+          #       - name: revision
+          #         value: main
+          #       - name: pathInRepo
+          #         value: stepactions/eaas-get-ephemeral-cluster-credentials/0.1/eaas-get-ephemeral-cluster-credentials.yaml
+          #   params:
+          #     - name: eaasSpaceSecretRef
+          #       value: $(tasks.provision-eaas-space.results.secretRef)
+          #     - name: clusterName
+          #       value: "$(steps.create-cluster.results.clusterName)"
+          #     - name: credentials
+          #       value: credentials
+          - name: claim-cluster
             image: registry.redhat.io/openshift4/ose-cli@sha256:15da03b04318bcc842060b71e9dd6d6c2595edb4e8fdd11b0c6781eeb03ca182
-            env:
-              - name: API_SERVER
-                value: "$(steps.get-kubeconfig.results.apiServerURL)"
-              - name: USERNAME
-                value: "$(steps.get-kubeconfig.results.username)"
-              - name: PASSWORD_PATH
-                value: "$(steps.get-kubeconfig.results.passwordPath)"
             volumeMounts:
-              - name: credentials
-                mountPath: /credentials
+              - name: hive-creds-volume
+                mountPath: /usr/local/hive-creds
             results:
               - name: ocp-login-command
                 description: "Ocp login command"
             script: |
-              #!/usr/bin/env bash
-              echo $API_SERVER
-              echo $USERNAME
-              echo "oc login --insecure-skip-tls-verify=true $API_SERVER -u $USERNAME -p $(cat /credentials/$PASSWORD_PATH)" > $(step.results.ocp-login-command.path)
+              #!/usr/bin/bash
+              oc login $(cat /usr/local/hive-creds/kube_api_url) -u cluster-admin -p $(cat /usr/local/hive-creds/password)
+              oc whoami
+              oc get clusterpool -n hive
+              oc create -f - <<EOF
+              apiVersion: hive.openshift.io/v1
+              kind: ClusterClaim
+              metadata:
+                name: ci-claim
+                namespace: hive
+              spec:
+                clusterPoolName: clusterpool
+              EOF
+              sleep 5
+              cp_namespace=$(oc get clusterclaims.hive.openshift.io -n hive example -o jsonpath={.spec.namespace})
+              api_url=$(oc get clusterdeployment -n $cp_namespace  $cp_namespace -o jsonpath={.status.apiURL})
+              admin_pass_secret=$(oc get clusterdeployment -n $cp_namespace  $cp_namespace -o jsonpath={.spec.clusterMetadata.adminPasswordSecretRef.name})
+              kubeadminpass=$(oc get secret $admin_pass_secret -n $cp_namespace -o jsonpath={.data.password} |base64 -d)
+              echo "oc login --insecure-skip-tls-verify=true $api_url -u kubeadmin -p $kubeadminpass" > $(step.results.ocp-login-command.path)
+          # - name: get-login-command
+          #   image: registry.redhat.io/openshift4/ose-cli@sha256:15da03b04318bcc842060b71e9dd6d6c2595edb4e8fdd11b0c6781eeb03ca182
+          #   env:
+          #     - name: API_SERVER
+          #       value: "$(steps.get-kubeconfig.results.apiServerURL)"
+          #     - name: USERNAME
+          #       value: "$(steps.get-kubeconfig.results.username)"
+          #     - name: PASSWORD_PATH
+          #       value: "$(steps.get-kubeconfig.results.passwordPath)"
+          #   volumeMounts:
+          #     - name: credentials
+          #       mountPath: /credentials
+          #   results:
+          #     - name: ocp-login-command
+          #       description: "Ocp login command"
+          #   script: |
+          #     #!/usr/bin/env bash
+          #     echo $API_SERVER
+          #     echo $USERNAME
+          #     echo "oc login --insecure-skip-tls-verify=true $API_SERVER -u $USERNAME -p $(cat /credentials/$PASSWORD_PATH)" > $(step.results.ocp-login-command.path)
     - name: rhtap-install
       runAfter:
         - provision-cluster

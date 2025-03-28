@@ -199,7 +199,7 @@ spec:
                 clusterPoolName: clusterpool
               EOF
               sleep 5
-              cp_namespace=$(oc get clusterclaims.hive.openshift.io -n hive example -o jsonpath={.spec.namespace})
+              cp_namespace=$(oc get clusterclaims.hive.openshift.io -n hive ci-claim -o jsonpath={.spec.namespace})
               api_url=$(oc get clusterdeployment -n $cp_namespace  $cp_namespace -o jsonpath={.status.apiURL})
               admin_pass_secret=$(oc get clusterdeployment -n $cp_namespace  $cp_namespace -o jsonpath={.spec.clusterMetadata.adminPasswordSecretRef.name})
               kubeadminpass=$(oc get secret $admin_pass_secret -n $cp_namespace -o jsonpath={.data.password} |base64 -d)

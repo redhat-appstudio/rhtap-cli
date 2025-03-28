@@ -3,7 +3,7 @@
 #
 
 FROM registry.redhat.io/openshift4/ose-tools-rhel9@sha256:e8c52221d1e3ea34ba94bd8abab00ae358c009511d14ca47f19e01ea2065c18c AS ose-tools
-FROM registry.access.redhat.com/ubi9/go-toolset:1.22.9-1742197705 AS builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.22.9-1743094161 AS builder
 
 USER root
 WORKDIR /workdir/rhtap-cli

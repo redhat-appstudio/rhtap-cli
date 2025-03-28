@@ -108,7 +108,7 @@ spec:
           - name: clusterName
             value: "$(steps.create-cluster.results.clusterName)"
           - name: ocp-login-command
-            value: "$(steps.get-login-command.results.ocp-login-command)"
+            value: "$(steps.claim-cluster.results.ocp-login-command)"
         volumes:
           - name: hive-creds-volume
             secret:

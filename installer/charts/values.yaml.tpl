@@ -141,13 +141,8 @@ infrastructure:
       enabled: {{ $tpa.Enabled }}
       namespace: {{ $tpa.Namespace }}
   openShiftPipelines:
-    enabled: {{ $rhdh.Enabled }}
-    patchClusterTektonConfig:
-      annotations:
-        meta.helm.sh/release-name: rhtap-backing-services
-        meta.helm.sh/release-namespace: {{ .Installer.Namespace }}
-      labels:
-        app.kubernetes.io/managed-by: Helm
+    enabled: {{ $pipelines.Enabled }}
+    namespace: {{ $pipelines.Namespace }}
 
 #
 # rhtap-backing-services
@@ -231,7 +226,8 @@ argoCD:
 # rhtap-pipelines
 #
 
-pipelines: {}
+pipelines:
+  namespace: {{ $pipelines.Namespace }}
 
 #
 # rhtap-quay

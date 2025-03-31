@@ -1,1 +1,0 @@
-../../../scripts/oc-amend.sh

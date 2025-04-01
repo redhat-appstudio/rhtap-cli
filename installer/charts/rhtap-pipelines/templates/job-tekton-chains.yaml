@@ -1,16 +1,12 @@
-{{- if .Values.infrastructure.openShiftPipelines.enabled }}
-  {{- $osp := .Values.infrastructure.openShiftPipelines -}}
-  {{- $signingSecretName := required
-        ".infrastructure.openShiftPipelines.tektonChains.signingSecretName"
-        $osp.tektonChains.signingSecretName
-  -}}
-  {{- $secretObj := (
-        lookup "v1" "Secret" $osp.namespace $signingSecretName
-      ) | default dict 
-  -}}
-  {{- $secretData := (get $secretObj "data") | default dict -}}
-  {{- $cosignKey := (get $secretData "cosign.key") | default "" -}}
-  {{- if eq $cosignKey "" }}
+{{- $namespace := .Values.pipelines.namespace }}
+{{- $signingSecretName := "signing-secrets" -}}
+{{- $secretObj := (
+      lookup "v1" "Secret" $namespace $signingSecretName
+    ) | default dict 
+-}}
+{{- $secretData := (get $secretObj "data") | default dict -}}
+{{- $cosignKey := (get $secretData "cosign.key") | default "" -}}
+{{- if eq $cosignKey "" }}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -20,12 +16,11 @@ metadata:
     helm.sh/hook-weight: "2"
   labels:
     {{- include "common.labels" . | nindent 4 }}
-  namespace: {{ $osp.namespace }}
-  name: {{ printf "cosign-%s" $osp.name }}
+  name: rhtap-tekton-configuration
 spec:
   template:
     spec:
-      serviceAccountName: {{ printf "patch-%s" $osp.name }}
+      serviceAccountName: {{ .Release.Name }}
       restartPolicy: Never
       containers:
         - name: tekton-chains-cosign
@@ -38,7 +33,7 @@ spec:
             - cosign
           args:
             - generate-key-pair
-            - {{ printf "k8s://%s/%s" $osp.namespace $signingSecretName }}
+            - {{ printf "k8s://%s/%s" $namespace $signingSecretName }}
           volumeMounts:
             - name: workspace
               mountPath: /workspace
@@ -47,5 +42,4 @@ spec:
       volumes:
         - name: workspace
           emptyDir: {}
-  {{- end }}
 {{- end }}

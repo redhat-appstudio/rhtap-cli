@@ -44,12 +44,15 @@ subscriptions:
   openshiftPipelines:
     enabled: false
     description: OpenShift Pipelines Operator
-    apiResource: pipelines.tekton.dev
     namespace: openshift-operators
     name: openshift-pipelines-operator-rh
     channel: pipelines-1.17
     source: redhat-operators
     sourceNamespace: openshift-marketplace
+    config:
+      env:
+        - name: AUTOINSTALL_COMPONENTS
+          value: "false"
   openshiftTrustedArtifactSigner:
     enabled: false
     description: Red Hat Trusted Artifact Signer Operator

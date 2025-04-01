@@ -60,12 +60,12 @@
       securityContext:
         allowPrivilegeEscalation: false
 {{- end }}
-{{- if .Values.infrastructure.openShiftPipelines.enabled }}
+{{- $osp := .Values.infrastructure.openShiftPipelines }}
+{{- if $osp.enabled }}
     #
     # Tests the OpenShift Pipelines rollout status.
     #
-  {{- $osp := .Values.infrastructure.openShiftPipelines }}
-    - name: {{ printf "openshift-pipelines-%s" $osp.name }}
+    - name: test-rollout-openshift-pipelines
       image: registry.redhat.io/openshift4/ose-tools-rhel9
       env:
         - name: NAMESPACE

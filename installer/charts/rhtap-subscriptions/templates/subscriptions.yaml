@@ -11,7 +11,6 @@ metadata:
 spec:
   {{- $s.operatorGroup | toYaml | nindent 2 }}
   {{- end }}
-
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -36,7 +35,7 @@ spec:
       - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
         value: "openshift-gitops,{{ $s.config.argoCDClusterNamespace }}"
     {{- else }}
-      {{ $s.config | nindent 4 }}
+      {{ $s.config | toYaml | nindent 4 }}
     {{- end }}
   {{- end }}
 {{- end }}

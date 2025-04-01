@@ -135,7 +135,10 @@ func (d *Deploy) Run() error {
 			i.PrintValues()
 		}
 
-		if err = i.Install(d.cmd.Context()); err != nil {
+		err = i.Install(d.cmd.Context())
+		// Delete temporary resources
+		_ = k8s.RetryDeleteResources(d.cmd.Context(), d.kube, d.cfg.Installer.Namespace)
+		if err != nil {
 			return err
 		}
 		fmt.Printf("############################################################\n\n")

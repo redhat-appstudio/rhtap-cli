@@ -4,12 +4,14 @@ kind: ServiceAccount
 metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
+  labels: {{- include "common.postDeployDeleteLabels" . | nindent 4 }}
 {{- end }}
 {{- define "common.clusterRoleBinding" -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ .Release.Name }}
+  labels: {{- include "common.postDeployDeleteLabels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -24,6 +26,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ .Release.Name }}
+  labels: {{- include "common.postDeployDeleteLabels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

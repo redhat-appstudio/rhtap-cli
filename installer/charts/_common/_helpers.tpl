@@ -43,6 +43,13 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
+Need deleted labels
+*/}}
+{{- define "common.needDeletedLabels" -}}
+delete: need-delete
+{{- end }}
+
+{{/*
 Selector labels
 */}}
 {{- define "common.selectorLabels" -}}

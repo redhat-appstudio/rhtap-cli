@@ -198,7 +198,13 @@ spec:
               spec:
                 clusterPoolName: clusterpool
               EOF
-              sleep 5
+              ## wait for cluster for up to 30 minutes
+              if ! kubectl wait --for=condition=ClusterRunning clusterclaims.hive.openshift.io/ci-claim -n hive --timeout 30m; then
+                echo "Cluster failed to start in 30 minutes. Deleting clusterClaim"
+                oc delete clusterclaims.hive.openshift.io/ci-claim -n hive
+                exit 1
+              fi
+
               cp_namespace=$(oc get clusterclaims.hive.openshift.io -n hive ci-claim -o jsonpath={.spec.namespace})
               api_url=$(oc get clusterdeployment -n $cp_namespace  $cp_namespace -o jsonpath={.status.apiURL})
               admin_pass_secret=$(oc get clusterdeployment -n $cp_namespace  $cp_namespace -o jsonpath={.spec.clusterMetadata.adminPasswordSecretRef.name})
@@ -303,14 +309,6 @@ spec:
         - name: ocp-version
           value: "$(params.ocp-version)"
   finally:
-    # - name: keep-cluster-running
-    #   taskSpec:
-    #     steps:
-    #       - name: wait
-    #         image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
-    #         script: |
-    #           #!/bin/bash
-    #           sleep 10800 #3 hours
     - name: collect-artifacts
       params:
         - name: ocp-login-command

@@ -65,16 +65,6 @@ spec:
                 required ".quay.secret.name is required"
                   $quay.secret.name
               }}
-            - name: QUAY_ROBOT_SHORT_NAME
-              value: {{
-                required ".quay.robot.name is required"
-                  $quay.robot.name
-              }}
-            - name: QUAY_REPOSITORY
-              value: {{
-                required ".quay.repository.name is required"
-                  $quay.repository.name
-              }}
           command:
             - /scripts/quay-helper.sh
           volumeMounts:

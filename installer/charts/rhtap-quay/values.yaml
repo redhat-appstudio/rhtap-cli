@@ -14,10 +14,16 @@ quay:
     name: rhtap
     # Organization's email.
     email: __OVERWRITE_ME__
+  repository:
+    # Repository's name
+    name: default
   # Quay admin "docker-registry" secret namespace and name.
   secret:
     namespace: __OVERWRITE_ME__
     name: __OVERWRITE_ME__
+  # Quay robot name for organization
+  robot:
+    name: rhtap_rw
   # Quay configuration bundle.
   config:
     # To support MinIO S3 instance, the RADOS Gateway (RGW) storage is used

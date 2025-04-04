@@ -46,7 +46,7 @@ subscriptions:
     description: OpenShift Pipelines Operator
     namespace: openshift-operators
     name: openshift-pipelines-operator-rh
-    channel: pipelines-1.17
+    channel: pipelines-1.18
     source: redhat-operators
     sourceNamespace: openshift-marketplace
     config:

@@ -8,6 +8,7 @@
 {{- $quay := required "Quay settings" .Installer.Features.redHatQuay -}}
 {{- $rhdh := required "RHDH settings" .Installer.Features.redHatDeveloperHub -}}
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
+{{- $ingressRouterCA := required "OpenShift RouterCA" .OpenShift.Ingress.RouterCA -}}
 {{- $minIOOperatorEnabled := or $tpa.Enabled $quay.Enabled -}}
 ---
 debug:
@@ -237,6 +238,7 @@ quay:
   enabled: {{ $quay.Enabled }}
   namespace: {{ $quay.Namespace }}
   ingressDomain: {{ $ingressDomain }}
+  ingressRouterCA: {{ $ingressRouterCA }}
   organization:
     email: {{ printf "rhtap@%s" $ingressDomain }}
   secret:

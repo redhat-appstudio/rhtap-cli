@@ -122,6 +122,8 @@ func (d *Deploy) Run() error {
 
 		err := i.SetValues(d.cmd.Context(), &d.cfg.Installer, string(valuesTmpl))
 		if err != nil {
+			// Delete temporary resources
+			_ = k8s.RetryDeleteResources(d.cmd.Context(), d.kube, d.cfg.Installer.Namespace)
 			return err
 		}
 		if d.flags.Debug {
@@ -129,6 +131,8 @@ func (d *Deploy) Run() error {
 		}
 
 		if err := i.RenderValues(); err != nil {
+			// Delete temporary resources
+			_ = k8s.RetryDeleteResources(d.cmd.Context(), d.kube, d.cfg.Installer.Namespace)
 			return err
 		}
 		if d.flags.Debug {
@@ -136,9 +140,17 @@ func (d *Deploy) Run() error {
 		}
 
 		if err = i.Install(d.cmd.Context()); err != nil {
+			// Delete temporary resources
+			_ = k8s.RetryDeleteResources(d.cmd.Context(), d.kube, d.cfg.Installer.Namespace)
 			return err
 		}
 		fmt.Printf("############################################################\n\n")
+	}
+
+	// Delete temporary resources
+	err = k8s.RetryDeleteResources(d.cmd.Context(), d.kube, d.cfg.Installer.Namespace)
+	if err != nil {
+		return err
 	}
 
 	fmt.Printf("Deployment complete!\n")

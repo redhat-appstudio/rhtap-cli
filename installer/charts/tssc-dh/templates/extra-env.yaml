@@ -74,9 +74,11 @@ data:
 {{- $glSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-gitlab-integration") -}}
 {{- $glSecretData := ($glSecretObj.data | default dict) -}}
 {{- if $glSecretData }}
+    GITLAB__GROUP: "{{ $glSecretData.group }}"
     GITLAB__HOST: {{ $glSecretData.host }}
     GITLAB__TOKEN: "{{ $glSecretData.token }}"
     GITLAB__URL: {{ print "https://" ($glSecretData.host | b64dec) | b64enc }}
+    GITLAB__USERNAME: {{ $glSecretData.username }}
     {{- if and $glSecretData.clientId $glSecretData.clientSecret }}
     GITLAB__APP__CLIENT__ID: {{ $glSecretData.clientId }}
     GITLAB__APP__CLIENT__SECRET: {{ $glSecretData.clientSecret }}

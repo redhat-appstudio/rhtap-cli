@@ -218,19 +218,28 @@ integrations:
 {{- $catalogURL := required "Red Hat Developer Hub Catalog URL is required"
     $rhdh.Properties.catalogURL }}
 
+{{- $authProvider := required "Auth Provider is required"
+    $rhdh.Properties.authProvider }}
+
+
 developerHub:
   namespace: {{ $rhdh.Namespace }}
   ingressDomain: {{ $ingressDomain }}
   catalogURL: {{ $catalogURL }}
+  authProvider: {{ $authProvider }}
   integrationSecrets:
     namespace: {{ .Installer.Namespace }}
   RBAC:
+    enabled: {{ dig "Properties" "RBAC" "enabled" false $rhdh }}
+{{- if eq $authProvider "github" }}
     adminUsers:
 {{ dig "Properties" "RBAC" "adminUsers" (list "${GITHUB__USERNAME}") $rhdh | toYaml | indent 6 }}
-    enabled: {{ dig "Properties" "RBAC" "enabled" false $rhdh }}
     orgs:
 {{ dig "Properties" "RBAC" "orgs" (list "${GITHUB__ORG}") $rhdh | toYaml | indent 6 }}
-
+{{- else if eq $authProvider "gitlab" }}
+    adminUsers:
+{{ dig "Properties" "RBAC" "adminUsers" (list "${GITLAB__USERNAME}") $rhdh | toYaml | indent 6 }}
+{{- end }}
 #
 # tssc-tpa-realm
 #

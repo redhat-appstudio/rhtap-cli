@@ -3,13 +3,11 @@ apiVersion: v2
 name: rhtap-minio-operator
 description: Helm Chart to manage the MinIO Operator for RHTAP
 type: application
-version: 1.4.0
+version: 1.5.0
 appVersion: "5.0.17"
-
-  # !!! When updating the chart version, make sure to update the image references in:
-  # !!!     - installer/charts/rhtap-infrastructure/templates/minio/tenants.yaml
-  # !!!     - installer/charts/rhtap-minio-operator/values.yaml
-
+# !!! When updating the chart version, make sure to update the image references in:
+# !!!     - installer/charts/rhtap-infrastructure/templates/minio/tenants.yaml
+# !!!     - installer/charts/rhtap-minio-operator/values.yaml
 dependencies:
   - name: operator
     version: 5.0.17

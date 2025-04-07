@@ -3,4 +3,5 @@ apiVersion: v2
 name: rhtap-quay
 description: RHTAP Quay
 type: application
-version: 1.4.0
+version: 1.5.0
+appVersion: "3.13"

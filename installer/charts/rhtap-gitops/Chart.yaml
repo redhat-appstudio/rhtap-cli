@@ -3,4 +3,5 @@ apiVersion: v2
 name: rhtap-gitops
 description: RHTAP OpenShift GitOps
 type: application
-version: 1.4.0
+version: 1.5.0
+appVersion: "1.15"

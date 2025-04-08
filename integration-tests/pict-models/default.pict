@@ -10,13 +10,13 @@
 # Pipeline: valid values are "tekton", "jenkins", "gitlabci", "actions"
 # AUTH: valid values are "github" and "gitlab"
 
-OCP: 4.17, 4.16
-AUTH: github
+OCP: 4.17
+AUTH: gitlab
 ACS: new
-Registry: quay.io
+Registry: artifactory
 TPA: new
-SCM: github
-Pipeline: tekton
+SCM: gitlab
+Pipeline: gitlabci
 
 # Constraints
 ## Parameter value validation. This doesn't work with the current pict docker image, we can uncomment it when we figure out it in future

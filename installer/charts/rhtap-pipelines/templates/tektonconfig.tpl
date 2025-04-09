@@ -1,39 +1,37 @@
-# This is a copy of the default TektonConfig that is generated
-# when installing OpenShift Pipelines.
-# The RHTAP specific configuration override is in `patch._tpl`
-{{- define "pipelines.TektonConfigDefault" -}}
+{{- define "pipelines.tektonconfig" -}}
+---
 apiVersion: operator.tekton.dev/v1alpha1
 kind: TektonConfig
 metadata:
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
   name: config
 spec:
   addon:
     params:
-      - name: pipelineTemplates
-        value: 'true'
-      - name: resolverTasks
-        value: 'true'
-      - name: resolverStepActions
-        value: 'true'
       - name: clusterTasks
         value: 'true'
       - name: communityClusterTasks
         value: 'true'
+      - name: pipelineTemplates
+        value: 'true'
   chain:
-    artifacts.oci.format: simplesigning
     artifacts.oci.storage: oci
     artifacts.pipelinerun.format: in-toto
     artifacts.pipelinerun.storage: oci
     artifacts.taskrun.format: in-toto
     artifacts.taskrun.storage: oci
     disabled: false
-    options: {}
+    transparency.enabled: 'true'
+    transparency.url: http://rekor-server.rhtap-tas.svc
   config: {}
   dashboard:
-    options: {}
+    options:
+      disabled: false
     readonly: false
   hub:
-    options: {}
+    options:
+      disabled: false
   params:
     - name: createRbacResource
       value: 'true'
@@ -52,7 +50,8 @@ spec:
     enable-hub-resolver: true
     enable-param-enum: false
     enable-provenance-in-status: true
-    enable-step-actions: true
+    enable-step-actions: false
+    enable-tekton-oci-bundles: true
     enforce-nonfalsifiability: none
     keep-pod-on-cancel: false
     max-result-size: 4096
@@ -61,7 +60,8 @@ spec:
     metrics.pipelinerun.level: pipeline
     metrics.taskrun.duration-type: histogram
     metrics.taskrun.level: task
-    options: {}
+    options:
+      disabled: false
     params:
       - name: enableMetrics
         value: 'true'
@@ -77,32 +77,24 @@ spec:
     openshift:
       pipelinesAsCode:
         enable: true
-        options: {}
+        options:
+          disabled: false
         settings:
-          application-name: Pipelines as Code CI
+          application-name: RHTAP CI
           auto-configure-new-github-repo: 'false'
-          auto-configure-repo-namespace-template: ''
-          bitbucket-cloud-additional-source-ip: ''
           bitbucket-cloud-check-source-ip: 'true'
           custom-console-name: ''
           custom-console-url: ''
-          custom-console-url-namespace: ''
           custom-console-url-pr-details: ''
           custom-console-url-pr-tasklog: ''
-          default-max-keep-runs: '0'
           error-detection-from-container-logs: 'true'
           error-detection-max-number-of-lines: '50'
-          error-detection-simple-regexp: '^(?P<filename>[^:]*):(?P<line>[0-9]+):(?P<column>[0-9]+)?([ ]*)?(?P<error>.*)'
+          error-detection-simple-regexp: '^(?P<filename>[^:]*):(?P<line>[0-9]+):(?P<column>[0-9]+):([ ]*)?(?P<error>.*)'
           error-log-snippet: 'true'
-          hub-catalog-name: tekton
-          hub-url: 'https://api.hub.tekton.dev/v1'
-          max-keep-run-upper-limit: '0'
-          remember-ok-to-test: 'true'
+          remember-ok-to-test: 'false'
           remote-tasks: 'true'
           secret-auto-create: 'true'
-          secret-github-app-scope-extra-repos: ''
           secret-github-app-token-scoped: 'true'
-          tekton-dashboard-url: ''
       scc:
         default: pipelines-scc
   profile: all
@@ -116,5 +108,6 @@ spec:
   trigger:
     default-service-account: pipeline
     enable-api-fields: stable
-    options: {}
-{{- end }}
+    options:
+      disabled: false
+{{- end -}}

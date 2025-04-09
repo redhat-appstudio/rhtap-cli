@@ -13,8 +13,8 @@ metadata:
       && files.all.exists(x, !x.matches('^(?:docs|.github|.vscode|.ci)/|\\.md$|^(?:.*/)?(?:\\.gitignore|OWNERS|PROJECT|LICENSE.txt|.golangci.yaml|.goreleaser.yaml|.snyk|.dockerignore|yamllint.yaml)$'))
   creationTimestamp:
   labels:
-    appstudio.openshift.io/application: rhtap-cli-release-1.5
-    appstudio.openshift.io/component: rhtap-cli-release-1.5
+    appstudio.openshift.io/application: rhtap-cli-1-5
+    appstudio.openshift.io/component: rhtap-cli-1-5
     pipelines.appstudio.openshift.io/type: build
   name: rhtap-cli-on-pull-request
   namespace: rhtap-shared-team-tenant

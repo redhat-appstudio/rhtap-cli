@@ -4,7 +4,7 @@ set -o nounset
 set -o pipefail
 
 # Number of retries to attempt before giving up.
-declare -r RETRIES=${RETRIES:-30}
+declare -r RETRIES=${RETRIES:-90}
 
 get_roxctl() {
   echo "# Download roxctl cli from ${ROX_CENTRAL_ENDPOINT}"

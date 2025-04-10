@@ -80,6 +80,10 @@ auth:
       {{- end }}
         clientId: ${GITLAB__APP__CLIENT__ID}
         clientSecret: ${GITLAB__APP__CLIENT__SECRET}
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName
+              dangerouslyAllowSignInWithoutUserInCatalog: true
     {{- end }}
   {{- end }}
 backend:

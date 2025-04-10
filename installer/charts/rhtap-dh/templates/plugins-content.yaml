@@ -50,6 +50,22 @@ plugins:
     package: ./dynamic-plugins/dist/backstage-community-plugin-azure-devops-backend-dynamic
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-community-plugin-azure-devops
+    # The default pluginConfig also includes EntityAzurePullRequestsContent which is not supported
+    # in RHTAP and causes 500 errors when loading the PR/MR tab:
+    # https://issues.redhat.com/browse/RHTAP-4837
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          backstage-community.plugin-azure-devops:
+            mountPoints:
+              - mountPoint: entity.page.ci/cards
+                importName: EntityAzurePipelinesContent
+                config:
+                  layout:
+                    gridColumn: "1 / -1"
+                  if:
+                    allOf:
+                      - isAzureDevOpsAvailable
 {{- end }}
 {{- if (lookup "v1" "Secret" $integrationNamespace "rhtap-github-integration") }}
   - disabled: false

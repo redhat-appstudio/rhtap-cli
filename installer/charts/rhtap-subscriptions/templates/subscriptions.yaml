@@ -35,7 +35,7 @@ spec:
       - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
         value: "openshift-gitops,{{ $s.config.argoCDClusterNamespace }}"
     {{- else }}
-      {{ $s.config | toYaml | nindent 4 }}
+      {{- $s.config | toYaml | nindent 4 }}
     {{- end }}
   {{- end }}
 {{- end }}

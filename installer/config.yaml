@@ -23,7 +23,7 @@ rhtapCLI:
       enabled: &rhdhEnabled true
       namespace: &rhdhNamespace rhtap-dh
       properties:
-        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/v1.5.0/all.yaml
+        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release-v1.5.x/all.yaml
         manageSubscription: true
         # namespacePrefixes:
         #   - rhtap-app

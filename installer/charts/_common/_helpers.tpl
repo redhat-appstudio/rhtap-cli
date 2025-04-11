@@ -43,6 +43,13 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
+Need deleted labels
+*/}}
+{{- define "common.postDeployDeleteLabels" -}}
+rhtap-cli.redhat-appstudio.github.com/post-deploy: delete
+{{- end }}
+
+{{/*
 Selector labels
 */}}
 {{- define "common.selectorLabels" -}}

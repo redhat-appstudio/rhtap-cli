@@ -77,6 +77,7 @@ data:
 {{- if $glSecretData }}
     GITLAB__HOST: {{ $glSecretData.host }}
     GITLAB__TOKEN: "{{ $glSecretData.token }}"
+    GITLAB__GROUP: "{{ $glSecretData.group }}"
     GITLAB__URL: {{ print "https://" ($glSecretData.host | b64dec) | b64enc }}
     {{- if and $glSecretData.clientId $glSecretData.clientSecret }}
     GITLAB__APP__CLIENT__ID: {{ $glSecretData.clientId }}

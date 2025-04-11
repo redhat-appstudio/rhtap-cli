@@ -23,3 +23,26 @@ PostgreSQL Clusters:
     Name: {{ $k }}
     Version: {{ $v.postgresVersion }}
 {{- end }}
+
+{{- if .Values.infrastructure.openShiftPipelines.enabled }}
+  {{- $osp := .Values.infrastructure.openShiftPipelines }}
+
+OpenShift Pipelines:
+  {{- if or
+        $osp.patchClusterTektonConfig.annotations
+        $osp.patchClusterTektonConfig.labels
+  }}
+  Tekton Config Patch:
+    - Name: {{ $osp.patchClusterTektonConfig.resourceName }}
+    {{- with $osp.patchClusterTektonConfig.annotations }}
+      Annotations:
+{{ . | toYaml | indent 8 }}
+    {{- end }}
+    {{- with $osp.patchClusterTektonConfig.labels }}
+      Labels:
+{{ . | toYaml | indent 8 }}
+    {{- end }}
+  {{- end }}
+  Tekton Chains:
+    - Signing Keys Secret: {{ $osp.tektonChains.signingSecretName }}
+{{- end }}

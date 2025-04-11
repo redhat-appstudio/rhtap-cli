@@ -235,5 +235,20 @@ infrastructure:
   openShiftPipelines:
     # Toggles the settings related to OpenShift Pipelines components.
     enabled: false
+    # The primary OpenShift Pipelines instance name.
+    name: tekton-pipeline
     # The namespace where the OpenShift Pipelines components is installed.
     namespace: openshift-pipelines
+    # Patches the global TektonConfig resource.
+    patchClusterTektonConfig:
+      # Resource name to patch.
+      resourceName: config
+      # Annotations to add to the resource.
+      annotations: {}
+      # Labels to add to the resource.
+      labels: {}
+    # Tekton Chains settings.
+    tektonChains:
+      # Secret name where the signing key is stored, the password is randomly
+      # generated and stored on the same secret.
+      signingSecretName: signing-secrets

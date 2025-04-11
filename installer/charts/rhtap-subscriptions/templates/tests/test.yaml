@@ -4,15 +4,13 @@
     #
     # Tests the subcriptions CRDs.
     #
-    - name: test-subscriptions-crds
+    - name: test-subscriptions
       image: registry.redhat.io/openshift4/ose-tools-rhel9
       command:
         - /scripts/test-subscriptions.sh
       args:
 {{- range $sub := include "subscriptions.enabled" . | fromYaml }}
-  {{- if (dig "apiResource" "" $sub) }}
         - {{ $sub.apiResource | quote }}
-  {{- end }}
 {{- end }}
       volumeMounts:
         - name: scripts

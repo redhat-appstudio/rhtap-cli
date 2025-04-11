@@ -11,6 +11,7 @@ metadata:
 spec:
   {{- $s.operatorGroup | toYaml | nindent 2 }}
   {{- end }}
+
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription

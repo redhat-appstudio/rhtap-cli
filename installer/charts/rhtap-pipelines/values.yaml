@@ -1,3 +1,2 @@
 ---
-pipelines:
-  namespace: __OVERWRITE_ME__
+pipelines: {}

@@ -103,6 +103,7 @@ spec:
               set -euo pipefail
 
               GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
+              KONFLUX_URL="https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com"
               KONFLUX_TENANT="${KONFLUX_NAMESPACE%-tenant}"
 
               if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
@@ -127,7 +128,7 @@ spec:
                 PIPELINE=$(echo "$config" | jq -r '.[] | select(.key == "Pipeline").value')
                 AUTH=$(echo "$config" | jq -r '.[] | select(.key == "AUTH").value')
 
-                pipeline_run_name=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
                   --param ocp-version="$OCP_VERSION"\
                   --param job-spec="$JOB_SPEC"\
                   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
@@ -145,9 +146,9 @@ spec:
                   --prefix-name "e2e-$OCP_VERSION"\
                   -o name)
 
-                  echo "Started new pipelinerun: https://console.redhat.com/application-pipeline/workspaces/${KONFLUX_TENANT}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${pipeline_run_name}"
+                  echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_TENANT}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
 
-                  PIPELINERUNS_ARRAY+=($pipeline_run_name)
+                  PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
 
               done < <(echo "$CONFIGS_JSON" | jq -c '.[]')
 
@@ -185,7 +186,7 @@ spec:
                   if ! $SOME_PIPELINE_FAILED ; then
                     echo "List of failed PLRs:"
                   fi
-                  echo "https://console.redhat.com/application-pipeline/workspaces/${KONFLUX_TENANT}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                  echo "${KONFLUX_URL}/ns/${KONFLUX_TENANT}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
                   SOME_PIPELINE_FAILED=true
                 fi
               done

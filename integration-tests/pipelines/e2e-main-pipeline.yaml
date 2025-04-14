@@ -139,7 +139,6 @@ spec:
 
               GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
               KONFLUX_URL="https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com"
-              KONFLUX_TENANT="${KONFLUX_NAMESPACE%-tenant}"
 
               if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
                 REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
@@ -182,7 +181,7 @@ spec:
                   --prefix-name "e2e-$OCP_VERSION"\
                   -o name)
 
-                  echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_TENANT}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                  echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
 
                   PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
 
@@ -202,7 +201,7 @@ spec:
                   if ! $SOME_PIPELINE_FAILED ; then
                     echo "List of failed PLRs:"
                   fi
-                  echo "${KONFLUX_URL}/ns/${KONFLUX_TENANT}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                  echo "${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
                   SOME_PIPELINE_FAILED=true
                 elif [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "True" ]]; then
                   SOME_PIPELINE_SUCCEEDED=true

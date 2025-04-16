@@ -24,6 +24,9 @@ quay:
   # Quay robot name for organization
   robot:
     name: rhtap_rw
+  robotReadonly:
+  # Quay robot name with read-only pemission
+    name: rhtap_ro
   # Quay configuration bundle.
   config:
     # Quay's instance adminstration user.

@@ -70,6 +70,11 @@ spec:
                 required ".quay.robot.name is required"
                   $quay.robot.name
               }}
+            - name: QUAY_ROBOT_SHORT_NAME_READONLY
+              value: {{
+                required ".quay.robotReadonly.name is required"
+                  $quay.robotReadonly.name
+              }}
             - name: QUAY_REPOSITORY
               value: {{
                 required ".quay.repository.name is required"

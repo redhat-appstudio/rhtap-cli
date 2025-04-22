@@ -144,7 +144,7 @@ infrastructure:
     keycloak:
       enabled: {{ $keycloak.Enabled }}
       namespace: {{ $keycloak.Namespace }}
-    guac:
+    tpa:
       enabled: {{ $tpa.Enabled }}
       namespace: {{ $tpa.Namespace }}
   openShiftPipelines:
@@ -331,7 +331,7 @@ trustedProfileAnalyzerRealm:
   oidcIssuerURL: {{ $tpaOIDCIssuerURL }}
   oidcClientsSecretName: {{ $tpaOIDCClientsSecretName }}
   clients:
-    walker:
+    cli:
       enabled: true
     testingManager:
       enabled: {{ $tpaTestingUsersEnabled }}
@@ -339,13 +339,13 @@ trustedProfileAnalyzerRealm:
       enabled: {{ $tpaTestingUsersEnabled }}
   frontendRedirectUris:
     - "http://localhost:8080"
-{{- range list "console" "sbom" "vex" }}
+{{- range list "server" "sbom" }}
     - "{{ printf "%s://%s-%s.%s" $protocol . $tpa.Namespace $ingressDomain }}"
     - "{{ printf "%s://%s-%s.%s/*" $protocol . $tpa.Namespace $ingressDomain }}"
 {{- end }}
   integrationSecret:
     bombasticAPI: {{
-      printf "%s://sbom-%s.%s"
+      printf "%s://server-%s.%s"
         $protocol
         $tpa.Namespace
         $ingressDomain
@@ -357,7 +357,7 @@ trustedProfileAnalyzerRealm:
 # tssc-tpa
 #
 
-{{- $tpaGUACDatabaseSecretName := "guac-pguser-guac" }}
+{{- $tpaDatabaseSecretName := "tpa-pguser-tpa" }}
 
 trustedProfileAnalyzer:
   enabled: {{ $tpa.Enabled }}
@@ -371,56 +371,46 @@ redhat-trusted-profile-analyzer:
     # In practice it toggles "https" vs. "http" for TPA components, for CRC it's
     # easier to focus on "http" communication only.
     useServiceCa: {{ not $crc.Enabled }}
-  guac: &tpaGUAC
-    database: &guacDatabase
-      name:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaGUACDatabaseSecretName }}
-      host:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaGUACDatabaseSecretName }}
-      port:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaGUACDatabaseSecretName}}
-      username:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaGUACDatabaseSecretName }}
-      password:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaGUACDatabaseSecretName }}
-    initDatabase: *guacDatabase
+  database: &tpaDatabase
+    name:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $tpaDatabaseSecretName }}
+          key: dbname
+    host:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $tpaDatabaseSecretName }}
+          key: host
+    port:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $tpaDatabaseSecretName}}
+          key: port
+    username:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $tpaDatabaseSecretName }}
+          key: user
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $tpaDatabaseSecretName }}
+          key: password
+  createDatabase: *tpaDatabase
+  migrateDatabase: *tpaDatabase
   storage: &tpaStorage
-    endpoint: {{ printf "http://minio.%s.svc.cluster.local:80" $tpa.Namespace }}
-    accessKey:
-      valueFrom:
-        secretKeyRef:
-          name: {{ $tpaMinIORootSecretName }}
-    secretKey:
-      valueFrom:
-        secretKeyRef:
-          name: {{ $tpaMinIORootSecretName }}
-  eventBus:
-    bootstrapServers: {{ $tpaKafkaBootstrapServers }}
-    config:
-      username: {{ $tpaKafkaSecretName }}
-      password:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaKafkaSecretName }}
+    type: filesystem
+    size: 32Gi
   oidc: &tpaOIDC
     issuerUrl: {{ $tpaOIDCIssuerURL }}
     clients:
-      walker:
+      cli:
         clientSecret:
           valueFrom:
             secretKeyRef:
               name: {{ $tpaOIDCClientsSecretName }}
-              key: walker
+              key: cli
 {{- if $tpaTestingUsersEnabled }}
       testingUser:
         clientSecret:
@@ -441,7 +431,6 @@ trustification:
   openshift: *tpaOpenShift
   storage: *tpaStorage
   oidc: *tpaOIDC
-  guac: *tpaGUAC
   ingress: *tpaIngress
   tls:
     serviceEnabled: "{{ not $crc.Enabled }}"

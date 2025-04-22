@@ -1,0 +1,106 @@
+---
+subscriptions:
+  amqStreams:
+    enabled: false
+    description: Red Hat AMQ Streams
+    apiResource: kafkas.kafka.strimzi.io
+    namespace: openshift-operators
+    name: amq-streams
+    channel: amq-streams-2.8.x
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+  crunchyData:
+    enabled: false
+    description: Crunchy-Data PostgreSQL Operator
+    apiResource: postgresclusters.postgres-operator.crunchydata.com
+    namespace: openshift-operators
+    name: crunchy-postgres-operator-rhmp
+    channel: v5
+    source: redhat-marketplace
+    sourceNamespace: openshift-marketplace
+  openshiftGitOps:
+    enabled: false
+    description: OpenShift GitOps Operator
+    apiResource: gitopsservices.pipelines.openshift.io
+    namespace: openshift-operators
+    name: openshift-gitops-operator
+    channel: gitops-1.16
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    config:
+      argoCDClusterNamespace: __OVERWRITE_ME__
+  openshiftKeycloak:
+    enabled: false
+    description: Red Hat Keycloak Operator
+    apiResource: keycloaks.k8s.keycloak.org
+    namespace: rhbk-operator
+    name: rhbk-operator
+    channel: stable-v24
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    operatorGroup:
+      upgradeStrategy: Default
+      targetNamespaces: []
+  openshiftPipelines:
+    enabled: false
+    description: OpenShift Pipelines Operator
+    namespace: openshift-operators
+    name: openshift-pipelines-operator-rh
+    channel: pipelines-1.18
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    config:
+      env:
+        - name: AUTOINSTALL_COMPONENTS
+          value: "false"
+  openshiftTrustedArtifactSigner:
+    enabled: false
+    description: Red Hat Trusted Artifact Signer Operator
+    apiResource: securesigns.rhtas.redhat.com
+    namespace: openshift-operators
+    name: rhtas-operator
+    channel: stable-v1.2
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+  redHatQuay:
+    enabled: false
+    description: Red Hat Quay Operator
+    apiResource: quayregistries.quay.redhat.com
+    namespace: openshift-operators
+    name: quay-operator
+    channel: stable-3.14
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+  redHatAdvancedClusterSecurity:
+    enabled: false
+    description: Red Hat Advanced Cluster Security Operator
+    apiResource: centrals.platform.stackrox.io
+    channel: rhacs-4.7
+    namespace: rhacs-operator
+    name: rhacs-operator
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    operatorGroup:
+      upgradeStrategy: Default
+  redHatDeveloperHub:
+    enabled: false
+    description: Red Hat Developer Hub Operator
+    apiResource: backstages.rhdh.redhat.com
+    namespace: openshift-operators
+    name: rhdh
+    channel: fast-1.6
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+  redHatOpenShiftDataFoundation:
+    enabled: false
+    description: Red Hat OpenShift Data Foundation (ODF)
+    apiResource: noobaas.noobaa.io
+    namespace: __OVERWRITE_ME__
+    name: odf-operator
+    channel: __OVERWRITE_ME__
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    operatorGroup:
+      upgradeStrategy: Default
+      targetNamespaces:
+        - __OVERWRITE_ME__

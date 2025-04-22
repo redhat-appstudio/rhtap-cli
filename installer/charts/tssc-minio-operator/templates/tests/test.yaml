@@ -1,0 +1,39 @@
+{{- if .Values.minIOOperator.enabled }}
+---
+{{- $sa := include "tsscMinioOperator.serviceAccountName" . -}}
+{{- $pod := dict
+  "serviceAccount" $sa
+}}
+{{- include "common.test" (merge $pod .) }}
+  containers:
+    - name: minio-crds-test
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
+      command:
+        - /scripts/test-subscriptions.sh
+      args:
+        - tenants.minio.min.io
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+    #
+    # Test the MinIO operator rollout status.
+    #
+    - name: operator-deployment-test
+      image: registry.redhat.io/openshift4/ose-tools-rhel9
+      env:
+        - name: NAMESPACE
+          value: {{ .Release.Namespace }}
+        - name: RESOURCE_TYPE
+          value: "deployment"
+      command:
+        - /scripts/test-rollout-status.sh
+      args:
+        - app=minio-operator
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false
+{{- end }}

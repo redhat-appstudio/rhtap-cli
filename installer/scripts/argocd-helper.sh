@@ -19,9 +19,9 @@ declare -r ARGOCD_USER="${ARGOCD_USER:-admin}"
 # ArgoCD password to use for login.
 declare -r ARGOCD_PASSWORD="${ARGOCD_PASSWORD:-}"
 # Environment file to store the ArgoCD credentials.
-declare -r ARGOCD_ENV_FILE="${ARGOCD_ENV_FILE:-/rhtap/argocd/env}"
+declare -r ARGOCD_ENV_FILE="${ARGOCD_ENV_FILE:-/tssc/argocd/env}"
 # Target secret name, to be created with ArgoCD credentials.
-declare -r SECRET_NAME="${SECRET_NAME:-rhtap-argocd-integration}"
+declare -r SECRET_NAME="${SECRET_NAME:-tssc-argocd-integration}"
 # Secret's namespace.
 declare -r NAMESPACE="${NAMESPACE:-}"
 

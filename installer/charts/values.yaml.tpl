@@ -8,13 +8,17 @@
 {{- $quay := required "Quay settings" .Installer.Features.redHatQuay -}}
 {{- $rhdh := required "RHDH settings" .Installer.Features.redHatDeveloperHub -}}
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
+{{- $ingressRouterCA := required "OpenShift RouterCA" .OpenShift.Ingress.RouterCA -}}
+{{- $openshiftMinorVersion := required "OpenShift Version" .OpenShift.MinorVersion -}}
 {{- $minIOOperatorEnabled := or $tpa.Enabled $quay.Enabled -}}
+{{- $odfEnabled := or $tpa.Enabled $quay.Enabled -}}
+{{- $odfNamespace := "openshift-storage" -}}
 ---
 debug:
   ci: false
 
 #
-# rhtap-openshift
+# tssc-openshift
 #
 
 openshift:
@@ -46,11 +50,16 @@ openshift:
 {{- if $rhdh.Enabled }}
     - {{ $rhdh.Namespace }}
 {{- end }}
+{{- if $odfEnabled }}
+    - {{ $odfNamespace }}
+{{- end }}
     - minio-operator
 
 #
-# rhtap-subscriptions
+# tssc-subscriptions
 #
+
+{{- $odfChannel := printf "stable-%s" $openshiftMinorVersion }}
 
 subscriptions:
   amqStreams:
@@ -85,23 +94,30 @@ subscriptions:
   redHatQuay:
     enabled: {{ $quay.Enabled }}
     managed: {{ and $quay.Enabled $quay.Properties.manageSubscription }}
+  redHatOpenShiftDataFoundation:
+    enabled: {{ $odfEnabled }}
+    managed: {{ $odfEnabled }}
+    namespace: {{ $odfNamespace }}
+    channel: {{ $odfChannel }}
+    operatorGroup:
+      targetNamespaces:
+        - {{ $odfNamespace }}
 
 #
-# rhtap-minio-operator
+# tssc-minio-operator
 #
 
 minIOOperator:
   enabled: {{ $minIOOperatorEnabled }}
 
+
 #
-# rhtap-infrastructure
+# tssc-infrastructure
 #
 
 {{- $tpaKafkaSecretName := "tpa-kafka" }}
 {{- $tpaKafkaBootstrapServers := "tpa-kafka-bootstrap:9092" }}
 {{- $tpaMinIORootSecretName := "tpa-minio-root-env" }}
-
-{{- $quayMinIOSecretName := "quay-minio-root-user"  }}
 
 infrastructure:
   developerHub:
@@ -124,28 +140,24 @@ infrastructure:
             secretKeyRef:
               name: {{ $tpaKafkaSecretName }}
               key: password
-    quay:
-      enabled: {{ $quay.Enabled }}
-      namespace: {{ $quay.Namespace }}
-      ingress:
-        enabled: true
-        domain: {{ $ingressDomain }}
-      rootSecretName: {{ $quayMinIOSecretName }}
-      kafkaNotify:
-        enabled: false
   postgresClusters:
     keycloak:
       enabled: {{ $keycloak.Enabled }}
       namespace: {{ $keycloak.Namespace }}
-    guac:
+    tpa:
       enabled: {{ $tpa.Enabled }}
       namespace: {{ $tpa.Namespace }}
   openShiftPipelines:
     enabled: {{ $pipelines.Enabled }}
     namespace: {{ $pipelines.Namespace }}
+  odf:
+    enabled: {{ $odfEnabled }}
+    backingStorageSize: 100Gi
+    backingStoreName: noobaa-pv-backing-store
+    namespace: {{ $odfNamespace }}
 
 #
-# rhtap-backing-services
+# tssc-backing-services
 #
 
 {{- $keycloakRouteTLSSecretName := "keycloak-tls" }}
@@ -184,13 +196,14 @@ backingServices:
     ingressDomain: {{ $ingressDomain }}
 
 #
-# rhtap-acs
+# tssc-acs
 #
 
 acs: &acs
   enabled: {{ $acs.Enabled }}
   name: &acsName stackrox-central-services
   ingressDomain: {{ $ingressDomain }}
+  ingressRouterCA: {{ $ingressRouterCA }}
   integrationSecret:
     namespace: {{ .Installer.Namespace }}
   test:
@@ -199,7 +212,7 @@ acs: &acs
 acsTest: *acs
 
 #
-# rhtap-app-namespaces
+# tssc-app-namespaces
 #
 appNamespaces:
   argoCD:
@@ -210,7 +223,7 @@ appNamespaces:
   {{- end }}
 
 #
-# rhtap-gitops
+# tssc-gitops
 #
 
 argoCD:
@@ -218,38 +231,32 @@ argoCD:
   name: {{ $argoCDName }}
   namespace: {{ $gitops.Namespace }}
   integrationSecret:
-    name: rhtap-argocd-integration
+    name: tssc-argocd-integration
     namespace: {{ .Installer.Namespace }}
   ingressDomain: {{ $ingressDomain }}
 
 #
-# rhtap-pipelines
+# tssc-pipelines
 #
 
 pipelines:
   namespace: {{ $pipelines.Namespace }}
 
 #
-# rhtap-quay
+# tssc-quay
 #
 
 quay:
   enabled: {{ $quay.Enabled }}
   namespace: {{ $quay.Namespace }}
   ingressDomain: {{ $ingressDomain }}
+  ingressRouterCA: {{ $ingressRouterCA }}
   organization:
-    email: {{ printf "rhtap@%s" $ingressDomain }}
+    email: {{ printf "tssc@%s" $ingressDomain }}
   secret:
     namespace: {{ .Installer.Namespace }}
-    name: rhtap-quay-integration
+    name: tssc-quay-integration
   config:
-    radosGWStorage:
-      enabled: true
-      hostname: {{ $quayMinIOHost }}
-      port: 443
-      isSecure: true
-      credentials:
-        secretName: {{ $quayMinIOSecretName }}
     superUser:
       email: {{ printf "admin@%s" $ingressDomain }}
   replicas:
@@ -257,7 +264,7 @@ quay:
     clair: 1
 
 #
-# rhtap-integrations
+# tssc-integrations
 #
 
 integrations:
@@ -282,7 +289,7 @@ integrations:
 #     token: ""
 
 #
-# rhtap-dh
+# tssc-dh
 #
 
 {{- $catalogURL := required "Red Hat Developer Hub Catalog URL is required"
@@ -302,14 +309,15 @@ developerHub:
 {{ dig "Properties" "RBAC" "orgs" (list "${GITHUB__ORG}") $rhdh | toYaml | indent 6 }}
 
 #
-# rhtap-tpa
+# tssc-tpa
 #
 
 {{- $tpaAppDomain := printf "-%s.%s" $tpa.Namespace $ingressDomain }}
-{{- $tpaGUACDatabaseSecretName := "guac-pguser-guac" }}
+{{- $tpaDatabaseSecretName := "tpa-pguser-tpa" }}
 {{- $tpaOIDCClientsSecretName := "tpa-realm-chicken-clients" }}
 {{- $tpaTestingUsersEnabled := false }}
 {{- $tpaRealmPath := "realms/chicken" }}
+{{- $tpaStorageType := "s3" }}
 {{- $protocol := "https" -}}
 {{- if $crc.Enabled }}
   {{- $protocol = "http" }}
@@ -320,13 +328,13 @@ trustedProfileAnalyzer:
   appDomain: "{{ $tpaAppDomain }}"
   integrationSecret:
     bombasticAPI: {{
-      printf "%s://sbom-%s.%s"
+      printf "%s://server-%s.%s"
         $protocol
         $tpa.Namespace
         $ingressDomain
     }}
     namespace: {{ .Installer.Namespace }}
-    name: rhtap-trustification-integration
+    name: tssc-trustification-integration
   keycloakRealmImport:
     enabled: {{ $keycloak.Enabled }}
     keycloakCR:
@@ -334,7 +342,7 @@ trustedProfileAnalyzer:
       name: keycloak
     oidcClientsSecretName: {{ $tpaOIDCClientsSecretName }}
     clients:
-      walker:
+      cli:
         enabled: true
       testingManager:
         enabled: {{ $tpaTestingUsersEnabled }}
@@ -342,7 +350,7 @@ trustedProfileAnalyzer:
         enabled: {{ $tpaTestingUsersEnabled }}
     frontendRedirectUris:
       - "http://localhost:8080"
-{{- range list "console" "sbom" "vex" }}
+{{- range list "server" "sbom" "vex" }}
       - "{{ printf "%s://%s-%s.%s" $protocol . $tpa.Namespace $ingressDomain }}"
       - "{{ printf "%s://%s-%s.%s/*" $protocol . $tpa.Namespace $ingressDomain }}"
 {{- end }}
@@ -355,47 +363,37 @@ redhat-trusted-profile-analyzer:
     # In practice it toggles "https" vs. "http" for TPA components, for CRC it's
     # easier to focus on "http" communication only.
     useServiceCa: {{ not $crc.Enabled }}
-  guac: &tpaGUAC
-    database: &guacDatabase
-      name:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaGUACDatabaseSecretName }}
-      host:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaGUACDatabaseSecretName }}
-      port:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaGUACDatabaseSecretName}}
-      username:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaGUACDatabaseSecretName }}
-      password:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaGUACDatabaseSecretName }}
-    initDatabase: *guacDatabase
+  database: &tpaDatabase
+    name:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $tpaDatabaseSecretName }}
+          key: dbname
+    host:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $tpaDatabaseSecretName }}
+          key: host
+    port:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $tpaDatabaseSecretName}}
+          key: port
+    username:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $tpaDatabaseSecretName }}
+          key: user
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $tpaDatabaseSecretName }}
+          key: password
+  createDatabase: *tpaDatabase
+  migrateDatabase: *tpaDatabase
   storage: &tpaStorage
-    endpoint: {{ printf "http://minio.%s.svc.cluster.local:80" $tpa.Namespace }}
-    accessKey:
-      valueFrom:
-        secretKeyRef:
-          name: {{ $tpaMinIORootSecretName }}
-    secretKey:
-      valueFrom:
-        secretKeyRef:
-          name: {{ $tpaMinIORootSecretName }}
-  eventBus:
-    bootstrapServers: {{ $tpaKafkaBootstrapServers }}
-    config:
-      username: {{ $tpaKafkaSecretName }}
-      password:
-        valueFrom:
-          secretKeyRef:
-            name: {{ $tpaKafkaSecretName }}
+    type: filesystem
+    size: 32Gi
   oidc: &tpaOIDC
 {{- if $crc.Enabled }}
     issuerUrl: {{ printf "http://%s/%s" $keycloakRouteHost $tpaRealmPath }}
@@ -403,12 +401,12 @@ redhat-trusted-profile-analyzer:
     issuerUrl: {{ printf "https://%s/%s" $keycloakRouteHost $tpaRealmPath }}
 {{- end }}
     clients:
-      walker:
+      cli:
         clientSecret:
           valueFrom:
             secretKeyRef:
               name: {{ $tpaOIDCClientsSecretName }}
-              key: walker
+              key: cli
 {{- if $tpaTestingUsersEnabled }}
       testingUser:
         clientSecret:
@@ -429,13 +427,12 @@ trustification:
   openshift: *tpaOpenShift
   storage: *tpaStorage
   oidc: *tpaOIDC
-  guac: *tpaGUAC
   ingress: *tpaIngress
   tls:
     serviceEnabled: "{{ not $crc.Enabled }}"
 
 #
-# rhtap-tas
+# tssc-tas
 #
 
 {{- $tasRealmPath := "realms/trusted-artifact-signer" }}
@@ -462,6 +459,6 @@ trustedArtifactSigner:
       certificate:
         # TODO: promopt the user for organization email/name input!
         organizationEmail: trusted-artifact-signer@company.dev
-        organizationName: RHTAP
+        organizationName: TSSC
   integrationSecret:
     namespace: {{ .Installer.Namespace }}

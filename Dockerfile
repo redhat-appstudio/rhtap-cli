@@ -2,11 +2,11 @@
 # Build
 #
 
-FROM registry.redhat.io/openshift4/ose-tools-rhel9@sha256:ceffda1d467e7ae6fd4ea29c82307d6785f85ce564f8ddb0ce02fe8daa8d24fb AS ose-tools
-FROM registry.access.redhat.com/ubi9/go-toolset:1.23.6-1744294473 AS builder
+FROM registry.redhat.io/openshift4/ose-tools-rhel9@sha256:595f1e12be349f012ef2ce2414f9acbb25f710773c6dd37ab1c4d6081634ce0a AS ose-tools
+FROM registry.access.redhat.com/ubi9/go-toolset:1.23.6-1746547777 AS builder
 
 USER root
-WORKDIR /workdir/rhtap-cli
+WORKDIR /workdir/tssc
 
 COPY installer/ ./installer/
 
@@ -22,24 +22,28 @@ RUN make GOFLAGS='-buildvcs=false'
 # Run
 #
 
-FROM registry.access.redhat.com/ubi9-minimal:9.5-1742914212
+FROM registry.access.redhat.com/ubi9-minimal:9.6-1747218906
 
 LABEL \
-  name="rhtap-cli" \
-  com.redhat.component="rhtap-cli" \
-  description="Red Hat Trusted Application Pipeline allows organizations to curate their own trusted, repeatable pipelines \
-        that stay compliant with industry requirements. Built on proven, trusted open source technologies, Red Hat \
-        Trusted Application Pipeline is part of Red Hat Trusted Software Supply Chain, a set of solutions to protect \ 
-        users, customers, and partners from risks and vulnerabilities in their software factory." \
-  io.k8s.description="Red Hat Trusted Application Pipeline allows organizations to curate their own trusted, repeatable pipelines \
-  that stay compliant with industry requirements. Built on proven, trusted open source technologies, Red Hat \
-  Trusted Application Pipeline is part of Red Hat Trusted Software Supply Chain, a set of solutions to protect \ 
-  users, customers, and partners from risks and vulnerabilities in their software factory." \
-  summary="Provides the binaries for downloading the RHTAP CLI." \
-  io.k8s.display-name="Red Hat Trusted Application Pipeline CLI" \
-  io.openshift.tags="rhtap-cli tas tpa rhdh ec tap openshift"
+  name="tssc" \
+  com.redhat.component="tssc" \
+  description="Red Hat Trusted Software Supply Chain allows organizations to curate their own trusted, \
+    repeatable pipelines that stay compliant with industry requirements. Built on proven, trusted open \
+    source technologies, Red Hat Trusted Software Supply Chain is a set of solutions to protect users, \
+    customers, and partners from risks and vulnerabilities in their software factory." \
+  io.k8s.description="Red Hat Trusted Software Supply Chain allows organizations to curate their own trusted, \
+    repeatable pipelines that stay compliant with industry requirements. Built on proven, trusted open \
+    source technologies, Red Hat Trusted Software Supply Chain is a set of solutions to protect users, \
+    customers, and partners from risks and vulnerabilities in their software factory." \
+  summary="Provides the tssc binary." \
+  io.k8s.display-name="Red Hat Trusted Software Supply Chain CLI" \
+  io.openshift.tags="tssc tas tpa rhdh ec tap openshift"
 
-WORKDIR /rhtap-cli
+WORKDIR /licenses
+
+COPY LICENSE.txt .
+
+WORKDIR /tssc
 
 COPY --from=ose-tools /usr/bin/jq /usr/bin/kubectl /usr/bin/oc /usr/bin/vi /usr/bin/
 # jq libraries
@@ -47,20 +51,20 @@ COPY --from=ose-tools /usr/lib64/libjq.so.1 /usr/lib64/libonig.so.5 /usr/lib64/
 # vi libraries
 COPY --from=ose-tools /usr/libexec/vi /usr/libexec/
 
-COPY --from=builder /workdir/rhtap-cli/installer/charts ./charts
-COPY --from=builder /workdir/rhtap-cli/installer/config.yaml ./
-COPY --from=builder /workdir/rhtap-cli/bin/rhtap-cli /usr/local/bin/rhtap-cli
+COPY --from=builder /workdir/tssc/installer/charts ./charts
+COPY --from=builder /workdir/tssc/installer/config.yaml ./
+COPY --from=builder /workdir/tssc/bin/tssc /usr/local/bin/tssc
 
-RUN groupadd --gid 999 -r rhtap-cli && \
-    useradd -r -d /rhtap-cli -g rhtap-cli -s /sbin/nologin --uid 999 rhtap-cli && \
-    chown -R rhtap-cli:rhtap-cli .
+RUN groupadd --gid 999 -r tssc && \
+    useradd -r -d /tssc -g tssc -s /sbin/nologin --uid 999 tssc && \
+    chown -R tssc:tssc .
 
-USER rhtap-cli
+USER tssc
 
 RUN echo "# jq" && jq --version && \
     echo "# kubectl" && kubectl version --client && \
     echo "# oc" && oc version
 
-ENV KUBECONFIG=/rhtap-cli/.kube/config
+ENV KUBECONFIG=/tssc/.kube/config
 
-ENTRYPOINT ["rhtap-cli"]
+ENTRYPOINT ["tssc"]

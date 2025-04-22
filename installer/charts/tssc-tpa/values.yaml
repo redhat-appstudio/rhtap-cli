@@ -1,0 +1,225 @@
+---
+#
+# Trusted Profile Analyzer (Trustification)
+#
+trustedProfileAnalyzer:
+  # Controls whether Trusted Profile Analyzer (Trustification) is enabled,
+  # which includes the deployment of the application components, and the Keycloak
+  # Realm import.
+  enabled: true
+  # Trustification's "appDomain" attribute.
+  appDomain: __OVERWRITE_ME__
+  # Describe details of Trustification installation for integration with other
+  # components.
+  integrationSecret:
+    # Bombastic API URL.
+    bombasticAPI: __OVERWRITE_ME__
+    # OIDC client ID to interact with the Bombastic API endpoint.
+    oidcClientID: cli
+    # Secret namespace and name.
+    namespace: __OVERWRITE_ME__
+    name: __OVERWRITE_ME__
+    # CycloneDX version supported by TPA (Trustification).
+    cycloneDXVersion: 1.4
+  # TPA Keycloak Realm import configuration.
+  keycloakRealmImport:
+    # Enables the Keycloak Realm import.
+    enabled: true
+    # Keycloak's CRD instance namespace and name. The local cluster instance where
+    # this Realm will be imported.
+    keycloakCR:
+      namespace: __OVERWRITE_ME__
+      name: __OVERWRITE_ME__
+    # Realm's admin user.
+    adminSecretName: tpa-realm-chicken-admin
+    # Name of the Secret generated with the enabled OIDC clients secrets, each
+    # client key on the ".client" object will become a Secret key.
+    oidcClientsSecretName: &oidcClientsSecretName tpa-realm-chicken-clients
+    # Realm clients are imported by default, and the ones described below you can
+    # toggle on/off. The testing users are disabled by default.
+    clients:
+      cli:
+        enabled: true
+      testingManager:
+        enabled: false
+      testingUser:
+        enabled: false
+    # List of valid project URIs added to the "frontend" client, all the TPA
+    # application endpoints must be listed here.
+    frontendRedirectUris:
+      - "http://localhost:8080"
+      - "http://server-rhtap-tpa.apps-crc.testing"
+      - "http://server-rhtap-tpa.apps-crc.testing/*"
+      - "http://sbom-rhtap-tpa.apps-crc.testing"
+      - "http://sbom-rhtap-tpa.apps-crc.testing/*"
+      - "http://vex-rhtap-tpa.apps-crc.testing"
+      - "http://vex-rhtap-tpa.apps-crc.testing/*"
+
+#
+# Red Hat Trusted Profile Analyzer
+#
+#  https://access.redhat.com/products/red-hat-trusted-profile-analyzer
+#  https://github.com/openshift-helm-charts/charts/tree/main/charts/redhat/redhat/redhat-trusted-profile-analyzer
+#
+redhat-trusted-profile-analyzer:
+  appDomain: __OVERWRITE_ME__
+  replicas: 1
+  rust:
+    logFilter: debug
+    backtrace: true
+  openshift: &tpaOpenShift
+    # The "useServiceCa" attribute is used to enable the OpenShift service CA,
+    # when false it uses "http" communication for internal services, something only
+    # advisable for CRC, testing, etc.
+    useServiceCa: true
+  ingress: &tpaIngress
+    className: openshift-default
+  storage: &tpaStorage
+    type: filesystem
+    size: 32Gi
+  database:
+    sslMode: disable
+    host:
+      valueFrom:
+        secretKeyRef:
+          name: __OVERWRITE_ME__
+          key: host
+    port:
+      valueFrom:
+        secretKeyRef:
+          name: __OVERWRITE_ME__
+          key: port
+    name:
+      valueFrom:
+        secretKeyRef:
+          name: __OVERWRITE_ME__
+          key: dbname
+    username:
+      valueFrom:
+        secretKeyRef:
+          name: __OVERWRITE_ME__
+          key: user
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: __OVERWRITE_ME__
+          key: password
+
+  createDatabase:
+    name:
+      valueFrom:
+        secretKeyRef:
+          name: __OVERWRITE_ME__
+          key: dbname
+    username:
+      valueFrom:
+        secretKeyRef:
+          name: __OVERWRITE_ME__
+          key: user
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: __OVERWRITE_ME__
+          key: password
+  migrateDatabase:
+    username:
+      valueFrom:
+        secretKeyRef:
+          name: __OVERWRITE_ME__
+          key: user
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: __OVERWRITE_ME__
+          key: password
+  # OIDC client configuration for the TPA and Keycloak realm import.
+  oidc: &tpaOIDC
+    issuerUrl: __OVERWRITE_ME__
+    clients:
+      # The "frontend" client is used by the TPA application, it must always be
+      # enabled for the dependencies to work.
+      frontend:
+        clientId: frontend
+      # A specialized crawler to interact with external data sources, this client
+      # is used by other TPA modules.
+      cli:
+        clientId: cli
+        clientSecret:
+          valueFrom:
+            secretKeyRef:
+              name: *oidcClientsSecretName
+              key: cli
+      # Testing clients, disabled by default. These clients are used for testing
+      # TPA by injecting data in the system and analyzing the results, as a
+      # regular user and a privileged manager.
+      # testingUser:
+      #   clientId: testing-user
+      #   clientSecret:
+      #     valueFrom:
+      #       secretKeyRef:
+      #         name: *oidcClientsSecretName
+      #         key: testingUser
+      # testingManager:
+      #   clientId: testing-manager
+      #   clientSecret:
+      #     valueFrom:
+      #       secretKeyRef:
+      #         name: *oidcClientsSecretName
+      #         key: testingManager
+  modules:
+    createDatabase:
+      enabled: true
+    migrateDatabase:
+      enabled: true
+    createImporters:
+      enabled: true
+      importers:
+        redhat-sboms:
+          sbom:
+            description: All Red Hat SBOMs
+            period: 1d
+            source: https://access.redhat.com/security/data/sbom/beta/
+            keys:
+              - https://access.redhat.com/security/data/97f5eac4.txt#77E79ABE93673533ED09EBE2DCE3823597F5EAC4
+            disabled: true
+            fetchRetries: 50
+        redhat-csaf:
+          csaf:
+            description: All Red Hat CSAF data
+            period: 1d
+            source: redhat.com
+            disabled: true
+            fetchRetries: 50
+        cve:
+          cve:
+            description: CVE list v5
+            period: 1d
+            source: https://github.com/CVEProject/cvelistV5
+            disabled: false
+        osv-github:
+          osv:
+            description: GitHub Advisory Database
+            period: 1d
+            source: https://github.com/github/advisory-database
+            path: advisories
+            disabled: false
+  # Authentication method for the TPA application, by default "keycloak".
+  authenticator:
+    type: keycloak
+  # TLS configuration.
+  tls: &tpaTLS
+    serviceEnabled: true
+    # Additional CA certificates to trust, which is fundamental to support
+    # OpenShift internal TLS communication.
+    additionalTrustAnchor: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt 
+  # TPA is composed by services, each service needs integration with S3 bucket and
+  # Kafka topics. When the bucket receives a new document, a message is issued to
+  # the "stored" Kafka topic.
+#
+# Trustification Helm chart values, linking its configuration with Red Hat's
+# Trusted Profile Analyzer chart sections.
+#
+#   https://github.com/trustification/trustification
+#
+trustification:
+  appDomain: __OVERWRITE_ME__

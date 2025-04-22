@@ -2,7 +2,7 @@
 # This is a sample PICT file for smoke run
 #
 
-OCP: 4.17, 4.16
+OCP: 4.18, 4.17, 4.16
 ACS: Enabled(hosted), Enabled(deploy new)
 Registry: Quay(hosted), Quay(deploy new), Artifactory
 TPA: Enabled, Disabled

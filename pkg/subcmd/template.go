@@ -36,7 +36,7 @@ var _ Interface = &Template{}
 const templateDesc = `
 The Template subcommand is used to render the values template file and,
 optionally, the Helm chart manifests. It is particularly useful for
-troubleshooting and developing Helm charts for the RHTAP installation process.
+troubleshooting and developing Helm charts for the TSSC installation process.
 
 By using the '--show-manifest=false' flag, only the global values template
 ('--values-template') will be rendered as YAML, thus the last argument, with the
@@ -52,13 +52,13 @@ to the local Helm Chart.
 Examples:
 
   # Only showing the global values as YAML.
-  $ rhtap-cli template --show-manifests=false
+  $ tssc template --show-manifests=false
 
   # Rendering only the templates of a single Helm Chart.
-  $ rhtap-cli template --show-values=false charts/rhtap-subscriptions
+  $ tssc template --show-values=false charts/tssc-subscriptions
 
   # Rendering all resources of a Helm Chart.
-  $ rhtap-cli template charts/rhtap-subscriptions
+  $ tssc template charts/tssc-subscriptions
 `
 
 // Cmd exposes the cobra instance.

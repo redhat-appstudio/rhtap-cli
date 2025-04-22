@@ -20,15 +20,16 @@ type IntegrationQuay struct {
 
 	quayIntegration *integrations.QuayIntegration // quay integration
 
-	apiToken         string // web API token
-	dockerconfigjson string // credentials to push/pull from the registry
+	apiToken                 string // web API token
+	dockerconfigjson         string // credentials to push/pull from the registry
+	dockerconfigjsonreadonly string // credentials to read from the registry
 }
 
 var _ Interface = &IntegrationQuay{}
 
 const quayIntegrationLongDesc = `
-Manages the Quay integration with RHTAP, by storing the required
-credentials required by the RHTAP services to interact with Quay.
+Manages the Quay integration with TSSC, by storing the required
+credentials required by the TSSC services to interact with Quay.
 
 The credentials are stored in a Kubernetes Secret in the configured namespace
 for RHDH.
@@ -36,7 +37,7 @@ for RHDH.
 
 If you experience push issues, add the image repository path in the "dockerconfig.json". For example, instead of "quay.io", specify the full repository path "quay.io/my-repository", as shown below:
 
-/bin/rhtap-cli integration quay --kube-config ~/my/kube/config --dockerconfigjson '{ "auths": { "quay.io/my-repository": { "auth": "REDACTED", "email": "" }  } }' --token "REDACTED" --url 'https://quay.io'
+/bin/tssc integration quay --kube-config ~/my/kube/config --dockerconfigjson '{ "auths": { "quay.io/my-repository": { "auth": "REDACTED", "email": "" }  } }' --token "REDACTED" --url 'https://quay.io'
 
 The given API token (--token) must have push/pull permissions on the target repository.
 `
@@ -68,14 +69,14 @@ func (d *IntegrationQuay) Run() error {
 }
 
 // NewIntegrationQuay creates the sub-command for the "integration quay"
-// responsible to manage the RHTAP integrations with a Quay image registry.
+// responsible to manage the TSSC integrations with a Quay image registry.
 func NewIntegrationQuay(logger *slog.Logger, kube *k8s.Kube) *IntegrationQuay {
 	quayIntegration := integrations.NewQuayIntegration(logger, kube)
 
 	d := &IntegrationQuay{
 		cmd: &cobra.Command{
 			Use:          "quay [flags]",
-			Short:        "Integrates a Quay instance into RHTAP",
+			Short:        "Integrates a Quay instance into TSSC",
 			Long:         quayIntegrationLongDesc,
 			SilenceUsage: true,
 		},

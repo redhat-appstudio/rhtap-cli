@@ -1,0 +1,14 @@
+{{- define "pipelines.TektonConfigPatch" -}}
+spec:
+  chain:
+    transparency.enabled: 'true'
+    transparency.url: http://rekor-server.tssc-tas.svc
+  platforms:
+    openshift:
+      pipelinesAsCode:
+        settings:
+          application-name: RHTAP CI
+          remember-ok-to-test: 'false'
+  pruner:
+    keep: 2
+{{- end }}

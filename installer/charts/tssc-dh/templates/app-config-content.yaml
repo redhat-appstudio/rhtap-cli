@@ -1,0 +1,237 @@
+{{- define "tssc-dh.app-conf" }}
+{{- $integrationNamespace := .Values.developerHub.integrationSecrets.namespace }}
+app:
+  title: Red Hat Developer Hub
+  baseUrl: ${BACKEND_URL}
+# Lookup for all the required secrets
+{{- $argocdSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-argocd-integration") }}
+{{- $argocdSecretData := ($argocdSecretObj.data | default dict) }}
+{{- $bbSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-bitbucket-integration") }}
+{{- $githubSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-github-integration") }}
+{{- $gitlabSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-gitlab-integration") }}
+{{- $jenkinsSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-jenkins-integration") }}
+{{- $quaySecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-quay-integration") }}
+{{- $quaySecretData := ($quaySecretObj.data | default dict) }}
+{{- $nexusSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-nexus-integration") }}
+{{- $artifactorySecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-artifactory-integration") }}
+{{- $artifactorySecretData := ($artifactorySecretObj.data | default dict) }}
+{{- $azureSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-azure-integration") }}
+{{- $azureSecretData := ($azureSecretObj.data | default dict) }}
+
+{{- if $argocdSecretData }}
+argocd:
+  appLocatorMethods:
+    - instances:
+        - name: default
+          url: ${ARGOCD__URL}
+          token: ${ARGOCD__API_TOKEN}
+      type: 'config'
+  password: ${ARGOCD__PASSWORD}
+  username: ${ARGOCD__USER}
+  waitCycles: 25
+{{- end }}
+{{- if $artifactorySecretObj }}
+artifactory:
+  uiUrl: ${ARTIFACTORY__URL}
+{{- end }}
+{{- if $azureSecretObj }}
+azureDevOps:
+  host: ${AZURE__HOST}
+  organization: ${AZURE__ORG}
+{{- end }}
+auth:
+  environment: production
+  providers:
+  {{- $signInPage := "" }}
+  {{- if $azureSecretData }}
+    {{- if and $azureSecretData.clientId $azureSecretData.clientSecret $azureSecretData.tenantId }}
+    {{- $signInPage = "microsoft" }}
+    microsoft:
+      production:
+        clientId: ${AZURE__CLIENT__ID}
+        clientSecret: ${AZURE__CLIENT__SECRET}
+        tenantId: ${AZURE__TENANT__ID}
+    {{- end }}
+  {{- end }}
+  {{- if $githubSecretObj }}
+    {{- $signInPage = "github" }}
+    github:
+      production:
+        clientId: ${GITHUB__APP__CLIENT__ID}
+        clientSecret: ${GITHUB__APP__CLIENT__SECRET}
+      {{- if ne ($githubSecretObj.data.host | b64dec) "github.com" }}
+        enterpriseInstanceUrl: ${GITHUB__URL}
+      {{- end }}
+      {{- if not .Values.developerHub.enableRBAC }}
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName
+              dangerouslyAllowSignInWithoutUserInCatalog: true
+      {{- end }}
+  {{- end }}
+  {{- $gitlabSecretData := ($gitlabSecretObj.data | default dict) }}
+  {{- if $gitlabSecretData }}
+    {{- if and $gitlabSecretData.clientId $gitlabSecretData.clientSecret }}
+    {{- $signInPage = "gitlab" }}
+    gitlab:
+      production:
+      {{- if ne ($gitlabSecretData.host | b64dec) "gitlab.com" }}
+        audience: ${GITLAB__URL}
+      {{- end }}
+        clientId: ${GITLAB__APP__CLIENT__ID}
+        clientSecret: ${GITLAB__APP__CLIENT__SECRET}
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName
+              dangerouslyAllowSignInWithoutUserInCatalog: true
+    {{- end }}
+  {{- end }}
+backend:
+  auth:
+    keys:
+      - secret: ${BACKEND_SECRET}
+  {{- if .Values.debug.ci }}
+    dangerouslyDisableDefaultAuthPolicy: true
+  {{- end }}
+  baseUrl: ${BACKEND_URL}
+  cors:
+    origin: ${BACKEND_URL}
+catalog:
+  {{- if and .Values.developerHub.RBAC.enabled $githubSecretObj }}
+  providers:
+    githubOrg:
+      id: production
+      githubUrl: ${GITHUB__URL}
+      orgs:
+{{ .Values.developerHub.RBAC.orgs | toYaml | indent 8 }}
+      schedule:
+        initialDelay: { seconds: 30 }
+        frequency: { minutes: 15 }
+        timeout: { minutes: 5 }
+  {{- end }}
+  locations:
+    - target: ${DEVELOPER_HUB__CATALOG__URL}
+      type: url
+  rules:
+    - allow:
+      - Component
+      - System
+      - Group
+      - User
+      - Resource
+      - Location
+      - Template
+      - API
+dangerouslyAllowSignInWithoutUserInCatalog: true
+integrations:
+{{- if $azureSecretObj }}
+  azure:
+    - host: ${AZURE__HOST}
+      credentials:
+      # If both personal token and client ID exist, use personal token
+      {{- if $azureSecretData.token }}
+        - personalAccessToken: ${AZURE__TOKEN}
+      {{- else }}
+        - clientId: ${AZURE__CLIENT__ID}
+        {{- if and $azureSecretData.clientSecret $azureSecretData.tenantId }}
+          clientSecret: ${AZURE__CLIENT__SECRET}
+          tenantId: ${AZURE__TENANT__ID}
+        {{- end }}
+      {{- end }}
+{{- end }}
+{{- if $bbSecretObj }}
+  bitbucketCloud:
+    - appPassword: ${BITBUCKET__APP_PASSWORD}
+      username: ${BITBUCKET__USERNAME}
+{{- end }}
+{{- if $githubSecretObj }}
+  github:
+    - host: ${GITHUB__HOST}
+      token: ${GITHUB__TOKEN}
+      apps:
+        - appId: ${GITHUB__APP__ID}
+          clientId: ${GITHUB__APP__CLIENT__ID}
+          clientSecret: ${GITHUB__APP__CLIENT__SECRET}
+          webhookUrl: ${GITHUB__APP__WEBHOOK__URL}
+          webhookSecret: ${GITHUB__APP__WEBHOOK__SECRET}
+          privateKey: ${GITHUB__APP__PRIVATE_KEY}
+{{- end }}
+{{- if $gitlabSecretObj }}
+  gitlab:
+    - host: ${GITLAB__HOST}
+      apiBaseUrl: https://${GITLAB__HOST}/api/v4
+      token: ${GITLAB__TOKEN}
+{{- end }}
+{{- if $jenkinsSecretObj }}
+jenkins:
+  instances:
+    - name: default
+      apiKey: ${JENKINS__TOKEN}
+      baseUrl: ${JENKINS__BASEURL}
+      username: ${JENKINS__USERNAME}
+{{- end }}
+{{- if $nexusSecretObj }}
+nexus:
+  uiUrl: ${NEXUS__URL}
+{{- end }}
+{{- if .Values.developerHub.RBAC.enabled }}
+permission:
+  enabled: true
+  {{- if $githubSecretObj }}
+  rbac:
+    admin:
+      users:
+      {{- range .Values.developerHub.RBAC.adminUsers }}
+        - name: user:default/{{ . }}
+      {{- end }}
+  {{- end }}
+{{- else }}
+permission:
+  enabled: false
+{{- end }}
+proxy:
+  endpoints:
+  {{- if $artifactorySecretObj }}
+    '/jfrog-artifactory/api':
+      target: ${ARTIFACTORY__URL}
+      headers:
+      {{- if $artifactorySecretData.token }}
+        Authorization: 'Bearer ${ARTIFACTORY__API_TOKEN}'
+      {{- end }}
+      # Change to "false" in case of using self hosted artifactory instance with a self-signed certificate
+      secure: true
+  {{- end }}
+  {{- if $nexusSecretObj }}
+    '/nexus-repository-manager':
+      target: ${NEXUS__URL}
+      headers:
+        X-Requested-With: 'XMLHttpRequest'
+      changeOrigin: true
+      secure: true
+  {{- end }}
+  {{- if $quaySecretObj }}
+    '/quay/api':
+      target: ${QUAY__URL}
+      changeOrigin: true
+      headers:
+        X-Requested-With: 'XMLHttpRequest'
+      {{- if $quaySecretData.token }}
+        Authorization: 'Bearer ${QUAY__API_TOKEN}'
+      {{- end }}
+      # Change to "false" in case of using self hosted quay instance with a self-signed certificate
+      secure: true
+  {{- end }}
+{{- if $quaySecretObj }}
+quay:
+  uiUrl: ${QUAY__URL}
+{{- end }}
+{{- if $signInPage }}
+signInPage: {{ $signInPage }}
+{{- end }}
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'local'
+  publisher:
+    type: 'local'
+{{- end }}

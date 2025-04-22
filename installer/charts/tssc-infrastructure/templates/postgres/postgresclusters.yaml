@@ -1,0 +1,40 @@
+{{- range $k, $v := include "infrastructure.postgresClusters.enabled" . | fromYaml }}
+---
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  labels:
+    app: postgres
+  namespace: {{ $v.namespace }}
+  name: {{ $k }}
+spec:
+  openshift: true
+  postgresVersion: {{ $v.postgresVersion }}
+  # Crunchy Data PGO requires the container image in combination with the
+  # PostgreSQL version, thus both needs to be informed.
+  image: {{ required ".image is required" $v.image }}
+  # TODO: Move this configuration into "values.yaml", at least the flag for user
+  # options like "SUPERUSER".
+  users:
+    - name: {{ $k }}
+      databases:
+        - {{ $k }}
+      password:
+        type: AlphaNumeric
+      options: SUPERUSER
+  backups:
+    pgbackrest:
+      image: {{ required ".image is required" $v.pgbackrest.image }}
+  {{- with $v.pgbackrest.global }}
+      global:
+        {{- toYaml . | nindent 8 }}
+  {{- end }}
+      repos:
+        {{- $v.backupRepos | toYaml | nindent 8 }}
+  instances:
+    {{- $v.instances | toYaml | nindent 4 }}
+  {{ with $v.patroni }}
+  patroni:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

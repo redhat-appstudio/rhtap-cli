@@ -30,7 +30,7 @@ type Deploy struct {
 var _ Interface = &Deploy{}
 
 const deployDesc = `
-Deploys the RHTAP platform components. The installer looks the the informed
+Deploys the TSSC platform components. The installer looks the the informed
 configuration to identify the features to be installed, and the dependencies to be
 resolved.
 
@@ -45,7 +45,7 @@ employed by default, to use local files just point the "config.yaml" file to
 find the dependencies in the local filesystem.
 
 A single chart can be deployed by specifying its path. E.g.:
-	rhtap-cli deploy charts/rhtap-openshift
+	tssc deploy charts/tssc-openshift
 `
 
 // Cmd exposes the cobra instance.
@@ -160,7 +160,7 @@ func NewDeploy(
 	d := &Deploy{
 		cmd: &cobra.Command{
 			Use:          "deploy [chart]",
-			Short:        "Rollout RHTAP platform components",
+			Short:        "Rollout TSSC platform components",
 			Long:         deployDesc,
 			SilenceUsage: true,
 		},

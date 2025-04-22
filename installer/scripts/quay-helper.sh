@@ -23,7 +23,7 @@ declare -r QUAY_PASSWORD="${QUAY_PASSWORD:-}"
 declare -r QUAY_EMAIL="${QUAY_EMAIL:-admin@localhost}"
 
 # Quay organization name to create and email address.
-declare -r QUAY_ORGANIZATION="${QUAY_ORGANIZATION:-rhtap}"
+declare -r QUAY_ORGANIZATION="${QUAY_ORGANIZATION:-tssc}"
 declare -r QUAY_ORGANIZATION_EMAIL="${QUAY_ORGANIZATION_EMAIL:-${QUAY_ORGANIZATION}@localhost}"
 
 # Namespace and secret name to create the "docker-registry" secret.
@@ -35,9 +35,14 @@ declare -r SECRET_NAME="${SECRET_NAME:-}"
 declare ACCESS_TOKEN=""
 
 # Quay robot account for register
-declare QUAY_ROBOT_SHORT_NAME="${QUAY_ROBOT_SHORT_NAME:-rhtap_rw}"
+declare QUAY_ROBOT_SHORT_NAME="${QUAY_ROBOT_SHORT_NAME:-tssc_rw}"
 declare QUAY_ROBOT_USERNAME=""
 declare QUAY_ROBOT_TOKEN=""
+
+# Quay read only reobot account
+declare QUAY_ROBOT_SHORT_NAME_READONLY="${QUAY_ROBOT_SHORT_NAME_READONLY:-tssc_ro}"
+declare QUAY_ROBOT_USERNAME_READONLY=""
+declare QUAY_ROBOT_TOKEN_READONLY=""
 
 #
 # Functions
@@ -176,16 +181,28 @@ quay_create_secret() {
     fi
     info "Secret created/updated successfully!"
 
-    # Patching the secret to include the "token" and "url" attributes, needed for
-    # the later RHDH integration.
-    info "Patch secret with 'token' and 'url'..."
-    local token url
+    # Patching the secret to include the ".dockerconfigjsonreadonly" "token" and
+    # "url" attributes, needed for the later RHDH integration.
+    info "Patch secret with '.dockerconfigjsonreadonly' 'token' and 'url'..."
+    local readonlyjson token url
     local -a patch
 
+    readonlyjson=$(
+        oc create secret docker-registry "${SECRET_NAME}" \
+            --namespace="${NAMESPACE}" \
+            --docker-server="${QUAY_HOSTNAME}" \
+            --docker-username="${QUAY_ROBOT_USERNAME_READONLY}" \
+            --docker-password="${QUAY_ROBOT_TOKEN_READONLY}" \
+            --docker-email="${QUAY_EMAIL}" \
+            --dry-run=client \
+            --output=json |
+            jq -r '.data.".dockerconfigjson"'
+        )
     token=$(base64 -w0 <<<"${ACCESS_TOKEN}")
     url=$(base64 -w0 <<<"https://${QUAY_HOSTNAME}")
     patch=(
         "["
+        "{\"op\": \"add\", \"path\": \"/data/.dockerconfigjsonreadonly\", \"value\": \"${readonlyjson}\"},"
         "{\"op\": \"add\", \"path\": \"/data/token\", \"value\": \"${token}\"},"
         "{\"op\": \"add\", \"path\": \"/data/url\", \"value\": \"${url}\"}"
         "]"
@@ -204,7 +221,7 @@ quay_create_secret() {
 # Create a robot account in organization with the name informed via environment,
 # using the super-user's ACCESS_TOKEN to authorize the request.
 quay_create_robot_account() {
-    local quay_url="https://${QUAY_HOSTNAME}/api/v1/organization/${QUAY_ORGANIZATION}/robots/${QUAY_ROBOT_SHORT_NAME}"
+    local quay_url="https://${QUAY_HOSTNAME}/api/v1/organization/${QUAY_ORGANIZATION}/robots/$1"
     local data=(
         "{"
         "\"description\": \"Quay robot account for ${QUAY_ORGANIZATION}\","
@@ -213,7 +230,7 @@ quay_create_robot_account() {
     )
     local create_response token
 
-    info "Creating Quay robot account ${QUAY_ROBOT_SHORT_NAME}..."
+    info "Creating Quay robot account $1..."
     create_response=$(
         curl \
             --silent \
@@ -245,23 +262,34 @@ quay_create_robot_account() {
         fail "Failed to get robot account token!"
     fi
 
-    info "Robot account created successfully!"
-    export QUAY_ROBOT_TOKEN="${token}"
-    export QUAY_ROBOT_USERNAME="${QUAY_ORGANIZATION}+${QUAY_ROBOT_SHORT_NAME}"
+    info "Robot account $1 created successfully!"
+    if [[ "$1" == "tssc_rw" ]]; then
+        export QUAY_ROBOT_TOKEN="${token}"
+        export QUAY_ROBOT_USERNAME="${QUAY_ORGANIZATION}+${QUAY_ROBOT_SHORT_NAME}"
+    else
+        export QUAY_ROBOT_TOKEN_READONLY="${token}"
+        export QUAY_ROBOT_USERNAME_READONLY="${QUAY_ORGANIZATION}+${QUAY_ROBOT_SHORT_NAME_READONLY}"
+    fi
 }
 
 # Create a new permission prototype in organization, that will automatically
-# grant admin permission of repositories to robot account
+# grant related permission of repositories to robot account
 quay_create_permission_prototype() {
     local quay_url="https://${QUAY_HOSTNAME}/api/v1/organization/${QUAY_ORGANIZATION}/prototypes"
+    local role
+    if [[ "$1" == *"tssc_rw" ]]; then
+        role="admin"
+    else
+        role="read"
+    fi
     local data=(
         "{"
-        "\"role\": \"admin\","
+        "\"role\": \"${role}\","
         "\"activating_user\": {"
             "\"name\": \"\""
             "},"
         "\"delegate\": {"
-            "\"name\": \"${QUAY_ROBOT_USERNAME}\","
+            "\"name\": \"$1\","
             "\"kind\": \"user\""
             "}"
         "}"
@@ -281,7 +309,7 @@ quay_create_permission_prototype() {
             "${quay_url}"
     )
 
-    if [[ -z "${create_response}" || "${create_response}" != *"${QUAY_ROBOT_USERNAME}"* ]]; then
+    if [[ -z "${create_response}" || "${create_response}" != *"$1"* ]]; then
         fail "Failed to create new permission prototype!"
     fi
 
@@ -368,8 +396,15 @@ quay_helper() {
     fi
 
     quay_create_organization
-    quay_create_robot_account
-    quay_create_permission_prototype
+
+    for robot in "${QUAY_ROBOT_SHORT_NAME}" "${QUAY_ROBOT_SHORT_NAME_READONLY}"; do
+        quay_create_robot_account "${robot}"
+    done
+
+    for robot in "$QUAY_ROBOT_USERNAME" "$QUAY_ROBOT_USERNAME_READONLY"; do
+        quay_create_permission_prototype "${robot}"
+    done
+
     quay_create_team
     quay_assign_robot_to_team
 

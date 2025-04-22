@@ -162,7 +162,7 @@ rhtap_cli() {
 }
 
 run_bin() {
-    eval "$PROJECT_DIR/bin/rhtap-cli $*"
+    eval "$PROJECT_DIR/bin/tssc $*"
 }
 
 run_container() {
@@ -171,10 +171,10 @@ run_container() {
         --env-file="$ENVFILE" \
         --publish "$CLI_PORT:$CLI_PORT" \
         --rm \
-        --volume="$KUBECONFIG:/rhtap-cli/.kube/config:Z,U" \
-        --volume="$CONFIG:/rhtap-cli/$CONFIG:Z,U" \
+        --volume="$KUBECONFIG:/tssc/.kube/config:Z,U" \
+        --volume="$CONFIG:/tssc/$(basename "$CONFIG"):Z,U" \
         "$CLI_IMAGE" \
-        -c "rhtap-cli $*"
+        -c "tssc $*"
     unshare
 }
 
@@ -209,7 +209,9 @@ configure() {
     if [[ -n "${TPA:-}" ]]; then
         yq -i '.rhtapCLI.features.trustedProfileAnalyzer.enabled=false' "$CONFIG"
     fi
-    rhtap_cli config --force --create "$CONFIG"
+    cd "$(dirname "$CONFIG")"
+    rhtap_cli config --force --create "$(basename "$CONFIG")"
+    cd - >/dev/null
 }
 
 integrations() {
@@ -225,12 +227,12 @@ integrations() {
             --username='"$BITBUCKET__USERNAME"'
     fi
     if [[ -n "${GITHUB:-}" ]]; then
-        if ! kubectl get secret -n "$NAMESPACE" rhtap-github-integration >/dev/null 2>&1; then
+        if ! kubectl get secret -n "$NAMESPACE" tssc-github-integration >/dev/null 2>&1; then
             rhtap_cli integration github-app \
                 --create \
                 --token='"$GITHUB__ORG_TOKEN"' \
                 --org='"$GITHUB__ORG"' \
-                "rhtap-$GITHUB__ORG-$(date +%m%d-%H%M)"
+                "tssc-$GITHUB__ORG-$(date +%m%d-%H%M)"
         fi
     fi
     if [[ -n "${GITLAB:-}" ]]; then

@@ -1,0 +1,45 @@
+{{- $namespace := .Values.pipelines.namespace }}
+{{- $signingSecretName := "signing-secrets" -}}
+{{- $secretObj := (
+      lookup "v1" "Secret" $namespace $signingSecretName
+    ) | default dict 
+-}}
+{{- $secretData := (get $secretObj "data") | default dict -}}
+{{- $cosignKey := (get $secretData "cosign.key") | default "" -}}
+{{- if eq $cosignKey "" }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "2"
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+  name: tssc-tekton-configuration
+spec:
+  template:
+    spec:
+      serviceAccountName: {{ .Release.Name }}
+      restartPolicy: Never
+      containers:
+        - name: tekton-chains-cosign
+          image: registry.redhat.io/rhtas/cosign-rhel9:1.1.1
+          env:
+            - name: COSIGN_PASSWORD
+              value: {{ randAlphaNum 32 }}
+          workingDir: /workspace
+          command:
+            - cosign
+          args:
+            - generate-key-pair
+            - {{ printf "k8s://%s/%s" $namespace $signingSecretName }}
+          volumeMounts:
+            - name: workspace
+              mountPath: /workspace
+          securityContext:
+            allowPrivilegeEscalation: false
+      volumes:
+        - name: workspace
+          emptyDir: {}
+{{- end }}

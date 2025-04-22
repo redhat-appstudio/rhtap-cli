@@ -15,13 +15,13 @@ trustedProfileAnalyzerRealm:
   # Name of the Secret generated with the enabled OIDC clients secrets, each
   # client key on the ".client" object will become a Secret key. These keys are
   # used for authorization on TPA micro-services.
-  oidcClientsSecretName: &oidcClientsSecretName tpa-realm-chicken-clients
+  oidcClientsSecretName: tpa-realm-chicken-clients
   # Realm clients are imported by default, and the ones described below you can
   # toggle on/off. The testing users are disabled by default.
   clients:
     # The main TPA actor, responsible to parse the information from SBOMs and
     # other source into its database.
-    walker:
+    cli:
       enabled: true
     # Testing user, meant to manage TPA's whole installation.
     testingManager:
@@ -33,19 +33,17 @@ trustedProfileAnalyzerRealm:
   # application endpoints must be listed here.
   frontendRedirectUris:
     - "http://localhost:8080"
-    - "http://console-tssc-tpa.apps-crc.testing"
-    - "http://console-tssc-tpa.apps-crc.testing/*"
+    - "http://server-tssc-tpa.apps-crc.testing"
+    - "http://server-tssc-tpa.apps-crc.testing/*"
     - "http://sbom-tssc-tpa.apps-crc.testing"
     - "http://sbom-tssc-tpa.apps-crc.testing/*"
-    - "http://vex-tssc-tpa.apps-crc.testing"
-    - "http://vex-tssc-tpa.apps-crc.testing/*"
   # Describe details of Trustification installation for integration with other
   # components.
   integrationSecret:
     # Bombastic API URL.
     bombasticAPI: __OVERWRITE_ME__
     # OIDC client ID to interact with the Bombastic API endpoint.
-    oidcClientID: walker
+    oidcClientID: cli
     # Secret namespace and name.
     namespace: __OVERWRITE_ME__
     name: __OVERWRITE_ME__

@@ -161,7 +161,7 @@ infrastructure:
             resources:
               requests:
                 storage: 500Mi
-    guac:
+    tpa:
       enabled: false
       namespace: __OVERWRITE_ME__
       postgresVersion: 14

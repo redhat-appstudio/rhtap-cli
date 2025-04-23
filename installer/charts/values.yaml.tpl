@@ -102,8 +102,6 @@ minIOOperator:
 {{- $tpaKafkaBootstrapServers := "tpa-kafka-bootstrap:9092" }}
 {{- $tpaMinIORootSecretName := "tpa-minio-root-env" }}
 
-{{- $quayMinIOSecretName := "quay-minio-root-user"  }}
-
 infrastructure:
   developerHub:
     namespace: {{ $rhdh.Namespace }}
@@ -125,15 +123,6 @@ infrastructure:
             secretKeyRef:
               name: {{ $tpaKafkaSecretName }}
               key: password
-    quay:
-      enabled: {{ $quay.Enabled }}
-      namespace: {{ $quay.Namespace }}
-      ingress:
-        enabled: true
-        domain: {{ $ingressDomain }}
-      rootSecretName: {{ $quayMinIOSecretName }}
-      kafkaNotify:
-        enabled: false
   postgresClusters:
     keycloak:
       enabled: {{ $keycloak.Enabled }}
@@ -245,13 +234,6 @@ quay:
     namespace: {{ .Installer.Namespace }}
     name: rhtap-quay-integration
   config:
-    radosGWStorage:
-      enabled: true
-      hostname: {{ $quayMinIOHost }}
-      port: 443
-      isSecure: true
-      credentials:
-        secretName: {{ $quayMinIOSecretName }}
     superUser:
       email: {{ printf "admin@%s" $ingressDomain }}
   replicas:

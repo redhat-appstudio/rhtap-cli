@@ -91,3 +91,16 @@ subscriptions:
     channel: fast-1.5
     source: redhat-operators
     sourceNamespace: openshift-marketplace
+  redHatOpenShiftDataFoundation:
+    enabled: false
+    description: Red Hat OpenShift Data Foundation (ODF)
+    apiResource: noobaas.noobaa.io
+    namespace: __OVERWRITE_ME__
+    name: odf-operator
+    channel: __OVERWRITE_ME__
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    operatorGroup:
+      upgradeStrategy: Default
+      targetNamespaces:
+        - __OVERWRITE_ME__

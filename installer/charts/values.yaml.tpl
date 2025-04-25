@@ -10,6 +10,8 @@
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 {{- $ingressRouterCA := required "OpenShift RouterCA" .OpenShift.Ingress.RouterCA -}}
 {{- $minIOOperatorEnabled := or $tpa.Enabled $quay.Enabled -}}
+{{- $odfEnabled := or $tpa.Enabled $quay.Enabled -}}
+{{- $odfNamespace := "openshift-storage" -}}
 ---
 debug:
   ci: false
@@ -47,11 +49,16 @@ openshift:
 {{- if $rhdh.Enabled }}
     - {{ $rhdh.Namespace }}
 {{- end }}
+{{- if $odfEnabled }}
+    - {{ $odfNamespace }}
+{{- end }}
     - minio-operator
 
 #
 # rhtap-subscriptions
 #
+
+{{- $odfChannel := "stable-4.17" }}
 
 subscriptions:
   amqStreams:
@@ -86,6 +93,14 @@ subscriptions:
   redHatQuay:
     enabled: {{ $quay.Enabled }}
     managed: {{ and $quay.Enabled $quay.Properties.manageSubscription }}
+  redHatOpenShiftDataFoundation:
+    enabled: {{ $odfEnabled }}
+    managed: {{ $odfEnabled }}
+    namespace: {{ $odfNamespace }}
+    channel: {{ $odfChannel }}
+    operatorGroup:
+      targetNamespaces:
+        - {{ $odfNamespace }}
 
 #
 # rhtap-minio-operator
@@ -133,6 +148,11 @@ infrastructure:
   openShiftPipelines:
     enabled: {{ $pipelines.Enabled }}
     namespace: {{ $pipelines.Namespace }}
+  odf:
+    enabled: {{ $odfEnabled }}
+    backingStorageSize: 100Gi
+    backingStoreName: noobaa-pv-backing-store
+    namespace: {{ $odfNamespace }}
 
 #
 # rhtap-backing-services

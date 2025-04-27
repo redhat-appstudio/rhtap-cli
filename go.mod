@@ -8,7 +8,7 @@ require (
 	github.com/google/go-github/v69 v69.0.0
 	github.com/onsi/gomega v1.33.1
 	github.com/openshift/api v0.0.0-20241107155230-d37bb9f7e380
-	github.com/openshift/client-go v0.0.0-20241107164952-923091dd2b1a
+	github.com/openshift/client-go 5f55ff6979a1
 	github.com/pkg/errors v0.9.1
 	github.com/quay/claircore v1.5.33
 	github.com/spf13/cobra v1.8.1

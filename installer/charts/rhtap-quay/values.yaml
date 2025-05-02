@@ -26,27 +26,6 @@ quay:
     name: rhtap_rw
   # Quay configuration bundle.
   config:
-    # To support MinIO S3 instance, the RADOS Gateway (RGW) storage is used
-    # (https://github.com/quay/quay-operator/issues/380).
-    radosGWStorage:
-      # S3 endpoint hostname.
-      hostname: __OVERWRITE_ME__
-      # S3 endpoint port.
-      port: 80
-      # Wether the S3 endpoint uses TLS.
-      isSecure: false
-      # S3 bucket name.
-      bucketName: quay
-      # MinIO credentials, must be stored in a secret
-      credentials:
-        # Secret name where the MinIO credentials are stored.
-        secretName: __OVERWRITE_ME__
-        # Access key name for the MinIO credentials.
-        accessKey: username
-        # Secret key name for the MinIO credentials.
-        secretKey: password
-      # Internal S3 storage path.
-      storagePath: "/datastorage/registry"
     # Quay's instance adminstration user.
     superUser:
       # Admin (super-user) username.

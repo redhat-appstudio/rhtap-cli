@@ -59,6 +59,6 @@ spec:
       managed: true
     - kind: route
       managed: true
-    # Disabled by default, since it uses MinIO object storage.
+    # Enable to allow for managed storage via ODF.
     - kind: objectstorage
-      managed: false
+      managed: true

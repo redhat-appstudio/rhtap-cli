@@ -10,6 +10,8 @@
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 {{- $ingressRouterCA := required "OpenShift RouterCA" .OpenShift.Ingress.RouterCA -}}
 {{- $minIOOperatorEnabled := or $tpa.Enabled $quay.Enabled -}}
+{{- $odfEnabled := or $tpa.Enabled $quay.Enabled -}}
+{{- $odfNamespace := "openshift-storage" -}}
 ---
 debug:
   ci: false
@@ -47,11 +49,16 @@ openshift:
 {{- if $rhdh.Enabled }}
     - {{ $rhdh.Namespace }}
 {{- end }}
+{{- if $odfEnabled }}
+    - {{ $odfNamespace }}
+{{- end }}
     - minio-operator
 
 #
 # rhtap-subscriptions
 #
+
+{{- $odfChannel := "stable-4.17" }}
 
 subscriptions:
   amqStreams:
@@ -86,6 +93,14 @@ subscriptions:
   redHatQuay:
     enabled: {{ $quay.Enabled }}
     managed: {{ and $quay.Enabled $quay.Properties.manageSubscription }}
+  redHatOpenShiftDataFoundation:
+    enabled: {{ $odfEnabled }}
+    managed: {{ $odfEnabled }}
+    namespace: {{ $odfNamespace }}
+    channel: {{ $odfChannel }}
+    operatorGroup:
+      targetNamespaces:
+        - {{ $odfNamespace }}
 
 #
 # rhtap-minio-operator
@@ -101,8 +116,6 @@ minIOOperator:
 {{- $tpaKafkaSecretName := "tpa-kafka" }}
 {{- $tpaKafkaBootstrapServers := "tpa-kafka-bootstrap:9092" }}
 {{- $tpaMinIORootSecretName := "tpa-minio-root-env" }}
-
-{{- $quayMinIOSecretName := "quay-minio-root-user"  }}
 
 infrastructure:
   developerHub:
@@ -125,15 +138,6 @@ infrastructure:
             secretKeyRef:
               name: {{ $tpaKafkaSecretName }}
               key: password
-    quay:
-      enabled: {{ $quay.Enabled }}
-      namespace: {{ $quay.Namespace }}
-      ingress:
-        enabled: true
-        domain: {{ $ingressDomain }}
-      rootSecretName: {{ $quayMinIOSecretName }}
-      kafkaNotify:
-        enabled: false
   postgresClusters:
     keycloak:
       enabled: {{ $keycloak.Enabled }}
@@ -144,6 +148,11 @@ infrastructure:
   openShiftPipelines:
     enabled: {{ $pipelines.Enabled }}
     namespace: {{ $pipelines.Namespace }}
+  odf:
+    enabled: {{ $odfEnabled }}
+    backingStorageSize: 100Gi
+    backingStoreName: noobaa-pv-backing-store
+    namespace: {{ $odfNamespace }}
 
 #
 # rhtap-backing-services
@@ -245,13 +254,6 @@ quay:
     namespace: {{ .Installer.Namespace }}
     name: rhtap-quay-integration
   config:
-    radosGWStorage:
-      enabled: true
-      hostname: {{ $quayMinIOHost }}
-      port: 443
-      isSecure: true
-      credentials:
-        secretName: {{ $quayMinIOSecretName }}
     superUser:
       email: {{ printf "admin@%s" $ingressDomain }}
   replicas:

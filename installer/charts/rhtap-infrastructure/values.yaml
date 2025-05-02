@@ -131,46 +131,6 @@ infrastructure:
               resources:
                 requests:
                   storage: 50Gi
-    #
-    # Quay.io Tenant, stores the container image artifacts.
-    #
-    quay:
-      enabled: false
-      # Target namespace for the MinIO Tenant and related resources.
-      namespace: __OVERWRITE_ME__
-      # Enable the Ingress resource to expose the MinIO Tenant.
-      ingress:
-        # Toggle the route resource creation.
-        enabled: false
-        # The Ingress domain.
-        domain: __OVERWRITE_ME__
-      # Secret name to store MinIO's root password, the password is generated when
-      # the secret is empty, otherwise the existing attributes are used.
-      rootSecretName: quay-minio-root-env
-      # The list of buckets to be created on the MinIO Tenant.
-      buckets:
-        - name: quay
-      # Quay doesn't rely on Kafka integration.
-      kafkaNotify:
-        enabled: false
-      # MinIO storage pools
-      pools:
-        - name: pool-0
-          servers: 1
-          containerSecurityContext:
-            runAsNonRoot: true
-          volumesPerServer: 1
-          volumeClaimTemplate:
-            apiVersion: v1
-            kind: persistentvolumeclaims
-            metadata:
-              name: quay-minio-pvc
-            spec:
-              accessModes:
-                - ReadWriteOnce
-              resources:
-                requests:
-                  storage: 100Gi
   #
   # PostgreSQL Clusters
   #

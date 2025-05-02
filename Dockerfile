@@ -39,6 +39,10 @@ LABEL \
   io.k8s.display-name="Red Hat Trusted Application Pipeline CLI" \
   io.openshift.tags="rhtap-cli tas tpa rhdh ec tap openshift"
 
+WORKDIR /licenses
+
+COPY LICENSE.txt .
+
 WORKDIR /rhtap-cli
 
 COPY --from=ose-tools /usr/bin/jq /usr/bin/kubectl /usr/bin/oc /usr/bin/vi /usr/bin/

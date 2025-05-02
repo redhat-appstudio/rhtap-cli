@@ -59,7 +59,7 @@ subscriptions:
     apiResource: securesigns.rhtas.redhat.com
     namespace: openshift-operators
     name: rhtas-operator
-    channel: stable-v1.1
+    channel: stable-v1.2
     source: redhat-operators
     sourceNamespace: openshift-marketplace
   redHatQuay:

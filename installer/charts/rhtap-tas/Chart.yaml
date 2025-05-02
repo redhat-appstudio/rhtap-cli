@@ -4,4 +4,4 @@ name: rhtap-tas
 description: Red Hat Trusted Artifact Signer
 type: application
 version: 1.5.0
-appVersion: "1.1"
+appVersion: "1.2"

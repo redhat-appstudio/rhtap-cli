@@ -58,12 +58,17 @@ subscriptions:
     namespace: openshift-operators
     name: rhdh
 <<<<<<< HEAD:installer/charts/tssc-subscriptions/values.yaml
+<<<<<<< HEAD:installer/charts/tssc-subscriptions/values.yaml
     channel: fast-1.7
     source: redhat-operators
 =======
     channel: fast-1.6
     source: rhdh-fast
 >>>>>>> 7117b81e (RHTAP-4516 RHDH pre-release testing):installer/charts/rhtap-subscriptions/values.yaml
+=======
+    channel: fast-1.5
+    source: redhat-operators
+>>>>>>> 031ae3a8 (patch for registry route):installer/charts/rhtap-subscriptions/values.yaml
     sourceNamespace: openshift-marketplace
   trustedProfileAnalyzer:
     enabled: false

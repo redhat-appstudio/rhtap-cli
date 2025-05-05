@@ -268,11 +268,15 @@ configure_rhtap_for_prerelease_versions_pipelines(){
 }
 
 configure_rhtap_for_prerelease_versions_rhdh(){
+  #Workaround for https://access.redhat.com/solutions/7003837
+  oc patch configs.imageregistry.operator.openshift.io/cluster --type merge -p '{"spec":{"managementState":"Managed"}}'
+
   RHDH_INSTALL_SCRIPT="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/main/.rhdh/scripts/install-rhdh-catalog-source.sh"
   curl -sSLO $RHDH_INSTALL_SCRIPT
   chmod +x install-rhdh-catalog-source.sh
 
-  export SHARED_DIR=$(pwd)
+  SHARED_DIR=$(pwd)
+  export SHARED_DIR
 
   ./install-rhdh-catalog-source.sh --latest --install-operator rhdh
   export PRODUCT="rhdh"

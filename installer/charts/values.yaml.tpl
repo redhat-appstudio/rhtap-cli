@@ -201,6 +201,7 @@ acs: &acs
   enabled: {{ $acs.Enabled }}
   name: &acsName stackrox-central-services
   ingressDomain: {{ $ingressDomain }}
+  ingressRouterCA: {{ $ingressRouterCA }}
   integrationSecret:
     namespace: {{ .Installer.Namespace }}
   test:

@@ -35,7 +35,7 @@ spec:
         secretName: rhtap-cli-install
   steps:
     - name: install
-      image: quay.io/redhat-user-workloads/rhtap-shared-team-tenant/rhtap-e2e/rhtap-e2e:bc690d27a9031aa7bbbbc55ef54d6ea319d6738e
+      image: quay.io/redhat-user-workloads/rhtap-shared-team-tenant/rhtap-e2e/rhtap-e2e:56a53cd5d68adf7e7b0dccdc6c483a866d457cef
       env:
         - name: JOB_SPEC
           value: "$(params.job-spec)"

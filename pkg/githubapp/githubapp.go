@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/google/go-github/scrape"
-	"github.com/google/go-github/v69/github"
+	"github.com/google/go-github/v71/github"
 	"github.com/spf13/pflag"
 )
 
@@ -184,7 +184,7 @@ func (g *GitHubApp) Create(
 	manifest scrape.AppManifest,
 ) (*github.AppConfig, error) {
 	redirectURL := fmt.Sprintf("http://localhost:%d", g.webServerPort)
-	manifest.RedirectURL = github.String(redirectURL)
+	manifest.RedirectURL = github.Ptr(redirectURL)
 
 	// Starting the oAuth workflow to interact with the GitHub web UI and create
 	// the new GitHub App.

@@ -96,6 +96,26 @@ plugins:
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins-backend-dynamic
 {{- end }}
+  - disabled: false
+    package: oci://registry.redhat.io/rhtap-backstage-plugins/rhtap-backstage-plugins-artifacts:1.5.0!rhtap-plugins-backstage-community-plugin-multi-source-security-viewer-dynamic
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          rhtap-plugins.backstage-community-plugin-multi-source-security-viewer:
+            mountPoints:
+              - config:
+                  layout:
+                    gridColumn: 1 / -1
+                    gridRowStart: 2
+                  if:
+                    allOf:
+                      - isMultiCIAvailable
+                importName: EntityMultiCIPipelinesContent
+                mountPoint: entity.page.ci/cards
+            entityTabs:
+              - path: /ci
+                title: CI
+                mountPoint: entity.page.ci
   #
   # Git
   #

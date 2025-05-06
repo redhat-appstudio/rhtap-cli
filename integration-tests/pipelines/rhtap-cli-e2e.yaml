@@ -115,9 +115,9 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/dperaza4dustbit/rhtap-cli.git
+            value: https://github.com/redhat-appstudio/rhtap-cli.git
           - name: revision
-            value: upgrade_go_and_deps
+            value: main
           - name: pathInRepo
             value: integration-tests/tasks/rhtap-install.yaml
       params:

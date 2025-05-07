@@ -1,0 +1,317 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: rhtap-install-e2e
+spec:
+  description: |-
+    This pipeline automates the process of running end-to-end tests for RHTAP
+    using a ROSA (Red Hat OpenShift Service on AWS) cluster. The pipeline provisions
+    the ROSA cluster, installs RHTAP using the installer, runs the tests, collects artifacts,
+    and finally deprovisions the ROSA cluster.
+  params:
+    - name: test-name
+      description: 'The name of the test corresponding to a defined Konflux integration test.'
+      default: ''
+      type: string
+    - name: ocp-version
+      description: 'The OpenShift version to use for the ephemeral cluster deployment.'
+      type: string
+    - name: cloud-credential-key
+      type: string
+      default: "qe-cloud-credentials-us-east-1"
+      description: The key secret from konflux-test-infra-secret where all AWS ROSA configurations are stored.
+    - name: replicas
+      description: 'The number of replicas for the cluster nodes.'
+      default: "3"
+      type: string
+    - name: machine-type
+      description: 'The type of machine to use for the cluster nodes.'
+      default: "m6i.4xlarge"
+      type: string
+    - name: oci-container-repo
+      default: 'quay.io/konflux-test-storage/rhtap-team/rhtap-cli'
+      description: The ORAS container used to store all test artifacts.
+      type: string
+    - name: job-spec
+      type: string
+    - name: konflux-test-infra-secret
+      description: The name of secret where testing infrastructures credentials are stored.
+      type: string
+    - name: acs_config
+      type: string
+      description: "The ACS option for rhtap-cli installation. Valid values are 'new' and 'hosted'."
+    - name: tpa_config
+      type: string
+      description: "The TPA option for rhtap-cli installation. Valid values are 'new' and 'hosted'."
+    - name: registry_config
+      type: string
+      description: "The image registry option for rhtap-cli installation. Valid values are 'quay', 'quay.io' and 'artifactory'."
+    - name: scm_config
+      type: string
+      description: "The SCM option for rhtap-cli installation. Valid values are 'github' , 'gitlab' and 'bitbucket'."
+    - name: pipeline_config
+      type: string
+      description: "The Pipeline option for rhtap-cli installation. Valid values are 'tekton' and 'jenkins'."
+    - name: auth_config
+      type: string
+      description: "The authentication provider for rhtap. Valid values are 'github' and 'gitlab'."
+  tasks:
+    - name: create-oci-container
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/create-oci-artifact/0.1/create-oci-artifact.yaml
+      params:
+        - name: oci-container-repo
+          value: $(params.oci-container-repo)
+        - name: oci-container-tag
+          value: $(context.pipelineRun.name)
+    - name: provision-cluster
+      runAfter:
+        - create-oci-container
+      taskSpec:
+        results:
+          - name: clusterName
+            value: "$(steps.create-cluster.results.clusterName)"
+          - name: ocp-login-command
+            value: "$(steps.claim-cluster.results.ocp-login-command)"
+        volumes:
+          - name: hive-creds-volume
+            secret:
+              secretName: rhopp-test
+          - name: credentials
+            emptyDir: {}
+        steps:
+          - name: claim-cluster
+            image: registry.redhat.io/openshift4/ose-cli@sha256:15da03b04318bcc842060b71e9dd6d6c2595edb4e8fdd11b0c6781eeb03ca182
+            volumeMounts:
+              - name: hive-creds-volume
+                mountPath: /usr/local/hive-creds
+            results:
+              - name: ocp-login-command
+                description: "Ocp login command"
+            script: |
+              #!/usr/bin/bash
+              oc login $(cat /usr/local/hive-creds/kube_api_url) -u cluster-admin -p $(cat /usr/local/hive-creds/password)
+              oc whoami
+              oc get clusterpool -n hive
+              oc create -f - <<EOF
+              apiVersion: hive.openshift.io/v1
+              kind: ClusterClaim
+              metadata:
+                name: ci-claim
+                namespace: hive
+              spec:
+                clusterPoolName: clusterpool
+              EOF
+              ## wait for cluster for up to 30 minutes
+              if ! kubectl wait --for=condition=ClusterRunning clusterclaims.hive.openshift.io/ci-claim -n hive --timeout 30m; then
+                echo "Cluster failed to start in 30 minutes. Deleting clusterClaim"
+                oc delete clusterclaims.hive.openshift.io/ci-claim -n hive
+                exit 1
+              fi
+              cp_namespace=$(oc get clusterclaims.hive.openshift.io -n hive ci-claim -o jsonpath={.spec.namespace})
+              api_url=$(oc get clusterdeployment -n $cp_namespace  $cp_namespace -o jsonpath={.status.apiURL})
+              admin_pass_secret=$(oc get clusterdeployment -n $cp_namespace  $cp_namespace -o jsonpath={.spec.clusterMetadata.adminPasswordSecretRef.name})
+              kubeadminpass=$(oc get secret $admin_pass_secret -n $cp_namespace -o jsonpath={.data.password} |base64 -d)
+              echo "oc login --insecure-skip-tls-verify=true $api_url -u kubeadmin -p $kubeadminpass" > $(step.results.ocp-login-command.path)
+    - name: rhtap-install
+      runAfter:
+        - provision-cluster
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/redhat-appstudio/rhtap-cli.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: integration-tests/tasks/rhtap-install.yaml
+      params:
+        - name: ocp-login-command
+          value: "$(tasks.provision-cluster.results.ocp-login-command)"
+        - name: job-spec
+          value: "$(params.job-spec)"
+        - name: acs_config
+          value: $(params.acs_config)
+        - name: tpa_config
+          value: $(params.tpa_config)
+        - name: registry_config
+          value: $(params.registry_config)
+        - name: scm_config
+          value: $(params.scm_config)
+        - name: pipeline_config
+          value: $(params.pipeline_config)
+        - name: auth_config
+          value: $(params.auth_config)
+    - name: sprayproxy-provision
+      when:
+        - input: "$(params.pipeline_config)"
+          operator: in
+          values:
+            - "tekton"
+        - input: "$(params.scm_config)"
+          operator: in
+          values:
+            - "github"
+      runAfter:
+        - rhtap-install
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/konflux-qe-definitions.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/sprayproxy/sprayproxy-provision/sprayproxy-register-server.yaml
+      params:
+        - name: ocp-login-command
+          value: "$(tasks.provision-cluster.results.ocp-login-command)"
+    - name: rhtap-e2e-tests
+      runAfter:
+        - sprayproxy-provision
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/redhat-appstudio/rhtap-e2e.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: integration-tests/tasks/rhtap-e2e.yaml
+      params:
+        - name: job-spec
+          value: $(params.job-spec)
+        - name: ocp-login-command
+          value: "$(tasks.provision-cluster.results.ocp-login-command)"
+        - name: oci-container
+          value: $(tasks.create-oci-container.results.oci-container)
+        - name: scm_config
+          value: $(params.scm_config)
+        - name: pipeline_config
+          value: $(params.pipeline_config)
+        - name: ocp-version
+          value: "$(params.ocp-version)"
+  finally:
+    - name: collect-artifacts
+      params:
+        - name: ocp-login-command
+          value: "$(tasks.provision-cluster.results.ocp-login-command)"
+        - name: oci-container
+          value: "$(tasks.create-oci-container.results.oci-container)"
+        - name: pipeline-aggregate-status
+          value: "$(tasks.status)"
+      taskSpec: 
+        description: |
+          This Tekton Task handles the collection of test artifacts and deprovisions the OpenShift cluster. The task performs the following steps:
+          1. **Collect Artifacts**: Gathers artifacts if the pipeline did not succeed.
+          2. **Inspect and Upload Artifacts**: Checks for sensitive information in the artifacts and uploads them to the OCI container registry.
+        params:
+          - name: ocp-login-command
+            type: string
+            description: Command to log in to the OpenShift cluster.
+          - name: oci-container
+            type: string
+            description: The ORAS container registry URI where artifacts will be stored.
+          - name: pipeline-aggregate-status
+            type: string
+            description: The status of the pipeline (e.g., Succeeded, Failed, Completed, None).
+            default: None
+        volumes:
+          - name: konflux-test-infra-volume
+            secret:
+              secretName: konflux-test-infra
+        steps:
+          - name: collect-artifacts
+            workingDir: /workspace/cluster-artifacts
+            onError: continue
+            image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
+            script: |
+              #!/bin/sh
+              $(params.ocp-login-command)
+              if [[ $(params.pipeline-aggregate-status) == "Succeeded" ]]; then
+                echo "[INFO]: Pipeline finished successfully. Skipping artifacts collection..."
+                exit 0
+              fi
+              curl -sSL https://raw.githubusercontent.com/konflux-ci/konflux-qe-definitions/main/scripts/gather-extra.sh | bash
+          - name: inspect-upload-artifacts
+            workingDir: /workspace
+            onError: continue
+            image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
+            volumeMounts:
+              - name: konflux-test-infra-volume
+                mountPath: /usr/local/konflux-test-infra
+            script: |
+              #!/bin/sh
+              if [[ "$(params.pipeline-aggregate-status)" == "Succeeded" ]]; then
+                  echo -e "[INFO]: Pipeline finished successfully. Skipping artifacts inspection..."
+                  exit 0
+              fi
+              leaktk scan --kind Files --resource /workspace | leaktk-remove-files /workspace
+              OCI_STORAGE_USERNAME="$(jq -r '."quay-username"' /usr/local/konflux-test-infra/oci-storage)"
+              OCI_STORAGE_TOKEN="$(jq -r '."quay-token"' /usr/local/konflux-test-infra/oci-storage)"
+              OCI_STORAGE_CONTAINER="$(params.oci-container)"
+              TEMP_ANNOTATION_FILE="$(mktemp)"
+              # Fetch the manifest annotations for the container
+              MANIFESTS=$(oras manifest fetch "$OCI_STORAGE_CONTAINER" | jq .annotations) || {
+                  echo -e "[ERROR]: Failed to fetch manifest from $OCI_STORAGE_CONTAINER"
+                  exit 1
+              }
+              # Create and save the JSON object
+              jq -n --argjson manifest "$MANIFESTS" '{ "$manifest": $manifest }' > "${TEMP_ANNOTATION_FILE}"
+              oras pull "$OCI_STORAGE_CONTAINER"
+              attempt=1
+              while ! oras push "$OCI_STORAGE_CONTAINER" --username="${OCI_STORAGE_USERNAME}" --password="${OCI_STORAGE_TOKEN}" --annotation-file "${TEMP_ANNOTATION_FILE}" ./:application/vnd.acme.rocket.docs.layer.v1+tar; do
+                  if [[ $attempt -ge 5 ]]; then
+                      echo -e "[ERROR]: oras push failed after $attempt attempts."
+                      rm -f "${TEMP_ANNOTATION_FILE}"
+                      exit 1
+                  fi
+                  echo -e "[WARNING]: oras push failed (attempt $attempt). Retrying in 5 seconds..."
+                  sleep 5
+                  ((attempt++))
+              done
+    - name: sprayproxy-deprovision
+      when:
+        - input: "$(tasks.sprayproxy-provision.status)"
+          operator: in
+          values:
+            - "Succeeded"
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/tekton-integration-catalog.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/sprayproxy/sprayproxy-deprovision/sprayproxy-unregister-server.yaml
+      params:
+        - name: ocp-login-command
+          value: "$(tasks.provision-cluster.results.ocp-login-command)"
+    - name: pull-request-status-message
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/konflux-ci/tekton-integration-catalog.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: common/tasks/pull-request-comment/0.2/pull-request-comment.yaml
+      params:
+        - name: test-name
+          value: "$(context.pipelineRun.name)"
+        - name: oci-container
+          value: "$(tasks.create-oci-container.results.oci-container)"
+        - name: pipeline-aggregate-status
+          value: "$(tasks.status)"
+        - name: job-spec
+          value: "$(params.job-spec)"

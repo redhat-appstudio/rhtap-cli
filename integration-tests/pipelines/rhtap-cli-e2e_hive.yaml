@@ -77,8 +77,6 @@ spec:
         - create-oci-container
       taskSpec:
         results:
-          - name: clusterName
-            value: "$(steps.create-cluster.results.clusterName)"
           - name: ocp-login-command
             value: "$(steps.claim-cluster.results.ocp-login-command)"
         volumes:
@@ -105,18 +103,18 @@ spec:
               apiVersion: hive.openshift.io/v1
               kind: ClusterClaim
               metadata:
-                name: ci-claim
+                name: $(context.pipelineRun.name)
                 namespace: hive
               spec:
                 clusterPoolName: clusterpool
               EOF
               ## wait for cluster for up to 30 minutes
-              if ! kubectl wait --for=condition=ClusterRunning clusterclaims.hive.openshift.io/ci-claim -n hive --timeout 30m; then
+              if ! kubectl wait --for=condition=ClusterRunning clusterclaims.hive.openshift.io/$(context.pipelineRun.name) -n hive --timeout 30m; then
                 echo "Cluster failed to start in 30 minutes. Deleting clusterClaim"
-                oc delete clusterclaims.hive.openshift.io/ci-claim -n hive
+                oc delete clusterclaims.hive.openshift.io/$(context.pipelineRun.name) -n hive
                 exit 1
               fi
-              cp_namespace=$(oc get clusterclaims.hive.openshift.io -n hive ci-claim -o jsonpath={.spec.namespace})
+              cp_namespace=$(oc get clusterclaims.hive.openshift.io -n hive $(context.pipelineRun.name) -o jsonpath={.spec.namespace})
               api_url=$(oc get clusterdeployment -n $cp_namespace  $cp_namespace -o jsonpath={.status.apiURL})
               admin_pass_secret=$(oc get clusterdeployment -n $cp_namespace  $cp_namespace -o jsonpath={.spec.clusterMetadata.adminPasswordSecretRef.name})
               kubeadminpass=$(oc get secret $admin_pass_secret -n $cp_namespace -o jsonpath={.data.password} |base64 -d)
@@ -315,3 +313,23 @@ spec:
           value: "$(tasks.status)"
         - name: job-spec
           value: "$(params.job-spec)"
+    - name: deprovision-cluster
+      taskSpec:
+        volumes:
+          - name: hive-creds-volume
+            secret:
+              secretName: rhopp-test
+          - name: credentials
+            emptyDir: {}
+        steps:
+          - name: deprovision-cluster
+            image: registry.redhat.io/openshift4/ose-cli@sha256:15da03b04318bcc842060b71e9dd6d6c2595edb4e8fdd11b0c6781eeb03ca182
+            volumeMounts:
+              - name: hive-creds-volume
+                mountPath: /usr/local/hive-creds
+            script: |
+              #!/usr/bin/bash
+              oc login $(cat /usr/local/hive-creds/kube_api_url) -u cluster-admin -p $(cat /usr/local/hive-creds/password)
+              oc whoami
+              oc delete clusterclaim $(context.pipelineRun.name) -n hive
+              

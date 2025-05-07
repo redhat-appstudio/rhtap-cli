@@ -9,6 +9,7 @@
 {{- $rhdh := required "RHDH settings" .Installer.Features.redHatDeveloperHub -}}
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 {{- $ingressRouterCA := required "OpenShift RouterCA" .OpenShift.Ingress.RouterCA -}}
+{{- $openshiftMinorVersion := required "OpenShift Version" .OpenShift.MinorVersion -}}
 {{- $minIOOperatorEnabled := or $tpa.Enabled $quay.Enabled -}}
 {{- $odfEnabled := or $tpa.Enabled $quay.Enabled -}}
 {{- $odfNamespace := "openshift-storage" -}}
@@ -58,7 +59,7 @@ openshift:
 # rhtap-subscriptions
 #
 
-{{- $odfChannel := "stable-4.17" }}
+{{- $odfChannel := printf "stable-%s" $openshiftMinorVersion }}
 
 subscriptions:
   amqStreams:
@@ -108,6 +109,7 @@ subscriptions:
 
 minIOOperator:
   enabled: {{ $minIOOperatorEnabled }}
+
 
 #
 # rhtap-infrastructure

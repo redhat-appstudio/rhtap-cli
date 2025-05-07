@@ -329,6 +329,7 @@ spec:
                 mountPath: /usr/local/hive-creds
             script: |
               #!/usr/bin/bash
+              set -x
               oc login $(cat /usr/local/hive-creds/kube_api_url) -u cluster-admin -p $(cat /usr/local/hive-creds/password)
               oc whoami
               oc delete clusterclaim $(context.pipelineRun.name) -n hive

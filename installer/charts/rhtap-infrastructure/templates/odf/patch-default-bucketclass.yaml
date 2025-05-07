@@ -8,8 +8,8 @@ metadata:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
+  backoffLimit: 3
   template:
-    backoffLimit: 3
     spec:
       serviceAccountName: patch-bucketclass-sa
       restartPolicy: OnFailure

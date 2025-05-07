@@ -205,7 +205,7 @@ install_rhtap() {
 
   echo "[INFO] Applying the cluster configuration, and showing the 'config.yaml'"
   set -x
-  ./bin/rhtap-cli config --kube-config "$KUBECONFIG" --log-level=debug --get --create "$config_file"
+  ./bin/rhtap-cli config --kube-config "$KUBECONFIG" --get --create "$config_file"
   set +x
 
   echo "[INFO] Print out the content of 'values.yaml.tpl'"
@@ -225,7 +225,7 @@ install_rhtap() {
 
   echo "[INFO] Running 'rhtap-cli deploy' command..."
   set -x
-  ./bin/rhtap-cli deploy --timeout 35m --values-template "$tpl_file" --kube-config "$KUBECONFIG" --debug --log-level=debug
+  ./bin/rhtap-cli deploy --timeout 35m --values-template "$tpl_file" --kube-config "$KUBECONFIG"
   set +x
 
   homepage_url=https://$(kubectl -n rhtap-dh get route backstage-developer-hub -o  'jsonpath={.spec.host}')

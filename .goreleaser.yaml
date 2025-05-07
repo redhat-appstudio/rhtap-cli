@@ -1,10 +1,10 @@
 ---
-project_name: rhtap-cli
+project_name: tssc
 dist: bin/dist
 
 builds:
-  - id: rhtap-cli
-    binary: rhtap-cli
+  - id: tssc
+    binary: tssc
     goos:
       - darwin
       - linux
@@ -13,7 +13,7 @@ builds:
       - GOFLAGS={{ .Env.GOFLAGS }}
       - CGO_ENABLED={{ .Env.CGO_ENABLED }}
       - CGO_LDFLAGS={{ .Env.CGO_LDFLAGS }}
-    main: cmd/rhtap-cli/main.go
+    main: cmd/tssc/main.go
     goarch:
       - arm64
       - amd64

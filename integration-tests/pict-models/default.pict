@@ -10,7 +10,7 @@
 # Pipeline: valid values are "tekton", "jenkins", "gitlabci", "actions"
 # AUTH: valid values are "github" and "gitlab"
 
-OCP: 4.18, 4.17, 4.16
+OCP: 4.17
 AUTH: github
 ACS: new
 Registry: quay.io

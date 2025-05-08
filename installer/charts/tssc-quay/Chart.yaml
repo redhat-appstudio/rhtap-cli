@@ -1,0 +1,7 @@
+---
+apiVersion: v2
+name: tssc-quay
+description: RHTAP Quay
+type: application
+version: 1.5.0
+appVersion: 3.14

@@ -8,7 +8,7 @@ declare -r RETRIES=${RETRIES:-90}
 
 get_roxctl() {
   echo "# Download roxctl cli from ${ROX_CENTRAL_ENDPOINT}"
-  curl --fail --insecure -s -L -H "Authorization: Bearer $ROX_API_TOKEN" \
+  curl --fail --insecure -s -L --proto "=https" -H "Authorization: Bearer $ROX_API_TOKEN" \
     "https://${ROX_CENTRAL_ENDPOINT}/api/cli/download/roxctl-linux" \
     --output ./roxctl  \
     > /dev/null || {

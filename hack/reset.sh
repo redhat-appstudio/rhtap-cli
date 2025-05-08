@@ -166,7 +166,7 @@ action() {
     fi
     if [ -n "${GITLAB:-}" ]; then
         echo '# GitLab'
-        for REPO in $(glab repo list -g "$GITLAB__GROUP" --output json | yq '.[].path_with_namespace'); do
+        for REPO in $(glab repo list -g "$GITLAB__GROUP" --output json | yq '.[].path_with_namespace' | grep -v -E "deleted-[0-9]*$"); do
             glab repo delete --yes "$REPO"
             echo "✓ Deleted repository $REPO"
         done 2>/dev/null

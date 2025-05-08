@@ -1,7 +1,0 @@
----
-apiVersion: v2
-name: rhtap-acs
-description: RHTAP Advanced Cluster Security
-type: application
-version: 1.5.0
-appVersion: 4.7

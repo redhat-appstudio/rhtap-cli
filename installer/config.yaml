@@ -55,48 +55,48 @@ rhtapCLI:
       properties:
         manageSubscription: true
   dependencies:
-    - chart: charts/rhtap-openshift
+    - chart: charts/tssc-openshift
       namespace: *installerNamespace
       enabled: true
-    - chart: charts/rhtap-subscriptions
+    - chart: charts/tssc-subscriptions
       namespace: *installerNamespace
       enabled: true
-    - chart: charts/rhtap-minio-operator
+    - chart: charts/tssc-minio-operator
       namespace: minio-operator
       enabled: true
-    - chart: charts/rhtap-infrastructure
+    - chart: charts/tssc-infrastructure
       namespace: *installerNamespace
       enabled: true
-    - chart: charts/rhtap-backing-services
+    - chart: charts/tssc-backing-services
       namespace: *installerNamespace
       enabled: *tpaEnabled
-    - chart: charts/rhtap-acs
+    - chart: charts/tssc-acs
       namespace: *rhacsNamespace
       enabled: *rhacsEnabled
-    - chart: charts/rhtap-gitops
+    - chart: charts/tssc-gitops
       namespace: *gitopsNamespace
       enabled: *gitopsEnabled
-    - chart: charts/rhtap-pipelines
+    - chart: charts/tssc-pipelines
       namespace: *installerNamespace
       enabled: *pipelinesEnabled
-    - chart: charts/rhtap-quay
+    - chart: charts/tssc-quay
       namespace: *quayNamespace
       enabled: *quayEnabled
-    - chart: charts/rhtap-tas
+    - chart: charts/tssc-tas
       namespace: *trustedArtifactSignerNamespace
       enabled: *tasEnabled
-    - chart: charts/rhtap-tpa
+    - chart: charts/tssc-tpa
       namespace: *trustedProfileAnalyzerNamespace
       enabled: *tpaEnabled
-    - chart: charts/rhtap-app-namespaces
+    - chart: charts/tssc-app-namespaces
       namespace: *installerNamespace
       enabled: *pipelinesEnabled
-    - chart: charts/rhtap-dh
+    - chart: charts/tssc-dh
       namespace: *rhdhNamespace
       enabled: *rhdhEnabled
-    - chart: charts/rhtap-acs-test
+    - chart: charts/tssc-acs-test
       namespace: *rhacsNamespace
       enabled: *rhacsEnabled
-    - chart: charts/rhtap-integrations
+    - chart: charts/tssc-integrations
       namespace: *installerNamespace
       enabled: true

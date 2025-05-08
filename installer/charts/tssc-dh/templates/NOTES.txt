@@ -3,8 +3,8 @@ Developer Hub:
 
 
 {{- $integrationNamespace := .Values.developerHub.integrationSecrets.namespace }}
-{{- $gitlabObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-gitlab-integration") | default dict -}}
-{{- $bitbucketObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-bitbucket-integration") | default dict -}}
+{{- $gitlabObj := (lookup "v1" "Secret" $integrationNamespace "tssc-gitlab-integration") | default dict -}}
+{{- $bitbucketObj := (lookup "v1" "Secret" $integrationNamespace "tssc-bitbucket-integration") | default dict -}}
 {{- if (or $gitlabObj $bitbucketObj) }}
 
 Tekton Pipelines as Code:
@@ -23,7 +23,7 @@ Tekton Pipelines as Code:
     {{- end }}
 {{- end }}
 
-{{- $jenkinsObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-jenkins-integration") | default dict -}}
+{{- $jenkinsObj := (lookup "v1" "Secret" $integrationNamespace "tssc-jenkins-integration") | default dict -}}
 {{- if $jenkinsObj }}
     {{- $secretObj := (lookup "v1" "Secret" "openshift-pipelines" "signing-secrets") | default dict -}}
     {{- $secretData := (get $secretObj "data") | default dict -}}
@@ -38,7 +38,7 @@ Tekton Chains:
 Tekton Chains: not installed
     {{- end }}
 
-    {{- $secretObj = (lookup "v1" "Secret" $integrationNamespace "rhtap-tas-integration") | default dict -}}
+    {{- $secretObj = (lookup "v1" "Secret" $integrationNamespace "tssc-tas-integration") | default dict -}}
     {{- $secretData = (get $secretObj "data") | default dict -}}
     {{- if $secretData }}
 

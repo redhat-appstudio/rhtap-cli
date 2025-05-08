@@ -1,5 +1,5 @@
 {{- if .Values.minIOOperator.enabled }}
-  {{- $sa := include "rhtapMinioOperator.serviceAccountName" . -}}
+  {{- $sa := include "tsscMinioOperator.serviceAccountName" . -}}
   {{- $namespace := .Release.Namespace -}}
   {{- $saAdmin := printf "%s-admin" $sa -}}
 ---

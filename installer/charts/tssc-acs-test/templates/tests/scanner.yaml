@@ -20,12 +20,12 @@
         - name: ROX_API_TOKEN
           valueFrom:
             secretKeyRef:
-              name: rhtap-acs-integration
+              name: tssc-acs-integration
               key: token
         - name: ROX_CENTRAL_ENDPOINT
           valueFrom:
             secretKeyRef:
-              name: rhtap-acs-integration
+              name: tssc-acs-integration
               key: endpoint
       volumeMounts:
         - name: scripts

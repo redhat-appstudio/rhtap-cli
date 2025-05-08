@@ -6,7 +6,7 @@ metadata:
     rhdh.redhat.com/backstage-name: {{ .Values.developerHub.instanceName }}
   labels:
     rhdh.redhat.com/ext-config-sync: 'true'
-  name: developer-hub-rhtap-app-config
+  name: tssc-developer-hub-app-config
 data:
-  app-config.rhtap.yaml: |
-{{- include "rhtap-dh.app-conf" . | indent 4 }}
+  app-config.tssc.yaml: |
+{{- include "tssc-dh.app-conf" . | indent 4 }}

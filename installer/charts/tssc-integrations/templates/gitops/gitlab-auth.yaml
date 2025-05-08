@@ -1,5 +1,5 @@
 {{- if .Values.argoCD.enabled -}}
-  {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "rhtap-gitlab-integration") -}}
+  {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "tssc-gitlab-integration") -}}
   {{- $secretData := (get $secretObj "data") | default dict -}}
   {{- if $secretData -}}
 apiVersion: v1

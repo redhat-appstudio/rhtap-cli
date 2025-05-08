@@ -1,21 +1,21 @@
-{{- define "rhtap-dh.app-conf" }}
+{{- define "tssc-dh.app-conf" }}
 {{- $integrationNamespace := .Values.developerHub.integrationSecrets.namespace }}
 app:
   title: Red Hat Developer Hub
   baseUrl: ${BACKEND_URL}
 # Lookup for all the required secrets
-{{- $argocdSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-argocd-integration") }}
+{{- $argocdSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-argocd-integration") }}
 {{- $argocdSecretData := ($argocdSecretObj.data | default dict) }}
-{{- $bbSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-bitbucket-integration") }}
-{{- $githubSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-github-integration") }}
-{{- $gitlabSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-gitlab-integration") }}
-{{- $jenkinsSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-jenkins-integration") }}
-{{- $quaySecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-quay-integration") }}
+{{- $bbSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-bitbucket-integration") }}
+{{- $githubSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-github-integration") }}
+{{- $gitlabSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-gitlab-integration") }}
+{{- $jenkinsSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-jenkins-integration") }}
+{{- $quaySecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-quay-integration") }}
 {{- $quaySecretData := ($quaySecretObj.data | default dict) }}
-{{- $nexusSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-nexus-integration") }}
-{{- $artifactorySecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-artifactory-integration") }}
+{{- $nexusSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-nexus-integration") }}
+{{- $artifactorySecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-artifactory-integration") }}
 {{- $artifactorySecretData := ($artifactorySecretObj.data | default dict) }}
-{{- $azureSecretObj := (lookup "v1" "Secret" $integrationNamespace "rhtap-azure-integration") }}
+{{- $azureSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-azure-integration") }}
 {{- $azureSecretData := ($azureSecretObj.data | default dict) }}
 
 {{- if $argocdSecretData }}

@@ -52,7 +52,7 @@ parse_args() {
             ;;
         *)
             REGISTRY="$1"
-            REGISTRY_SECRET="rhtap-$REGISTRY-integration"
+            REGISTRY_SECRET="tssc-$REGISTRY-integration"
             if ! oc get secrets -n "$NAMESPACE" "$REGISTRY_SECRET" >/dev/null 2>&1; then
                 fail "Unsupported registry: Could not find '$REGISTRY_SECRET' secret in '$NAMESPACE'."
             fi
@@ -83,7 +83,7 @@ info() {
 }
 
 get_variables() {
-    ACS_SECRET="rhtap-acs-integration"
+    ACS_SECRET="tssc-acs-integration"
     if [ -z "${ROX_CENTRAL_ENDPOINT:-}" ]; then
         ROX_CENTRAL_ENDPOINT="$(oc get secrets -n "$NAMESPACE" "$ACS_SECRET" -o json | jq -r '.data.endpoint | @base64d')"
     fi

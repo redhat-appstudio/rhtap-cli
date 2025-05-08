@@ -231,7 +231,7 @@ argoCD:
   name: {{ $argoCDName }}
   namespace: {{ $gitops.Namespace }}
   integrationSecret:
-    name: rhtap-argocd-integration
+    name: tssc-argocd-integration
     namespace: {{ .Installer.Namespace }}
   ingressDomain: {{ $ingressDomain }}
 
@@ -252,10 +252,10 @@ quay:
   ingressDomain: {{ $ingressDomain }}
   ingressRouterCA: {{ $ingressRouterCA }}
   organization:
-    email: {{ printf "rhtap@%s" $ingressDomain }}
+    email: {{ printf "tssc@%s" $ingressDomain }}
   secret:
     namespace: {{ .Installer.Namespace }}
-    name: rhtap-quay-integration
+    name: tssc-quay-integration
   config:
     superUser:
       email: {{ printf "admin@%s" $ingressDomain }}
@@ -333,7 +333,7 @@ trustedProfileAnalyzer:
         $ingressDomain
     }}
     namespace: {{ .Installer.Namespace }}
-    name: rhtap-trustification-integration
+    name: tssc-trustification-integration
   keycloakRealmImport:
     enabled: {{ $keycloak.Enabled }}
     keycloakCR:
@@ -469,6 +469,6 @@ trustedArtifactSigner:
       certificate:
         # TODO: promopt the user for organization email/name input!
         organizationEmail: trusted-artifact-signer@company.dev
-        organizationName: RHTAP
+        organizationName: TSSC
   integrationSecret:
     namespace: {{ .Installer.Namespace }}

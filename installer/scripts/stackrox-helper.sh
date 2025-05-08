@@ -19,7 +19,7 @@ declare -r ROX_ENDPOINT_PATH="${ROX_ENDPOINT_PATH:-/v1/apitokens/generate}"
 
 # Kubernetes secret namespace and name to store the generated token.
 declare -r NAMESPACE="${NAMESPACE:-}"
-declare -r SECRET_NAME="${SECRET_NAME:-rhtap-acs-integration}"
+declare -r SECRET_NAME="${SECRET_NAME:-tssc-acs-integration}"
 
 #
 # Functions

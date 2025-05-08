@@ -72,7 +72,7 @@ getValues() {
     COSIGN_PUBLIC_KEY="$(oc get secrets -n openshift-pipelines signing-secrets -o json | yq '.data.["cosign.pub"]')"
 
     for REGISTRY in "artifactory" "nexus" "quay"; do
-        REGISTRY_SECRET="rhtap-$REGISTRY-integration" # notsecret
+        REGISTRY_SECRET="tssc-$REGISTRY-integration" # notsecret
         if ! oc get secrets -n "$NAMESPACE" "$REGISTRY_SECRET" -o name >/dev/null 2>&1; then
             continue
         fi
@@ -93,7 +93,7 @@ getValues() {
         break
     done
 
-    SECRET="rhtap-acs-integration"
+    SECRET="tssc-acs-integration"
     ROX_CENTRAL_ENDPOINT="$(oc get secrets -n "$NAMESPACE" "$SECRET" -o json | yq '.data.endpoint | @base64d')"
     ROX_API_TOKEN="$(oc get secrets -n "$NAMESPACE" "$SECRET" -o json | yq '.data.token | @base64d')"
 
@@ -104,7 +104,7 @@ getValues() {
 getSCMs() {
     SCM_LIST=( )
     for SCM in github gitlab; do
-        SECRET="rhtap-$SCM-integration" # notsecret
+        SECRET="tssc-$SCM-integration" # notsecret
         if kubectl get secrets -n "$NAMESPACE" "$SECRET" >/dev/null 2>&1 ; then
             SCM_LIST+=("$SCM")
         fi
@@ -136,7 +136,7 @@ setVar() {
 }
 
 githubGetValues() {
-    SECRET="rhtap-github-integration"
+    SECRET="tssc-github-integration"
     GIT_ORG="$GITHUB__ORG"
     GIT_TOKEN="$(oc get secrets -n "$NAMESPACE" "$SECRET" -o json | yq '.data.token | @base64d')"
 }
@@ -146,7 +146,7 @@ githubSetVar() {
 }
 
 gitlabGetValues() {
-    SECRET="rhtap-gitlab-integration"
+    SECRET="tssc-gitlab-integration"
     GIT_TOKEN="$(oc get secrets -n "$NAMESPACE" "$SECRET" -o json | yq '.data.token | @base64d')"
     GIT_ORG="$GITLAB__GROUP"
     URL="https://$(oc get secrets -n "$NAMESPACE" "$SECRET" -o json | yq '.data.host | @base64d')"

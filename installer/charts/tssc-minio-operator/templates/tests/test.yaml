@@ -1,6 +1,6 @@
 {{- if .Values.minIOOperator.enabled }}
 ---
-{{- $sa := include "rhtapMinioOperator.serviceAccountName" . -}}
+{{- $sa := include "tsscMinioOperator.serviceAccountName" . -}}
 {{- $pod := dict
   "serviceAccount" $sa
 }}

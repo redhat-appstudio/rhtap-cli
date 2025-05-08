@@ -23,7 +23,7 @@ declare -r QUAY_PASSWORD="${QUAY_PASSWORD:-}"
 declare -r QUAY_EMAIL="${QUAY_EMAIL:-admin@localhost}"
 
 # Quay organization name to create and email address.
-declare -r QUAY_ORGANIZATION="${QUAY_ORGANIZATION:-rhtap}"
+declare -r QUAY_ORGANIZATION="${QUAY_ORGANIZATION:-tssc}"
 declare -r QUAY_ORGANIZATION_EMAIL="${QUAY_ORGANIZATION_EMAIL:-${QUAY_ORGANIZATION}@localhost}"
 
 # Namespace and secret name to create the "docker-registry" secret.
@@ -35,12 +35,12 @@ declare -r SECRET_NAME="${SECRET_NAME:-}"
 declare ACCESS_TOKEN=""
 
 # Quay robot account for register
-declare QUAY_ROBOT_SHORT_NAME="${QUAY_ROBOT_SHORT_NAME:-rhtap_rw}"
+declare QUAY_ROBOT_SHORT_NAME="${QUAY_ROBOT_SHORT_NAME:-tssc_rw}"
 declare QUAY_ROBOT_USERNAME=""
 declare QUAY_ROBOT_TOKEN=""
 
 # Quay read only reobot account
-declare QUAY_ROBOT_SHORT_NAME_READONLY="${QUAY_ROBOT_SHORT_NAME_READONLY:-rhtap_ro}"
+declare QUAY_ROBOT_SHORT_NAME_READONLY="${QUAY_ROBOT_SHORT_NAME_READONLY:-tssc_ro}"
 declare QUAY_ROBOT_USERNAME_READONLY=""
 declare QUAY_ROBOT_TOKEN_READONLY=""
 
@@ -263,7 +263,7 @@ quay_create_robot_account() {
     fi
 
     info "Robot account $1 created successfully!"
-    if [[ "$1" == "rhtap_rw" ]]; then
+    if [[ "$1" == "tssc_rw" ]]; then
         export QUAY_ROBOT_TOKEN="${token}"
         export QUAY_ROBOT_USERNAME="${QUAY_ORGANIZATION}+${QUAY_ROBOT_SHORT_NAME}"
     else
@@ -277,7 +277,7 @@ quay_create_robot_account() {
 quay_create_permission_prototype() {
     local quay_url="https://${QUAY_HOSTNAME}/api/v1/organization/${QUAY_ORGANIZATION}/prototypes"
     local role
-    if [[ "$1" == *"rhtap_rw" ]]; then
+    if [[ "$1" == *"tssc_rw" ]]; then
         role="admin"
     else
         role="read"

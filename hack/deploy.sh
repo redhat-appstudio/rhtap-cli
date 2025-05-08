@@ -225,12 +225,12 @@ integrations() {
             --username='"$BITBUCKET__USERNAME"'
     fi
     if [[ -n "${GITHUB:-}" ]]; then
-        if ! kubectl get secret -n "$NAMESPACE" rhtap-github-integration >/dev/null 2>&1; then
+        if ! kubectl get secret -n "$NAMESPACE" tssc-github-integration >/dev/null 2>&1; then
             rhtap_cli integration github-app \
                 --create \
                 --token='"$GITHUB__ORG_TOKEN"' \
                 --org='"$GITHUB__ORG"' \
-                "rhtap-$GITHUB__ORG-$(date +%m%d-%H%M)"
+                "tssc-$GITHUB__ORG-$(date +%m%d-%H%M)"
         fi
     fi
     if [[ -n "${GITLAB:-}" ]]; then

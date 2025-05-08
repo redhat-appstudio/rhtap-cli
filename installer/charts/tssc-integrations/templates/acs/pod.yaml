@@ -1,5 +1,5 @@
 {{ $integrations := .Values.integrations }}
-{{- $secretACS := (lookup "v1" "Secret" .Release.Namespace "rhtap-acs-integration") }}
+{{- $secretACS := (lookup "v1" "Secret" .Release.Namespace "tssc-acs-integration") }}
 {{- if $secretACS }}
 #
 # Setup ACS integrations.
@@ -17,7 +17,7 @@ metadata:
     helm.sh/hook-delete-policy: before-hook-creation, hook-succeeded
   labels:
     {{- include "common.labels" . | nindent 4 }}
-  name: rhtap-acs-integrations
+  name: tssc-acs-integrations
 spec:
   serviceAccountName: {{ .Release.Name }}
   restartPolicy: Never
@@ -29,7 +29,7 @@ spec:
 {{- include "common.copyScripts" . | nindent 8 }}
   containers:
   {{- $noop := true }}
-  {{- $secretArtifactory := (lookup "v1" "Secret" .Release.Namespace "rhtap-artifactory-integration") }}
+  {{- $secretArtifactory := (lookup "v1" "Secret" .Release.Namespace "tssc-artifactory-integration") }}
   {{- if and $integrations.acs.enabled $secretArtifactory }}
     {{- $noop = false }}
     #
@@ -43,12 +43,12 @@ spec:
         - name: ROX_API_TOKEN
           valueFrom:
             secretKeyRef:
-              name: rhtap-acs-integration
+              name: tssc-acs-integration
               key: token
         - name: ROX_CENTRAL_ENDPOINT
           valueFrom:
             secretKeyRef:
-              name: rhtap-acs-integration
+              name: tssc-acs-integration
               key: endpoint
       command:
         - /scripts/acs-integration-helper.sh
@@ -59,7 +59,7 @@ spec:
       securityContext:
         allowPrivilegeEscalation: false
   {{- end }}
-  {{- $secretNexus := (lookup "v1" "Secret" .Release.Namespace "rhtap-nexus-integration") }}
+  {{- $secretNexus := (lookup "v1" "Secret" .Release.Namespace "tssc-nexus-integration") }}
   {{- if and $integrations.acs.enabled $secretNexus }}
     {{- $noop = false }}
     #
@@ -73,12 +73,12 @@ spec:
         - name: ROX_API_TOKEN
           valueFrom:
             secretKeyRef:
-              name: rhtap-acs-integration
+              name: tssc-acs-integration
               key: token
         - name: ROX_CENTRAL_ENDPOINT
           valueFrom:
             secretKeyRef:
-              name: rhtap-acs-integration
+              name: tssc-acs-integration
               key: endpoint
       command:
         - /scripts/acs-integration-helper.sh
@@ -89,7 +89,7 @@ spec:
       securityContext:
         allowPrivilegeEscalation: false
   {{- end }}
-  {{- $secretQuay := (lookup "v1" "Secret" .Release.Namespace "rhtap-quay-integration") }}
+  {{- $secretQuay := (lookup "v1" "Secret" .Release.Namespace "tssc-quay-integration") }}
   {{- if and (or $integrations.acs.enabled $integrations.quay.enabled) $secretQuay }}
     {{- $noop = false }}
     #
@@ -103,12 +103,12 @@ spec:
         - name: ROX_API_TOKEN
           valueFrom:
             secretKeyRef:
-              name: rhtap-acs-integration
+              name: tssc-acs-integration
               key: token
         - name: ROX_CENTRAL_ENDPOINT
           valueFrom:
             secretKeyRef:
-              name: rhtap-acs-integration
+              name: tssc-acs-integration
               key: endpoint
       command:
         - /scripts/acs-integration-helper.sh

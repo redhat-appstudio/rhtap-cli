@@ -1,3 +1,3 @@
-{{- define "rhtapMinioOperator.serviceAccountName" -}}
+{{- define "tsscMinioOperator.serviceAccountName" -}}
   {{ print "minio-operator" }}
 {{- end -}}

@@ -1,7 +1,7 @@
 {{- if .Values.argoCD.enabled }}
   {{- $argoCD := .Values.argoCD }}
   {{- $name := printf "%s-post-deploy" $argoCD.name }}
-  {{- $argoCDEnvFile := "/rhtap/argocd/env" -}}
+  {{- $argoCDEnvFile := "/tssc/argocd/env" -}}
 #
 # Generates the ArgoCD API token and stores it on a Kubernetes secret. The steps
 # are executed on a Kubernetes Job in order create a declarative way of generating
@@ -57,14 +57,14 @@ spec:
           volumeMounts:
             - name: scripts
               mountPath: /scripts
-            - name: rhtap-argocd
-              mountPath: /rhtap/argocd
+            - name: tssc-argocd
+              mountPath: /tssc/argocd
           securityContext:
             runAsNonRoot: false
             allowPrivilegeEscalation: false
         #
         # Stores the generated token on a secret, the secret data is shared via
-        # the "/rhtap/argocd" volume, the previous step stored the API credentials
+        # the "/tssc/argocd" volume, the previous step stored the API credentials
         # on a environment file.
         #
         - name: argocd-store-token
@@ -83,13 +83,13 @@ spec:
           volumeMounts:
             - name: scripts
               mountPath: /scripts
-            - name: rhtap-argocd
-              mountPath: /rhtap/argocd
+            - name: tssc-argocd
+              mountPath: /tssc/argocd
           securityContext:
             allowPrivilegeEscalation: false
       volumes:
         - name: scripts
           emptyDir: {}
-        - name: rhtap-argocd
+        - name: tssc-argocd
           emptyDir: {}
 {{- end }}

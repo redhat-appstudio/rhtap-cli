@@ -47,7 +47,7 @@ RUN dnf install -y -q --allowerasing --nobest \
     curl -fsSL --proto "=https" -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64 &&\
     install -m 555 argocd-linux-amd64 /usr/local/bin/argocd && \
     rm argocd-linux-amd64 && \
-    curl -fsSL -o /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    curl -fsSL --proto "=https" -o /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -sL --proto "=https" https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
     chmod +x /usr/local/bin/kubectl && \
     curl -fsSL --proto "=https" -o /usr/local/bin/cosign https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 && \
     chmod +x /usr/local/bin/cosign && \

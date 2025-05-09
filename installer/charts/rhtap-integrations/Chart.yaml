@@ -1,6 +1,0 @@
----
-apiVersion: v2
-name: rhtap-integrations
-description: RHTAP Integrations
-type: application
-version: 1.5.0

@@ -18,7 +18,7 @@ debug:
   ci: false
 
 #
-# rhtap-openshift
+# tssc-openshift
 #
 
 openshift:
@@ -56,7 +56,7 @@ openshift:
     - minio-operator
 
 #
-# rhtap-subscriptions
+# tssc-subscriptions
 #
 
 {{- $odfChannel := printf "stable-%s" $openshiftMinorVersion }}
@@ -104,7 +104,7 @@ subscriptions:
         - {{ $odfNamespace }}
 
 #
-# rhtap-minio-operator
+# tssc-minio-operator
 #
 
 minIOOperator:
@@ -112,7 +112,7 @@ minIOOperator:
 
 
 #
-# rhtap-infrastructure
+# tssc-infrastructure
 #
 
 {{- $tpaKafkaSecretName := "tpa-kafka" }}
@@ -157,7 +157,7 @@ infrastructure:
     namespace: {{ $odfNamespace }}
 
 #
-# rhtap-backing-services
+# tssc-backing-services
 #
 
 {{- $keycloakRouteTLSSecretName := "keycloak-tls" }}
@@ -196,7 +196,7 @@ backingServices:
     ingressDomain: {{ $ingressDomain }}
 
 #
-# rhtap-acs
+# tssc-acs
 #
 
 acs: &acs
@@ -212,7 +212,7 @@ acs: &acs
 acsTest: *acs
 
 #
-# rhtap-app-namespaces
+# tssc-app-namespaces
 #
 appNamespaces:
   argoCD:
@@ -223,7 +223,7 @@ appNamespaces:
   {{- end }}
 
 #
-# rhtap-gitops
+# tssc-gitops
 #
 
 argoCD:
@@ -236,14 +236,14 @@ argoCD:
   ingressDomain: {{ $ingressDomain }}
 
 #
-# rhtap-pipelines
+# tssc-pipelines
 #
 
 pipelines:
   namespace: {{ $pipelines.Namespace }}
 
 #
-# rhtap-quay
+# tssc-quay
 #
 
 quay:
@@ -264,7 +264,7 @@ quay:
     clair: 1
 
 #
-# rhtap-integrations
+# tssc-integrations
 #
 
 integrations:
@@ -289,7 +289,7 @@ integrations:
 #     token: ""
 
 #
-# rhtap-dh
+# tssc-dh
 #
 
 {{- $catalogURL := required "Red Hat Developer Hub Catalog URL is required"
@@ -309,7 +309,7 @@ developerHub:
 {{ dig "Properties" "RBAC" "orgs" (list "${GITHUB__ORG}") $rhdh | toYaml | indent 6 }}
 
 #
-# rhtap-tpa
+# tssc-tpa
 #
 
 {{- $tpaAppDomain := printf "-%s.%s" $tpa.Namespace $ingressDomain }}
@@ -442,7 +442,7 @@ trustification:
     serviceEnabled: "{{ not $crc.Enabled }}"
 
 #
-# rhtap-tas
+# tssc-tas
 #
 
 {{- $tasRealmPath := "realms/trusted-artifact-signer" }}

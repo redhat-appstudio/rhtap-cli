@@ -1,0 +1,5 @@
+apiVersion: v2
+name: tssc-app-namespaces
+description: Red Hat User Application Namespaces
+type: application
+version: 1.5.0

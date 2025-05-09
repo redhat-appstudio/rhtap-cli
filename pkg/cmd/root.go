@@ -52,7 +52,7 @@ func NewRootCmd() (*RootCmd, error) {
 		flags: f,
 		cmd: &cobra.Command{
 			Use:          constants.AppName,
-			Short:        "RHTAP Installer CLI",
+			Short:        "Trusted Software Supply Chain CLI",
 			SilenceUsage: true,
 		},
 		cfs:  cfs,

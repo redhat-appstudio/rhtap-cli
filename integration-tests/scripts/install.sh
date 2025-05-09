@@ -44,8 +44,8 @@ update_dh_catalog_url() {
   fi
 }
 
-# Workaround: This function has to be called before rhtap-cli import "installer/config.yaml" into cluster.
-# Currently, the rhtap-cli `config` subcommand lacks the ability to modify property values stored in config.yaml.
+# Workaround: This function has to be called before tssc import "installer/config.yaml" into cluster.
+# Currently, the tssc `config` subcommand lacks the ability to modify property values stored in config.yaml.
 github_integration() {
   # if scm_config is "github", then perform the github integration
   if [[ "${scm_config}" == "github" || "$auth_config" == "github" ]]; then
@@ -81,7 +81,7 @@ jenkins_integration() {
     JENKINS_URL="${JENKINS_URL:-$(cat /usr/local/rhtap-cli-install/jenkins-url)}"
     JENKINS_USERNAME="${JENKINS_USERNAME:-$(cat /usr/local/rhtap-cli-install/jenkins-username)}"
 
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" jenkins --token="$JENKINS_API_TOKEN" --url="$JENKINS_URL" --username="$JENKINS_USERNAME" --force
+    ./bin/tssc integration --kube-config "$KUBECONFIG" jenkins --token="$JENKINS_API_TOKEN" --url="$JENKINS_URL" --username="$JENKINS_USERNAME" --force
   fi
 }
 
@@ -95,12 +95,12 @@ gitlab_integration() {
     GITLAB__APP_SECRET="${GITLAB__APP_SECRET:-$(cat /usr/local/rhtap-cli-install/gitlab-app-secret)}"
     GITLAB__GROUP="${GITLAB__GROUP:-$(cat /usr/local/rhtap-cli-install/gitlab-group)}"
 
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" gitlab --token="${GITLAB__TOKEN}" --app-id="${GITLAB__APP__ID}" --app-secret="${GITLAB__APP_SECRET}" --group="${GITLAB__GROUP}" --force
+    ./bin/tssc integration --kube-config "$KUBECONFIG" gitlab --token="${GITLAB__TOKEN}" --app-id="${GITLAB__APP__ID}" --app-secret="${GITLAB__APP_SECRET}" --group="${GITLAB__GROUP}"
   fi
 }
 
-# Workaround: This function has to be called before rhtap-cli import "installer/config.yaml" into cluster.
-# Currently, the rhtap-cli `config` subcommand lacks the ability to modify property values stored in cluster
+# Workaround: This function has to be called before tssc import "installer/config.yaml" into cluster.
+# Currently, the tssc `config` subcommand lacks the ability to modify property values stored in cluster
 disable_quay() {
   # if registry_config is not "quay", then disable Quay installation
   if [[ "${registry_config}" != "quay" ]]; then
@@ -117,13 +117,13 @@ quayio_integration() {
     QUAY__DOCKERCONFIGJSON="${QUAY__DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/quay-dockerconfig-json)}"
     QUAY__API_TOKEN="${QUAY__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/quay-api-token)}"
 
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" quay --url="https://quay.io" --dockerconfigjson="${QUAY__DOCKERCONFIGJSON}" --token="${QUAY__API_TOKEN}" --force
+    ./bin/tssc integration --kube-config "$KUBECONFIG" quay --url="https://quay.io" --dockerconfigjson="${QUAY__DOCKERCONFIGJSON}" --token="${QUAY__API_TOKEN}"
   fi
 
 }
 
-# Workaround: This function has to be called before rhtap-cli import "installer/config.yaml" into cluster.
-# Currently, the rhtap-cli `config` subcommand lacks the ability to modify property values stored in cluster
+# Workaround: This function has to be called before tssc import "installer/config.yaml" into cluster.
+# Currently, the tssc `config` subcommand lacks the ability to modify property values stored in cluster
 disable_acs() {
   if [[ "${acs_config}" == "hosted" ]]; then
     echo "[INFO] Disable ACS installation"
@@ -138,7 +138,7 @@ acs_integration() {
     ACS__CENTRAL_ENDPOINT="${ACS__CENTRAL_ENDPOINT:-$(cat /usr/local/rhtap-cli-install/acs-central-endpoint)}"
     ACS__API_TOKEN="${ACS__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/acs-api-token)}"
 
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" acs --endpoint="${ACS__CENTRAL_ENDPOINT}" --token="${ACS__API_TOKEN}" --force
+    ./bin/tssc integration --kube-config "$KUBECONFIG" acs --endpoint="${ACS__CENTRAL_ENDPOINT}" --token="${ACS__API_TOKEN}"
   fi
 }
 
@@ -149,12 +149,12 @@ bitbucket_integration() {
     BITBUCKET_USERNAME="${BITBUCKET_USERNAME:-$(cat /usr/local/rhtap-cli-install/bitbucket-username)}"
     BITBUCKET_APP_PASSWORD="${BITBUCKET_APP_PASSWORD:-$(cat /usr/local/rhtap-cli-install/bitbucket-app-password)}"
 
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" bitbucket --host="${BITBUCKET_HOST}" --username="${BITBUCKET_USERNAME}" --app-password="${BITBUCKET_APP_PASSWORD}"
+    ./bin/tssc integration --kube-config "$KUBECONFIG" bitbucket --host="${BITBUCKET_HOST}" --username="${BITBUCKET_USERNAME}" --app-password="${BITBUCKET_APP_PASSWORD}"
   fi
 }
 
-# Workaround: This function has to be called before rhtap-cli import "installer/config.yaml" into cluster.
-# Currently, the rhtap-cli `config` subcommand lacks the ability to modify property values stored in cluster
+# Workaround: This function has to be called before tssc import "installer/config.yaml" into cluster.
+# Currently, the tssc `config` subcommand lacks the ability to modify property values stored in cluster
 disable_tpa() {
   if [[ "${tpa_config}" == "hosted" ]]; then
     echo "[INFO] Disable TPA installation"
@@ -171,7 +171,7 @@ tpa_integration() {
     OIDC_CLIENT_SECRET="${OIDC_CLIENT_SECRET:-$(cat /usr/local/rhtap-cli-install/oidc-client-secret)}"
     OIDC_ISSUER_URL="${OIDC_ISSUER_URL:-$(cat /usr/local/rhtap-cli-install/oidc-issuer-url)}"
 
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" trustification --bombastic-api-url="${BOMBASTIC_API_URL}" --oidc-client-id="${OIDC_CLIENT_ID}" --oidc-client-secret="${OIDC_CLIENT_SECRET}" --oidc-issuer-url="${OIDC_ISSUER_URL}" --supported-cyclonedx-version="${SUPPORTED_CYCLONEDX_VERSION}"
+    ./bin/tssc integration --kube-config "$KUBECONFIG" trustification --bombastic-api-url="${BOMBASTIC_API_URL}" --oidc-client-id="${OIDC_CLIENT_ID}" --oidc-client-secret="${OIDC_CLIENT_SECRET}" --oidc-issuer-url="${OIDC_ISSUER_URL}" --supported-cyclonedx-version="${SUPPORTED_CYCLONEDX_VERSION}"
   fi
 }
 
@@ -182,7 +182,7 @@ artifactory_integration() {
     ARTIFACTORY_URL="${ARTIFACTORY_URL:-$(cat /usr/local/rhtap-cli-install/artifactory-url)}"
     ARTIFACTORY_TOKEN="${ARTIFACTORY_TOKEN:-$(cat /usr/local/rhtap-cli-install/artifactory-token)}"
     ARTIFACTORY_DOCKERCONFIGJSON="${ARTIFACTORY_DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/artifactory-dockerconfig-json)}"
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" artifactory --url="${ARTIFACTORY_URL}" --token="${ARTIFACTORY_TOKEN} " --dockerconfigjson="${ARTIFACTORY_DOCKERCONFIGJSON}" --force
+    ./bin/tssc integration --kube-config "$KUBECONFIG" artifactory --url="${ARTIFACTORY_URL}" --token="${ARTIFACTORY_TOKEN} " --dockerconfigjson="${ARTIFACTORY_DOCKERCONFIGJSON}"
   fi
 }
 
@@ -192,7 +192,7 @@ nexus_integration() {
 
     NEXUS_URL="${NEXUS_URL:-$(cat /usr/local/rhtap-cli-install/nexus-ui-url)}"
     NEXUS_DOCKERCONFIGJSON="${NEXUS_DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/nexus-dockerconfig-json)}"
-    ./bin/rhtap-cli integration --kube-config "$KUBECONFIG" nexus --url="${NEXUS_URL}" --dockerconfigjson="${NEXUS_DOCKERCONFIGJSON}"
+    ./bin/tssc integration --kube-config "$KUBECONFIG" nexus --url="${NEXUS_URL}" --dockerconfigjson="${NEXUS_DOCKERCONFIGJSON}"
   fi
 }
 
@@ -279,7 +279,7 @@ install_rhtap() {
 
   echo "[INFO] Applying the cluster configuration, and showing the 'config.yaml'"
   set -x
-  ./bin/rhtap-cli config --kube-config "$KUBECONFIG" --get --create "$config_file"
+  ./bin/tssc config --kube-config "$KUBECONFIG" --get --create "$config_file"
   set +x
 
   echo "[INFO] Print out the content of 'values.yaml.tpl'"
@@ -297,9 +297,9 @@ install_rhtap() {
   artifactory_integration
   nexus_integration
 
-  echo "[INFO] Running 'rhtap-cli deploy' command..."
+  echo "[INFO] Running 'tssc deploy' command..."
   set -x
-  ./bin/rhtap-cli deploy --timeout 35m --values-template "$tpl_file" --kube-config "$KUBECONFIG"
+  ./bin/tssc deploy --timeout 35m --values-template "$tpl_file" --kube-config "$KUBECONFIG"
   set +x
 
   homepage_url=https://$(kubectl -n rhtap-dh get route backstage-developer-hub -o  'jsonpath={.spec.host}')

@@ -162,7 +162,7 @@ rhtap_cli() {
 }
 
 run_bin() {
-    eval "$PROJECT_DIR/bin/rhtap-cli $*"
+    eval "$PROJECT_DIR/bin/tssc $*"
 }
 
 run_container() {
@@ -171,10 +171,10 @@ run_container() {
         --env-file="$ENVFILE" \
         --publish "$CLI_PORT:$CLI_PORT" \
         --rm \
-        --volume="$KUBECONFIG:/rhtap-cli/.kube/config:Z,U" \
-        --volume="$CONFIG:/rhtap-cli/$CONFIG:Z,U" \
+        --volume="$KUBECONFIG:/tssc/.kube/config:Z,U" \
+        --volume="$CONFIG:/tssc/$CONFIG:Z,U" \
         "$CLI_IMAGE" \
-        -c "rhtap-cli $*"
+        -c "tssc $*"
     unshare
 }
 

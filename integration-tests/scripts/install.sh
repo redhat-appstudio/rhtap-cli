@@ -25,6 +25,11 @@ echo "[INFO] auth_config=$auth_config"
 
 tpl_file="installer/charts/values.yaml.tpl"
 config_file="installer/config.yaml"
+subscription_values_file="installer/charts/rhtap-subscriptions/values.yaml"
+
+git restore $tpl_file
+git restore $config_file
+git restore $subscription_values_file
 
 ci_enabled() {
   echo "[INFO] Turn ci to true, this is required when you perform rhtap-e2e automation test against RHTAP"
@@ -191,11 +196,80 @@ nexus_integration() {
   fi
 }
 
+configure_rhtap_for_prerelease_versions_pipelines(){
+  export PRODUCT="pipelines"
+  export NEW_OPERATOR_CHANNEL="latest"
+  export NEW_SOURCE="pipelines-iib"
+  export PIPELINES_IMAGE="quay.io/openshift-pipeline/openshift-pipelines-pipelines-operator-bundle-container-index"
+  export PIPELINES_IMAGE_TAG="v4.17-candidate"
+  pwd
+  ./integration-tests/scripts/pre-release/pipelines-prerelease-install.sh
+}
+
+configure_rhtap_for_prerelease_versions_rhdh(){
+  #Workaround for https://access.redhat.com/solutions/7003837
+  oc patch configs.imageregistry.operator.openshift.io/cluster --type merge -p '{"spec":{"managementState":"Managed"}}'
+
+  RHDH_INSTALL_SCRIPT="https://raw.githubusercontent.com/redhat-developer/rhdh-operator/main/.rhdh/scripts/install-rhdh-catalog-source.sh"
+  curl -sSLO $RHDH_INSTALL_SCRIPT
+  chmod +x install-rhdh-catalog-source.sh
+
+  SHARED_DIR=$(pwd)
+  export SHARED_DIR
+
+  ./install-rhdh-catalog-source.sh --latest --install-operator rhdh
+  export PRODUCT="rhdh"
+  export NEW_OPERATOR_CHANNEL="fast-1.6"
+  export NEW_SOURCE="rhdh-fast"
+}
+
+configure_rhtap_for_prerelease_versions_gitops(){
+  export PRODUCT="gitops"
+  export NEW_OPERATOR_CHANNEL="latest"
+  export NEW_SOURCE="gitops-iib"
+  export GITOPS_IIB_IMAGE="quay.io/rhtap_qe/gitops-iib:782137"
+  ./integration-tests/scripts/pre-release/gitops-prerelease-install.sh
+}
+
+configure_rhtap_for_prerelease_versions(){
+  # Prepare for pre-release install capabilities
+  # Function to update the values
+  update_values() {
+    local section=$1
+    local channel=$2
+    local source=$3
+
+    sed -i "/$section:/,/sourceNamespace:/ {
+      /^ *channel:/ s/: .*/: $channel/
+      /^ *source:/ s/: .*/: $source/
+    }" $subscription_values_file
+  }
+
+  echo "Check the PRODUCT variable and update the corresponding section"
+  if [ "$PRODUCT" == "gitops" ]; then
+    update_values "openshiftGitOps" "$NEW_OPERATOR_CHANNEL" "$NEW_SOURCE"
+  elif [ "$PRODUCT" == "rhdh" ]; then
+    update_values "redHatDeveloperHub" "$NEW_OPERATOR_CHANNEL" "$NEW_SOURCE"
+  elif [ "$PRODUCT" == "pipelines" ]; then
+    update_values "openshiftPipelines" "$NEW_OPERATOR_CHANNEL" "$NEW_SOURCE"
+  else
+    echo "No prerelease product specified nothing needs doing."
+  fi
+  
+  echo "Show subscription values"
+  cat $subscription_values_file
+}
+
 install_rhtap() {
   echo "[INFO] Start installing RHTAP"
   echo "[INFO] Building binary"
   make build
 
+  echo "[INFO] Preparing RHTAP for pre release testing"
+  #configure_rhtap_for_prerelease_versions_pipelines# works?
+  configure_rhtap_for_prerelease_versions_rhdh
+  #configure_rhtap_for_prerelease_versions_gitops
+  configure_rhtap_for_prerelease_versions
   echo "[INFO] Installing RHTAP"
 
   echo "[INFO] Showing the local configuration"

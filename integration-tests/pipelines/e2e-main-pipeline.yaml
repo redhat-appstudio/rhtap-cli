@@ -45,6 +45,8 @@ spec:
             env:
               - name: JOB_SPEC
                 value: $(tasks.test-metadata.results.job-spec)
+              - name: PICT_FILE_LOCATION
+                value: $(PICT_FILE_PATH:integration-tests/pict-models/default.pict)
             script: |
               #!/usr/bin/env bash
               set -x
@@ -53,7 +55,7 @@ spec:
               REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
               BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
 
-              curl -o pict.txt https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
+              curl -o pict.txt https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/PICT_FILE_LOCATION
               ##Workaround: Base64 encode the pict file to avoid issues with removing double quotes
               base64 -w 0 < pict.txt > $(results.pict-file.path)
     - name: generate-configs

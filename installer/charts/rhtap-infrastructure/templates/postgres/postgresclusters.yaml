@@ -3,6 +3,8 @@
 apiVersion: postgres-operator.crunchydata.com/v1beta1
 kind: PostgresCluster
 metadata:
+  annotations:
+    postgres-operator.crunchydata.com/authorizeBackupRemoval: "true"
   labels:
     app: postgres
   namespace: {{ $v.namespace }}
@@ -22,14 +24,6 @@ spec:
       password:
         type: AlphaNumeric
       options: SUPERUSER
-  backups:
-    pgbackrest:
-  {{- with $v.pgbackrestGlobal }}
-      global:
-        {{- toYaml . | nindent 8 }}
-  {{- end }}
-      repos:
-        {{- $v.backupRepos | toYaml | nindent 8 }}
   instances:
     {{- $v.instances | toYaml | nindent 4 }}
   {{ with $v.patroni }}

@@ -16,6 +16,10 @@ spec:
     - name: konflux-test-infra-secret
       description: The name of secret where testing infrastructures credentials are stored.
       type: string
+    - name: PICT_FILE_PATH
+      description: Path to pict file.
+      default: 'integration-tests/pict-models/default.pict'
+      type: string
   tasks:
     - name: test-metadata
       taskRef:
@@ -46,7 +50,7 @@ spec:
               - name: JOB_SPEC
                 value: $(tasks.test-metadata.results.job-spec)
               - name: PICT_FILE_LOCATION
-                value: $(PICT_FILE_PATH:integration-tests/pict-models/default.pict)
+                value: $(params.PICT_FILE_PATH)
             script: |
               #!/usr/bin/env bash
               set -x

@@ -58,11 +58,11 @@ spec:
               echo $PICT_FILE_LOCATION
               ## Download the pict file from the repository under directory integration-tests/pict-models/default.pict
               GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
-              ## Comment this for testing purporses
-              ##REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
-              ##BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
-              REPO_ORG=jkopriva
-              BRANCH=RHTAP-4928
+              REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
+              BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+              
+              # REPO_ORG=jkopriva
+              # BRANCH=RHTAP-4928
 
               curl -o pict.txt https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/$PICT_FILE_LOCATION
               ##Workaround: Base64 encode the pict file to avoid issues with removing double quotes

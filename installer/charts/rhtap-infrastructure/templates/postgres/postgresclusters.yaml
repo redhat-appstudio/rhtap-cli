@@ -24,7 +24,8 @@ spec:
       options: SUPERUSER
   backups:
     pgbackrest:
-  {{- with $v.pgbackrestGlobal }}
+      image: {{ required ".image is required" $v.pgbackrest.image }}
+  {{- with $v.pgbackrest.global }}
       global:
         {{- toYaml . | nindent 8 }}
   {{- end }}

@@ -140,8 +140,10 @@ infrastructure:
       namespace: __OVERWRITE_ME__
       postgresVersion: 14
       image: registry.connect.redhat.com/crunchydata/crunchy-postgres@sha256:6f4db1e9707b196aaa9f98ada5c09523ec00ade573ff835bd1ca6367ac0bb9f1
-      pgbackrestGlobal:
-        repo1-retention-full: "3"
+      pgbackrest:
+        global:
+          repo1-retention-full: "3"
+        image: registry.connect.redhat.com/crunchydata/crunchy-pgbackrest@sha256:7092a1036b0ff04004a45bae296262a97b96cb81eab266ce68197060f6711c6b
       backupRepos:
         - name: repo1
           volume:
@@ -164,8 +166,10 @@ infrastructure:
       namespace: __OVERWRITE_ME__
       postgresVersion: 14
       image: registry.connect.redhat.com/crunchydata/crunchy-postgres@sha256:6f4db1e9707b196aaa9f98ada5c09523ec00ade573ff835bd1ca6367ac0bb9f1
-      pgbackrestGlobal:
-        repo1-retention-full: "3"
+      pgbackrest:
+        global:
+          repo1-retention-full: "3"
+        image: registry.connect.redhat.com/crunchydata/crunchy-pgbackrest@sha256:7092a1036b0ff04004a45bae296262a97b96cb81eab266ce68197060f6711c6b
       backupRepos:
         - name: repo1
           volume:

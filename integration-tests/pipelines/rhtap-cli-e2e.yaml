@@ -170,7 +170,7 @@ spec:
           - name: url
             value: https://github.com/rhopp/rhtap-e2e.git
           - name: revision
-            value: fixCI
+            value: ee2e8cca26057bfd2e84307c30166b58461bdad0
           - name: pathInRepo
             value: integration-tests/tasks/rhtap-e2e.yaml
       params:

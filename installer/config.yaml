@@ -1,32 +1,32 @@
 ---
 rhtapCLI:
-  namespace: &installerNamespace rhtap
+  namespace: &installerNamespace tssc
   features:
     crc:
       enabled: false
     trustedProfileAnalyzer:
       enabled: &tpaEnabled true
-      namespace: &trustedProfileAnalyzerNamespace rhtap-tpa
+      namespace: &trustedProfileAnalyzerNamespace tssc-tpa
       properties:
         manageSubscription: true
     keycloak:
       enabled: *tpaEnabled
-      namespace: rhtap-keycloak
+      namespace: tssc-keycloak
       properties:
         manageSubscription: true
     trustedArtifactSigner:
       enabled: &tasEnabled true
-      namespace: &trustedArtifactSignerNamespace rhtap-tas
+      namespace: &trustedArtifactSignerNamespace tssc-tas
       properties:
         manageSubscription: true
     redHatDeveloperHub:
       enabled: &rhdhEnabled true
-      namespace: &rhdhNamespace rhtap-dh
+      namespace: &rhdhNamespace tssc-dh
       properties:
         catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release-v1.5.x/all.yaml
         manageSubscription: true
         # namespacePrefixes:
-        #   - rhtap-app
+        #   - tssc-app
         # RBAC:
         #   adminUsers:
         #     - myUsername
@@ -35,17 +35,17 @@ rhtapCLI:
         #     - myOrg
     redHatAdvancedClusterSecurity:
       enabled: &rhacsEnabled true
-      namespace: &rhacsNamespace rhtap-acs
+      namespace: &rhacsNamespace tssc-acs
       properties:
         manageSubscription: true
     redHatQuay:
       enabled: &quayEnabled true
-      namespace: &quayNamespace rhtap-quay
+      namespace: &quayNamespace tssc-quay
       properties:
         manageSubscription: true
     openShiftGitOps:
       enabled: &gitopsEnabled true
-      namespace: &gitopsNamespace rhtap-gitops
+      namespace: &gitopsNamespace tssc-gitops
       properties:
         manageSubscription: true
     openShiftPipelines:

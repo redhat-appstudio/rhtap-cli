@@ -20,7 +20,7 @@ Optional arguments:
     -e, --env-file ENVFILE
         Environment variables definitions (default: $SCRIPT_DIR/private.env)
     -n, --namespace NAMESPACE
-        RHTAP installation namespace (default: rhtap)
+        RHTAP installation namespace (default: tssc)
     -d, --debug
         Activate tracing/debug mode.
     -h, --help
@@ -32,7 +32,7 @@ Example:
 }
 
 parse_args() {
-    NAMESPACE="rhtap"
+    NAMESPACE="tssc"
     ENVFILE="$SCRIPT_DIR/private.env"
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -97,8 +97,8 @@ getValues() {
     ROX_CENTRAL_ENDPOINT="$(oc get secrets -n "$NAMESPACE" "$SECRET" -o json | yq '.data.endpoint | @base64d')"
     ROX_API_TOKEN="$(oc get secrets -n "$NAMESPACE" "$SECRET" -o json | yq '.data.token | @base64d')"
 
-    REKOR_HOST="https://$(oc get routes -n rhtap-tas -l "app.kubernetes.io/name=rekor-server" -o jsonpath="{.items[0].spec.host}")"
-    TUF_MIRROR="https://$(oc get routes -n rhtap-tas -l "app.kubernetes.io/name=tuf" -o jsonpath="{.items[0].spec.host}")"
+    REKOR_HOST="https://$(oc get routes -n tssc-tas -l "app.kubernetes.io/name=rekor-server" -o jsonpath="{.items[0].spec.host}")"
+    TUF_MIRROR="https://$(oc get routes -n tssc-tas -l "app.kubernetes.io/name=tuf" -o jsonpath="{.items[0].spec.host}")"
 }
 
 getSCMs() {

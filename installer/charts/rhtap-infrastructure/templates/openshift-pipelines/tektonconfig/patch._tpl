@@ -2,7 +2,7 @@
 spec:
   chain:
     transparency.enabled: 'true'
-    transparency.url: http://rekor-server.rhtap-tas.svc
+    transparency.url: http://rekor-server.tssc-tas.svc
   platforms:
     openshift:
       pipelinesAsCode:

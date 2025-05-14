@@ -18,7 +18,7 @@ Optional arguments:
     --insecure
         Disable TLS certificate validation in the integration
     -n, --namespace NAMESPACE
-        RHTAP installation namespace (default: rhtap)
+        RHTAP installation namespace (default: tssc)
     -d, --debug
         Activate tracing/debug mode.
     -h, --help
@@ -30,7 +30,7 @@ Example:
 }
 
 parse_args() {
-    NAMESPACE="${NAMESPACE:-rhtap}"
+    NAMESPACE="${NAMESPACE:-tssc}"
     INSECURE="false"
     while [[ $# -gt 0 ]]; do
         case $1 in

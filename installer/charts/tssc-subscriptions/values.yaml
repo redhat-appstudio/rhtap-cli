@@ -88,7 +88,7 @@ subscriptions:
     apiResource: backstages.rhdh.redhat.com
     namespace: openshift-operators
     name: rhdh
-    channel: fast-1.5
+    channel: fast-1.6
     source: redhat-operators
     sourceNamespace: openshift-marketplace
   redHatOpenShiftDataFoundation:

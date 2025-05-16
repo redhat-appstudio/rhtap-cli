@@ -1,7 +1,7 @@
 ---
 tssc:
   namespace: &installerNamespace tssc
-  features:
+  products:
     crc:
       enabled: false
     trustedProfileAnalyzer:

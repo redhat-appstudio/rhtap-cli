@@ -185,11 +185,11 @@ unshare() {
 configure() {
     if [ -n "${CATALOG_URL:-}" ]; then
         export CATALOG_URL
-        yq -i '.tssc.features.redHatDeveloperHub.properties.catalogURL=strenv(CATALOG_URL)' "$CONFIG"
+        yq -i '.tssc.products.redHatDeveloperHub.properties.catalogURL=strenv(CATALOG_URL)' "$CONFIG"
     fi
 
     if [[ -n "${ACS:-}" ]]; then
-        yq -i '.tssc.features.redHatAdvancedClusterSecurity.enabled=false' "$CONFIG"
+        yq -i '.tssc.products.redHatAdvancedClusterSecurity.enabled=false' "$CONFIG"
     fi
     if [[ -n "${CI:-}" ]]; then
         sed -i 's/\( *ci\): .*/\1: true/' "$VALUES"
@@ -198,16 +198,16 @@ configure() {
         yq -i '.tssc.dependencies[] |= select(.chart == "charts/tssc-dh").enabled = false' "$CONFIG"
     fi
     if [[ -n "${GITOPS:-}" ]]; then
-        yq -i '.tssc.features.openShiftGitOps.enabled=false' "$CONFIG"
+        yq -i '.tssc.products.openShiftGitOps.enabled=false' "$CONFIG"
     fi
     if [[ -n "${QUAY:-}" ]]; then
-        yq -i '.tssc.features.redHatQuay.enabled=false' "$CONFIG"
+        yq -i '.tssc.products.redHatQuay.enabled=false' "$CONFIG"
     fi
     if [[ -n "${TAS:-}" ]]; then
-        yq -i '.tssc.features.trustedArtifactSigner.enabled=false' "$CONFIG"
+        yq -i '.tssc.products.trustedArtifactSigner.enabled=false' "$CONFIG"
     fi
     if [[ -n "${TPA:-}" ]]; then
-        yq -i '.tssc.features.trustedProfileAnalyzer.enabled=false' "$CONFIG"
+        yq -i '.tssc.products.trustedProfileAnalyzer.enabled=false' "$CONFIG"
     fi
     cd "$(dirname "$CONFIG")"
     tssc_cli config --force --create "$(basename "$CONFIG")"

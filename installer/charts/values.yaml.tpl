@@ -1,12 +1,12 @@
-{{- $crc := required "CRC settings" .Installer.Features.crc -}}
-{{- $tas := required "TAS settings" .Installer.Features.trustedArtifactSigner -}}
-{{- $tpa := required "TPA settings" .Installer.Features.trustedProfileAnalyzer -}}
-{{- $keycloak := required "Keycloak settings" .Installer.Features.keycloak -}}
-{{- $acs := required "Red Hat ACS settings" .Installer.Features.redHatAdvancedClusterSecurity -}}
-{{- $gitops := required "GitOps settings" .Installer.Features.openShiftGitOps -}}
-{{- $pipelines := required "Pipelines settings" .Installer.Features.openShiftPipelines -}}
-{{- $quay := required "Quay settings" .Installer.Features.redHatQuay -}}
-{{- $rhdh := required "RHDH settings" .Installer.Features.redHatDeveloperHub -}}
+{{- $crc := required "CRC settings" .Installer.Products.crc -}}
+{{- $tas := required "TAS settings" .Installer.Products.trustedArtifactSigner -}}
+{{- $tpa := required "TPA settings" .Installer.Products.trustedProfileAnalyzer -}}
+{{- $keycloak := required "Keycloak settings" .Installer.Products.keycloak -}}
+{{- $acs := required "Red Hat ACS settings" .Installer.Products.advancedClusterSecurity -}}
+{{- $gitops := required "GitOps settings" .Installer.Products.openShiftGitOps -}}
+{{- $pipelines := required "Pipelines settings" .Installer.Products.openShiftPipelines -}}
+{{- $quay := required "Quay settings" .Installer.Products.quay -}}
+{{- $rhdh := required "RHDH settings" .Installer.Products.developerHub -}}
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 {{- $ingressRouterCA := required "OpenShift RouterCA" .OpenShift.Ingress.RouterCA -}}
 {{- $openshiftMinorVersion := required "OpenShift Version" .OpenShift.MinorVersion -}}
@@ -85,16 +85,16 @@ subscriptions:
   openshiftTrustedArtifactSigner:
     enabled: {{ $tas.Enabled }}
     managed: {{ and $tas.Enabled $tas.Properties.manageSubscription }}
-  redHatAdvancedClusterSecurity:
+  advancedClusterSecurity:
     enabled: {{ $acs.Enabled }}
     managed: {{ and $acs.Enabled $acs.Properties.manageSubscription }}
-  redHatDeveloperHub:
+  developerHub:
     enabled: {{ $rhdh.Enabled }}
     managed: {{ and $rhdh.Enabled $rhdh.Properties.manageSubscription }}
-  redHatQuay:
+  quay:
     enabled: {{ $quay.Enabled }}
     managed: {{ and $quay.Enabled $quay.Properties.manageSubscription }}
-  redHatOpenShiftDataFoundation:
+  openShiftDataFoundation:
     enabled: {{ $odfEnabled }}
     managed: {{ $odfEnabled }}
     namespace: {{ $odfNamespace }}

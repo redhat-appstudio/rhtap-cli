@@ -112,7 +112,7 @@ init() {
 
 action() {
     CONFIG="$PROJECT_DIR/installer/config.yaml"
-    NAMESPACE="$(yq '.rhtapCLI.namespace' "$CONFIG")"
+    NAMESPACE="$(yq '.cli.namespace' "$CONFIG")"
 
     if [ -n "${CLUSTER:-}" ]; then
         echo '# Cluster'

@@ -59,25 +59,25 @@ The [`config.yaml`](installer/config.yaml) file is structured to outline key com
 
 ```yaml
 ---
-rhtapCLI:
+cli:
   namespace: rhtap
   features: {}
   dependencies: {}
 ```
 
-The attributes of the `rhtapCLI` object are as follows:
+The attributes of the `cli` object are as follows:
 
 - `.namespace`: Specifies the default namespace used by the installer, set to rhtap. This namespace acts as the primary operational area for the installation process.
 - `.features`: Defines the features to be deployed by the installer. Each feature is identified by a unique name and a set of properties.
 - `.dependencies`: Specifies the dependencies rolled out by the installer in the specific order defined in the configuration file.
 
-## `rhtapCLI.features`
+## `cli.features`
 
 Defines the features the installer will deploy. Each feature is defined by a unique name and a set of properties. For instance, the following snippet defines a `featureName` block:
 
 ```yaml
 ---
-rhtapCLI:
+cli:
   features:
     featureName:
       enabled: true
@@ -93,12 +93,12 @@ With the following attributes:
 
 This data can be leveraged for templating using the [`values.yaml.tpl`](#template-functions) file.
 
-## `rhtapCLI.dependencies`
+## `cli.dependencies`
 
 Each dependency is defined by a unique name and a set of attributes. The installer will deploy these dependencies in the order specified in the configuration file. For instance:
 
 ```yaml
-rhtapCLI:
+cli:
   dependencies:
     - chart: path/to/chart/directory 
       namespace: namespace
@@ -149,7 +149,7 @@ install --mode=755 bin/tssc /usr/local/bin
 
 Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) for more information on building the project from source requirements. Then, follow the steps below to install the `tssc` binary from source:
 
-1. Clone [the repository][rhtapCLI], and navigate to the `rhtap-cli` directory.
+1. Clone [the repository][https://github.com/redhat-appstudio/rhtap-cli.git], and navigate to the `rhtap-cli` directory.
 
 ```bash
 git clone --depth=1 https://github.com/redhat-appstudio/rhtap-cli.git && \

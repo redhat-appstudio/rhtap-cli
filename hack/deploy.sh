@@ -150,7 +150,7 @@ init_config() {
     cp "$KUBECONFIG" "$CONFIG_DIR/kubeconfig"
     KUBECONFIG="$CONFIG_DIR/kubeconfig"
 
-    NAMESPACE="$(yq '.rhtapCLI.namespace' "$CONFIG")"
+    NAMESPACE="$(yq '.cli.namespace' "$CONFIG")"
     export NAMESPACE
 
     # shellcheck disable=SC1090
@@ -185,29 +185,29 @@ unshare() {
 configure() {
     if [ -n "${CATALOG_URL:-}" ]; then
         export CATALOG_URL
-        yq -i '.rhtapCLI.features.redHatDeveloperHub.properties.catalogURL=strenv(CATALOG_URL)' "$CONFIG"
+        yq -i '.cli.features.redHatDeveloperHub.properties.catalogURL=strenv(CATALOG_URL)' "$CONFIG"
     fi
 
     if [[ -n "${ACS:-}" ]]; then
-        yq -i '.rhtapCLI.features.redHatAdvancedClusterSecurity.enabled=false' "$CONFIG"
+        yq -i '.cli.features.redHatAdvancedClusterSecurity.enabled=false' "$CONFIG"
     fi
     if [[ -n "${CI:-}" ]]; then
         sed -i 's/\( *ci\): .*/\1: true/' "$VALUES"
     fi
     if [[ -n "${DH:-}" ]]; then
-        yq -i '.rhtapCLI.dependencies[] |= select(.chart == "charts/rhtap-dh").enabled = false' "$CONFIG"
+        yq -i '.cli.dependencies[] |= select(.chart == "charts/rhtap-dh").enabled = false' "$CONFIG"
     fi
     if [[ -n "${GITOPS:-}" ]]; then
-        yq -i '.rhtapCLI.features.openShiftGitOps.enabled=false' "$CONFIG"
+        yq -i '.cli.features.openShiftGitOps.enabled=false' "$CONFIG"
     fi
     if [[ -n "${QUAY:-}" ]]; then
-        yq -i '.rhtapCLI.features.redHatQuay.enabled=false' "$CONFIG"
+        yq -i '.cli.features.redHatQuay.enabled=false' "$CONFIG"
     fi
     if [[ -n "${TAS:-}" ]]; then
-        yq -i '.rhtapCLI.features.trustedArtifactSigner.enabled=false' "$CONFIG"
+        yq -i '.cli.features.trustedArtifactSigner.enabled=false' "$CONFIG"
     fi
     if [[ -n "${TPA:-}" ]]; then
-        yq -i '.rhtapCLI.features.trustedProfileAnalyzer.enabled=false' "$CONFIG"
+        yq -i '.cli.features.trustedProfileAnalyzer.enabled=false' "$CONFIG"
     fi
     cd "$(dirname "$CONFIG")"
     rhtap_cli config --force --create "$(basename "$CONFIG")"

@@ -29,7 +29,7 @@ func (r *RootCmd) Cmd() *cobra.Command {
 	r.cmd.AddCommand(subcmd.NewIntegration(logger, r.kube))
 
 	for _, sub := range []subcmd.Interface{
-		subcmd.NewConfig(logger, r.cfs, r.kube),
+		subcmd.NewConfig(logger, r.flags, r.cfs, r.kube),
 		subcmd.NewDeploy(logger, r.flags, r.cfs, r.kube),
 		subcmd.NewTemplate(logger, r.flags, r.cfs, r.kube),
 		subcmd.NewInstaller(r.flags),

@@ -51,7 +51,7 @@ plugins:
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-community-plugin-azure-devops
     # The default pluginConfig also includes EntityAzurePullRequestsContent which is not supported
-    # in RHTAP and causes 500 errors when loading the PR/MR tab:
+    # in TSSC and causes 500 errors when loading the PR/MR tab:
     # https://issues.redhat.com/browse/RHTAP-4837
     pluginConfig:
       dynamicPlugins:

@@ -13,22 +13,22 @@ spec:
       description: "The job specification containing details of the test execution."
     - name: acs_config
       type: string
-      description: "The ACS option for rhtap-cli installation. Valid values are 'new' and 'hosted'."
+      description: "The ACS option for tssc installation. Valid values are 'new' and 'hosted'."
     - name: tpa_config
       type: string
-      description: "The TPA option for rhtap-cli installation. Valid values are 'new' and 'hosted'."
+      description: "The TPA option for tssc installation. Valid values are 'new' and 'hosted'."
     - name: registry_config
       type: string
-      description: "The image registry option for rhtap-cli installation. Valid values are 'quay', 'quayio' and 'artifactory'."
+      description: "The image registry option for tssc installation. Valid values are 'quay', 'quayio' and 'artifactory'."
     - name: scm_config
       type: string
-      description: "The SCM option for rhtap-cli installation. Valid values are 'github' , 'gitlab' and 'bitbucket'."
+      description: "The SCM option for tssc installation. Valid values are 'github' , 'gitlab' and 'bitbucket'."
     - name: pipeline_config
       type: string
-      description: "The Pipeline option for rhtap-cli installation. Valid values are 'tekton' and 'jenkins'."
+      description: "The Pipeline option for tssc installation. Valid values are 'tekton' and 'jenkins'."
     - name: auth_config
       type: string
-      description: "The authentication provider for rhtap. Valid values are 'github' and 'gitlab'."
+      description: "The authentication provider for tssc. Valid values are 'github' and 'gitlab'."
   volumes:
     - name: rhtap-cli-volume
       secret:
@@ -72,7 +72,7 @@ spec:
             git clone https://github.com/redhat-appstudio/rhtap-cli.git .
         fi
 
-        # Generate the .env file for rhtap-cli installation based on the configuration given in the pict file
+        # Generate the .env file for tssc installation based on the configuration given in the pict file
         env_file="integration-tests/scripts/.ci-env"
         echo "export acs_config=\"$(params.acs_config)\"" >> ${env_file}
         echo "export tpa_config=\"$(params.tpa_config)\"" >> ${env_file}
@@ -81,9 +81,9 @@ spec:
         echo "export pipeline_config=\"$(params.pipeline_config)\"" >> ${env_file}
         echo "export auth_config=\"$(params.auth_config)\"" >> ${env_file}
 
-        echo "INFO: .env file for rhtap-cli installation"
+        echo "INFO: .env file for tssc installation"
         cat ${env_file}
-        # Deploy rhtap
+        # Deploy tssc
         source ${env_file}
         ./integration-tests/scripts/ci-oc-login.sh
         ./integration-tests/scripts/minio.sh

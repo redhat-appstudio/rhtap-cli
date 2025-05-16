@@ -7,7 +7,7 @@ spec:
     openshift:
       pipelinesAsCode:
         settings:
-          application-name: RHTAP CI
+          application-name: TSSC CI
           remember-ok-to-test: 'false'
   pruner:
     keep: 2

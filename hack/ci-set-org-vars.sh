@@ -20,7 +20,7 @@ Optional arguments:
     -e, --env-file ENVFILE
         Environment variables definitions (default: $SCRIPT_DIR/private.env)
     -n, --namespace NAMESPACE
-        RHTAP installation namespace (default: tssc)
+        TSSC installation namespace (default: tssc)
     -d, --debug
         Activate tracing/debug mode.
     -h, --help

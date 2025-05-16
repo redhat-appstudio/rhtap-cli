@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Manage a full deployment of RHTAP based on values from an env file
+# Manage a full deployment of TSSC based on values from an env file
 # and a few parameters
 
 # shellcheck disable=SC2016
@@ -131,8 +131,8 @@ build() {
         make
     else
         if [ "${CLI_IMAGE:-}" = "dev" ]; then
-            podman build . -t rhtap-cli
-            CLI_IMAGE="rhtap-cli:latest"
+            podman build . -t tssc
+            CLI_IMAGE="tssc:latest"
         fi
     fi
 }
@@ -157,7 +157,7 @@ init_config() {
     source "$ENVFILE"
 }
 
-rhtap_cli() {
+tssc_cli() {
     $CLI "$@"
 }
 
@@ -195,7 +195,7 @@ configure() {
         sed -i 's/\( *ci\): .*/\1: true/' "$VALUES"
     fi
     if [[ -n "${DH:-}" ]]; then
-        yq -i '.rhtapCLI.dependencies[] |= select(.chart == "charts/rhtap-dh").enabled = false' "$CONFIG"
+        yq -i '.rhtapCLI.dependencies[] |= select(.chart == "charts/tssc-dh").enabled = false' "$CONFIG"
     fi
     if [[ -n "${GITOPS:-}" ]]; then
         yq -i '.rhtapCLI.features.openShiftGitOps.enabled=false' "$CONFIG"
@@ -210,25 +210,25 @@ configure() {
         yq -i '.rhtapCLI.features.trustedProfileAnalyzer.enabled=false' "$CONFIG"
     fi
     cd "$(dirname "$CONFIG")"
-    rhtap_cli config --force --create "$(basename "$CONFIG")"
+    tssc_cli config --force --create "$(basename "$CONFIG")"
     cd - >/dev/null
 }
 
 integrations() {
     if [[ -n "${ACS:-}" ]]; then
-        rhtap_cli integration acs --force \
+        tssc_cli integration acs --force \
             --endpoint='"$ACS__CENTRAL_ENDPOINT"' \
             --token='"$ACS__API_TOKEN"'
     fi
     if [[ -n "${BITBUCKET:-}" ]]; then
-        rhtap_cli integration bitbucket --force \
+        tssc_cli integration bitbucket --force \
             --app-password='"$BITBUCKET__APP_PASSWORD"' \
             --host='"$BITBUCKET__HOST"' \
             --username='"$BITBUCKET__USERNAME"'
     fi
     if [[ -n "${GITHUB:-}" ]]; then
         if ! kubectl get secret -n "$NAMESPACE" tssc-github-integration >/dev/null 2>&1; then
-            rhtap_cli integration github-app \
+            tssc_cli integration github-app \
                 --create \
                 --token='"$GITHUB__ORG_TOKEN"' \
                 --org='"$GITHUB__ORG"' \
@@ -237,34 +237,34 @@ integrations() {
     fi
     if [[ -n "${GITLAB:-}" ]]; then
         if [[ -n "${GITLAB__APP__CLIENT__ID:-}" && -n "${GITLAB__APP__CLIENT__SECRET:-}" ]]; then
-            rhtap_cli integration gitlab --force \
+            tssc_cli integration gitlab --force \
                 --app-id='"$GITLAB__APP__CLIENT__ID"' \
                 --app-secret='"$GITLAB__APP__CLIENT__SECRET"' \
                 --group='"$GITLAB__GROUP"' \
                 --host='"$GITLAB__HOST"' \
                 --token='"$GITLAB__TOKEN"'
         else
-            rhtap_cli integration gitlab --force \
+            tssc_cli integration gitlab --force \
                 --group='"$GITLAB__GROUP"' \
                 --host='"$GITLAB__HOST"' \
                 --token='"$GITLAB__TOKEN"'
         fi
     fi
     if [[ -n "${JENKINS:-}" ]]; then
-        rhtap_cli integration jenkins --force \
+        tssc_cli integration jenkins --force \
             --token='"$JENKINS__TOKEN"' \
             --url='"$JENKINS__URL"' \
             --username='"$JENKINS__USERNAME"'
     fi
     if [[ -n "${QUAY:-}" ]]; then
-        rhtap_cli integration quay --force \
+        tssc_cli integration quay --force \
             --dockerconfigjson='"$QUAY__DOCKERCONFIGJSON"' \
             --token='"$QUAY__API_TOKEN"' --url='"$QUAY__URL"'
     fi
 }
 
 deploy() {
-    time rhtap_cli deploy "${DEBUG:-}"
+    time tssc_cli deploy "${DEBUG:-}"
 }
 
 configure_ci() {

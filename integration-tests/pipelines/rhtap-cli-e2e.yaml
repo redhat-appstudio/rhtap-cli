@@ -170,7 +170,7 @@ spec:
           - name: url
             value: https://github.com/redhat-appstudio/rhtap-e2e.git
           - name: revision
-            value: main
+            value: rhtap
           - name: pathInRepo
             value: integration-tests/tasks/rhtap-e2e.yaml
       params:

@@ -185,11 +185,11 @@ unshare() {
 configure() {
     if [ -n "${CATALOG_URL:-}" ]; then
         export CATALOG_URL
-        yq -i '.cli.products.redHatDeveloperHub.properties.catalogURL=strenv(CATALOG_URL)' "$CONFIG"
+        yq -i '.cli.products.developerHub.properties.catalogURL=strenv(CATALOG_URL)' "$CONFIG"
     fi
 
     if [[ -n "${ACS:-}" ]]; then
-        yq -i '.cli.products.redHatAdvancedClusterSecurity.enabled=false' "$CONFIG"
+        yq -i '.cli.products.advancedClusterSecurity.enabled=false' "$CONFIG"
     fi
     if [[ -n "${CI:-}" ]]; then
         sed -i 's/\( *ci\): .*/\1: true/' "$VALUES"
@@ -201,7 +201,7 @@ configure() {
         yq -i '.cli.products.openShiftGitOps.enabled=false' "$CONFIG"
     fi
     if [[ -n "${QUAY:-}" ]]; then
-        yq -i '.cli.products.redHatQuay.enabled=false' "$CONFIG"
+        yq -i '.cli.products.quay.enabled=false' "$CONFIG"
     fi
     if [[ -n "${TAS:-}" ]]; then
         yq -i '.cli.products.trustedArtifactSigner.enabled=false' "$CONFIG"

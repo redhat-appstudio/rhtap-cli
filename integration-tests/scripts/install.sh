@@ -27,7 +27,7 @@ tpl_file="installer/charts/values.yaml.tpl"
 config_file="installer/config.yaml"
 
 ci_enabled() {
-  echo "[INFO] Turn ci to true, this is required when you perform rhtap-e2e automation test against RHTAP"
+  echo "[INFO] Turn ci to true, this is required when you perform rhtap-e2e automation test against TSSC"
   sed -i'' -e 's/ci: false/ci: true/g' "$tpl_file"
 }
 
@@ -44,7 +44,7 @@ update_dh_catalog_url() {
 github_integration() {
   # if scm_config is "github", then perform the github integration
   if [[ "${scm_config}" == "github" || "$auth_config" == "github" ]]; then
-    echo "[INFO] Config Github integration with RHTAP"
+    echo "[INFO] Config Github integration with TSSC"
 
     GITHUB__APP__ID="${GITHUB__APP__ID:-$(cat /usr/local/rhtap-cli-install/rhdh-github-app-id)}"
     GITHUB__APP__CLIENT__ID="${GITHUB__APP__CLIENT__ID:-$(cat /usr/local/rhtap-cli-install/rhdh-github-client-id)}"
@@ -70,7 +70,7 @@ EOF
 
 jenkins_integration() {
   if [[ "${pipeline_config}" == "jenkins" ]]; then
-    echo "[INFO] Integrates an exising Jenkins server into RHTAP"
+    echo "[INFO] Integrates an exising Jenkins server into TSSC"
 
     JENKINS_API_TOKEN="${JENKINS_API_TOKEN:-$(cat /usr/local/rhtap-cli-install/jenkins-api-token)}"
     JENKINS_URL="${JENKINS_URL:-$(cat /usr/local/rhtap-cli-install/jenkins-url)}"
@@ -82,7 +82,7 @@ jenkins_integration() {
 
 gitlab_integration() {
   if [[ "${scm_config}" == "gitlab" || "$auth_config" = "gitlab" ]]; then
-    echo "[INFO] Configure Gitlab integration into RHTAP"
+    echo "[INFO] Configure Gitlab integration into TSSC"
 
     GITLAB__TOKEN="${GITLAB__TOKEN:-$(cat /usr/local/rhtap-cli-install/gitlab_token)}"
 
@@ -107,7 +107,7 @@ disable_quay() {
 
 quayio_integration() {
   if [[ "${registry_config}" == "quay.io" ]]; then
-    echo "[INFO] Configure quay.io integration into RHTAP"
+    echo "[INFO] Configure quay.io integration into TSSC"
 
     QUAY__DOCKERCONFIGJSON="${QUAY__DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/quay-dockerconfig-json)}"
     QUAY__API_TOKEN="${QUAY__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/quay-api-token)}"
@@ -128,7 +128,7 @@ disable_acs() {
 
 acs_integration() {
   if [[ "${acs_config}" == "hosted" ]]; then
-    echo "[INFO] Configure an existing intance of ACS integration into RHTAP"
+    echo "[INFO] Configure an existing intance of ACS integration into TSSC"
 
     ACS__CENTRAL_ENDPOINT="${ACS__CENTRAL_ENDPOINT:-$(cat /usr/local/rhtap-cli-install/acs-central-endpoint)}"
     ACS__API_TOKEN="${ACS__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/acs-api-token)}"
@@ -139,7 +139,7 @@ acs_integration() {
 
 bitbucket_integration() {
   if [[ "${scm_config}" == "bitbucket" ]]; then
-    echo "[INFO] Configure Bitbucket integration into RHTAP"
+    echo "[INFO] Configure Bitbucket integration into TSSC"
 
     BITBUCKET_USERNAME="${BITBUCKET_USERNAME:-$(cat /usr/local/rhtap-cli-install/bitbucket-username)}"
     BITBUCKET_APP_PASSWORD="${BITBUCKET_APP_PASSWORD:-$(cat /usr/local/rhtap-cli-install/bitbucket-app-password)}"
@@ -159,7 +159,7 @@ disable_tpa() {
 
 tpa_integration() {
   if [[ "${tpa_config}" == "hosted" ]]; then
-    echo "[INFO] Configure a hosted TPA integration into RHTAP"
+    echo "[INFO] Configure a hosted TPA integration into TSSC"
 
     BOMBASTIC_API_URL="${BOMBASTIC_API_URL:-$(cat /usr/local/rhtap-cli-install/bombastic-api-url)}"
     OIDC_CLIENT_ID="${OIDC_CLIENT_ID:-$(cat /usr/local/rhtap-cli-install/oidc-client-id)}"
@@ -172,7 +172,7 @@ tpa_integration() {
 
 artifactory_integration() {
   if [[ "${registry_config}" == "artifactory" ]]; then
-    echo "[INFO] Configure Artifactory integration into RHTAP"
+    echo "[INFO] Configure Artifactory integration into TSSC"
 
     ARTIFACTORY_URL="${ARTIFACTORY_URL:-$(cat /usr/local/rhtap-cli-install/artifactory-url)}"
     ARTIFACTORY_TOKEN="${ARTIFACTORY_TOKEN:-$(cat /usr/local/rhtap-cli-install/artifactory-token)}"
@@ -183,7 +183,7 @@ artifactory_integration() {
 
 nexus_integration() {
   if [[ "${registry_config}" == "nexus" ]]; then
-    echo "[INFO] Configure Nexus integration into RHTAP"
+    echo "[INFO] Configure Nexus integration into TSSC"
 
     NEXUS_URL="${NEXUS_URL:-$(cat /usr/local/rhtap-cli-install/nexus-ui-url)}"
     NEXUS_DOCKERCONFIGJSON="${NEXUS_DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/nexus-dockerconfig-json)}"
@@ -191,12 +191,12 @@ nexus_integration() {
   fi
 }
 
-install_rhtap() {
-  echo "[INFO] Start installing RHTAP"
+install_tssc() {
+  echo "[INFO] Start installing TSSC"
   echo "[INFO] Building binary"
   make build
 
-  echo "[INFO] Installing RHTAP"
+  echo "[INFO] Installing TSSC"
 
   echo "[INFO] Showing the local configuration"
   set -x
@@ -243,4 +243,4 @@ update_dh_catalog_url
 disable_quay
 disable_acs
 disable_tpa
-install_rhtap
+install_tssc

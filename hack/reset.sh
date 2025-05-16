@@ -21,7 +21,7 @@ Optional arguments:
     -a, --all
         Reset the cluster and integration services.
     -c, --cluster
-        Reset all RHTAP namespaces in the cluster.
+        Reset all TSSC namespaces in the cluster.
     -e, --env-file
         Environment variables definitions (default: $SCRIPT_DIR/private.env)
     -n, --namespace NAMESPACE

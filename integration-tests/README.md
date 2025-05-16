@@ -1,6 +1,6 @@
 # E2E integration tests
 
-This folder contains resources for running multi-level e2e for RHTAP in Konflux
+This folder contains resources for running multi-level e2e for TSSC in Konflux
 
 ## Prerequisites
 In order to succesfully run this integration test one must:
@@ -47,6 +47,6 @@ This is the main pipeline used by our IntegrationTestScenario. It has 3 phases
 
 Pipeline that given parameters:
 1) Creates ephemeral cluster
-2) Installs RHTAP
+2) Installs TSSC
 3) Runs rhtap-e2e tests
 4) Teardown (archive artifacts, destroy cluster, ...)

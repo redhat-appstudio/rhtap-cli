@@ -71,7 +71,7 @@ stackrox_generate_api_token() {
             --silent \
             --insecure \
             --user "${ROX_USERNAME}:${ROX_PASSWORD}" \
-            --data '{"name":"RHTAP", "role": "Admin"}' \
+            --data '{"name":"TSSC", "role": "Admin"}' \
             "${api_url}"
     )"
     [[ $? -ne 0 || -z "${output}" ]] &&

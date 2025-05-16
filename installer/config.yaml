@@ -1,5 +1,5 @@
 ---
-rhtapCLI:
+tssc:
   namespace: &installerNamespace tssc
   features:
     crc:

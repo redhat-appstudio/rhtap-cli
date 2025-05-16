@@ -35,7 +35,7 @@ update_dh_catalog_url() {
   # if DEVELOPER_HUB__CATALOG__URL is not empty string, then update the catalog url
   if [[ -n "${DEVELOPER_HUB__CATALOG__URL}" ]]; then
     echo "[INFO] Update dh catalog url with $DEVELOPER_HUB__CATALOG__URL"
-    yq -i ".rhtapCLI.features.redHatDeveloperHub.properties.catalogURL = strenv(DEVELOPER_HUB__CATALOG__URL)" "${config_file}"
+    yq -i ".tssc.features.redHatDeveloperHub.properties.catalogURL = strenv(DEVELOPER_HUB__CATALOG__URL)" "${config_file}"
   fi
 }
 
@@ -101,7 +101,7 @@ disable_quay() {
   if [[ "${registry_config}" != "quay" ]]; then
   
     echo "[INFO] Disable Quay installation"
-    yq e '.rhtapCLI.features.redHatQuay.enabled = false' -i "${config_file}"
+    yq e '.tssc.features.redHatQuay.enabled = false' -i "${config_file}"
   fi
 }
 
@@ -122,7 +122,7 @@ quayio_integration() {
 disable_acs() {
   if [[ "${acs_config}" == "hosted" ]]; then
     echo "[INFO] Disable ACS installation"
-    yq e '.rhtapCLI.features.redHatAdvancedClusterSecurity.enabled = false' -i "${config_file}"
+    yq e '.tssc.features.redHatAdvancedClusterSecurity.enabled = false' -i "${config_file}"
   fi
 }
 
@@ -153,7 +153,7 @@ bitbucket_integration() {
 disable_tpa() {
   if [[ "${tpa_config}" == "hosted" ]]; then
     echo "[INFO] Disable TPA installation"
-    yq e '.rhtapCLI.features.trustedProfileAnalyzer.enabled = false' -i "${config_file}"
+    yq e '.tssc.features.trustedProfileAnalyzer.enabled = false' -i "${config_file}"
   fi
 }
 

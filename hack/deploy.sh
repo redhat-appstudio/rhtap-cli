@@ -185,11 +185,11 @@ unshare() {
 configure() {
     if [ -n "${CATALOG_URL:-}" ]; then
         export CATALOG_URL
-        yq -i '.cli.features.redHatDeveloperHub.properties.catalogURL=strenv(CATALOG_URL)' "$CONFIG"
+        yq -i '.cli.products.redHatDeveloperHub.properties.catalogURL=strenv(CATALOG_URL)' "$CONFIG"
     fi
 
     if [[ -n "${ACS:-}" ]]; then
-        yq -i '.cli.features.redHatAdvancedClusterSecurity.enabled=false' "$CONFIG"
+        yq -i '.cli.products.redHatAdvancedClusterSecurity.enabled=false' "$CONFIG"
     fi
     if [[ -n "${CI:-}" ]]; then
         sed -i 's/\( *ci\): .*/\1: true/' "$VALUES"
@@ -198,16 +198,16 @@ configure() {
         yq -i '.cli.dependencies[] |= select(.chart == "charts/rhtap-dh").enabled = false' "$CONFIG"
     fi
     if [[ -n "${GITOPS:-}" ]]; then
-        yq -i '.cli.features.openShiftGitOps.enabled=false' "$CONFIG"
+        yq -i '.cli.products.openShiftGitOps.enabled=false' "$CONFIG"
     fi
     if [[ -n "${QUAY:-}" ]]; then
-        yq -i '.cli.features.redHatQuay.enabled=false' "$CONFIG"
+        yq -i '.cli.products.redHatQuay.enabled=false' "$CONFIG"
     fi
     if [[ -n "${TAS:-}" ]]; then
-        yq -i '.cli.features.trustedArtifactSigner.enabled=false' "$CONFIG"
+        yq -i '.cli.products.trustedArtifactSigner.enabled=false' "$CONFIG"
     fi
     if [[ -n "${TPA:-}" ]]; then
-        yq -i '.cli.features.trustedProfileAnalyzer.enabled=false' "$CONFIG"
+        yq -i '.cli.products.trustedProfileAnalyzer.enabled=false' "$CONFIG"
     fi
     cd "$(dirname "$CONFIG")"
     rhtap_cli config --force --create "$(basename "$CONFIG")"

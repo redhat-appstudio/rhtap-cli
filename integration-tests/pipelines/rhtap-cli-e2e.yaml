@@ -5,9 +5,9 @@ metadata:
   name: rhtap-install-e2e
 spec:
   description: |-
-    This pipeline automates the process of running end-to-end tests for RHTAP
+    This pipeline automates the process of running end-to-end tests for TSSC
     using a ROSA (Red Hat OpenShift Service on AWS) cluster. The pipeline provisions
-    the ROSA cluster, installs RHTAP using the installer, runs the tests, collects artifacts,
+    the ROSA cluster, installs TSSC using the installer, runs the tests, collects artifacts,
     and finally deprovisions the ROSA cluster.
   params:
     - name: test-name
@@ -40,22 +40,22 @@ spec:
       type: string
     - name: acs_config
       type: string
-      description: "The ACS option for rhtap-cli installation. Valid values are 'new' and 'hosted'."
+      description: "The ACS option for tssc installation. Valid values are 'new' and 'hosted'."
     - name: tpa_config
       type: string
-      description: "The TPA option for rhtap-cli installation. Valid values are 'new' and 'hosted'."
+      description: "The TPA option for tssc installation. Valid values are 'new' and 'hosted'."
     - name: registry_config
       type: string
-      description: "The image registry option for rhtap-cli installation. Valid values are 'quay', 'quay.io' and 'artifactory'."
+      description: "The image registry option for tssc installation. Valid values are 'quay', 'quay.io' and 'artifactory'."
     - name: scm_config
       type: string
-      description: "The SCM option for rhtap-cli installation. Valid values are 'github' , 'gitlab' and 'bitbucket'."
+      description: "The SCM option for tssc installation. Valid values are 'github' , 'gitlab' and 'bitbucket'."
     - name: pipeline_config
       type: string
-      description: "The Pipeline option for rhtap-cli installation. Valid values are 'tekton' and 'jenkins'."
+      description: "The Pipeline option for tssc installation. Valid values are 'tekton' and 'jenkins'."
     - name: auth_config
       type: string
-      description: "The authentication provider for rhtap. Valid values are 'github' and 'gitlab'."
+      description: "The authentication provider for tssc. Valid values are 'github' and 'gitlab'."
   tasks:
     - name: rosa-hcp-metadata
       taskRef:

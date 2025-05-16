@@ -1,3 +1,3 @@
 # Openshift
 
-This chart prepares the cluster for the full deployment of RHTAP.
+This chart prepares the cluster for the full deployment of TSSC.

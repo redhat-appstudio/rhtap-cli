@@ -18,7 +18,7 @@ Optional arguments:
     --insecure
         Disable TLS certificate validation in the integration
     -n, --namespace NAMESPACE
-        RHTAP installation namespace (default: tssc)
+        TSSC installation namespace (default: tssc)
     -d, --debug
         Activate tracing/debug mode.
     -h, --help
@@ -90,7 +90,7 @@ get_variables() {
     if [ -z "${ROX_API_TOKEN:-}" ]; then
         ROX_API_TOKEN="$(oc get secrets -n "$NAMESPACE" "$ACS_SECRET" -o json | jq -r '.data.token | @base64d')"
     fi
-    # For Nexus and Artifactory, they have two urls, one for UI and one for image registry. When RHTAP integrate with them, 
+    # For Nexus and Artifactory, they have two urls, one for UI and one for image registry. When TSSC integrate with them, 
     # it needs to pass UI url as `--url` parameter to the integration command. If passing image registry url as `--url` parameter,
     # images pushed to Nexus and Artifactory will not apear in the Image Registry page.
     if [ -z "${REGISTRY_ENDPOINT:-}" ]; then

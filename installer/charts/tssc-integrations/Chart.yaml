@@ -1,6 +1,6 @@
 ---
 apiVersion: v2
 name: tssc-integrations
-description: RHTAP Integrations
+description: TSSC Integrations
 type: application
 version: 1.5.0

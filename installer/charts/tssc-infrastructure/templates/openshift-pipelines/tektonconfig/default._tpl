@@ -1,6 +1,6 @@
 # This is a copy of the default TektonConfig that is generated
 # when installing OpenShift Pipelines.
-# The RHTAP specific configuration override is in `patch._tpl`
+# The TSSC specific configuration override is in `patch._tpl`
 {{- define "pipelines.TektonConfigDefault" -}}
 apiVersion: operator.tekton.dev/v1alpha1
 kind: TektonConfig

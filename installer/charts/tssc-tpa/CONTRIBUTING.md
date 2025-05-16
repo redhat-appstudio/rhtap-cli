@@ -1,4 +1,4 @@
-`tssc-tpa`: RHTAP Trusted Profile Analyzer
+`tssc-tpa`: TSSC Trusted Profile Analyzer
 -------------------------------------------
 
 # Contributing

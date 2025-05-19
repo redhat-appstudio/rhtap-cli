@@ -23,13 +23,27 @@ spec:
             - -c
             - |
               if [[ "{{ .Values.subscriptions.openshiftPipelines.managed }}" == "true" ]]; then
+                  if oc get tektonconfig --selector="app.kubernetes.io/managed-by" -o name | grep -q "/config"; then
+                    echo "TektonConfig already managed by Helm"
+                    echo "Success"
+                    exit 0
+                  fi
                   echo "Deleting TektonConfig resource if it exists to allow helm to own the resource"
-                  oc delete tektonconfig config --ignore-not-found
+
+                  wait=5
+                  RETRIES=24
+                  for i in $(seq 1 "${RETRIES}"); do
+                    date
+                    echo "### [${i}/${RETRIES}] "
+                    if oc get tektonconfigs.operator.tekton.dev config -o name 2>/dev/null
+                      oc delete tektonconfig config
+                      echo "TektonConfig already managed by Helm"
+                      echo "Success"
+                      exit 0
+                    fi
+                    echo "# Waiting for ${wait} seconds before retrying..."
+                    sleep ${wait}
+                  done
               else
                   echo "Skipping TektonConfig resource delete as pipeline subscription is not managed"
-              fi
-              if [[ $? -ne 0 ]]; then
-                  echo "Sleeping for 5 seconds before letting job restart pod"
-                  sleep 5
-                  exit 1
               fi

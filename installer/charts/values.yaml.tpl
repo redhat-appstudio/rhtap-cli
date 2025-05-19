@@ -350,7 +350,7 @@ trustedProfileAnalyzer:
         enabled: {{ $tpaTestingUsersEnabled }}
     frontendRedirectUris:
       - "http://localhost:8080"
-{{- range list "server" "sbom" "vex" }}
+{{- range list "server" "sbom" }}
       - "{{ printf "%s://%s-%s.%s" $protocol . $tpa.Namespace $ingressDomain }}"
       - "{{ printf "%s://%s-%s.%s/*" $protocol . $tpa.Namespace $ingressDomain }}"
 {{- end }}

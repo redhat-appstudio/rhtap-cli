@@ -20,7 +20,5 @@ Trusted Profile Analyzer (TPA):
     Bombastic API:  {{ printf "sbom%s" $trustification.appDomain }}
     Documentation:  {{ printf "docs%s" $trustification.appDomain }}
     SPOG API:       {{ printf "api%s" $trustification.appDomain }}
-    SPOG Console:   {{ printf "console%s" $trustification.appDomain }}
-    Vexination API: {{ printf "vex%s" $trustification.appDomain }}
 
 {{ end -}}

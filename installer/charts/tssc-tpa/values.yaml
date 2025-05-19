@@ -48,12 +48,10 @@ trustedProfileAnalyzer:
     # application endpoints must be listed here.
     frontendRedirectUris:
       - "http://localhost:8080"
-      - "http://server-rhtap-tpa.apps-crc.testing"
-      - "http://server-rhtap-tpa.apps-crc.testing/*"
-      - "http://sbom-rhtap-tpa.apps-crc.testing"
-      - "http://sbom-rhtap-tpa.apps-crc.testing/*"
-      - "http://vex-rhtap-tpa.apps-crc.testing"
-      - "http://vex-rhtap-tpa.apps-crc.testing/*"
+      - "http://server-tssc-tpa.apps-crc.testing"
+      - "http://server-tssc-tpa.apps-crc.testing/*"
+      - "http://sbom-tssc-tpa.apps-crc.testing"
+      - "http://sbom-tssc-tpa.apps-crc.testing/*"
 
 #
 # Red Hat Trusted Profile Analyzer

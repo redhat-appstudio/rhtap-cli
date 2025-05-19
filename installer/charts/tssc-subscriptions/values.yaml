@@ -14,9 +14,9 @@ subscriptions:
     description: Crunchy-Data PostgreSQL Operator
     apiResource: postgresclusters.postgres-operator.crunchydata.com
     namespace: openshift-operators
-    name: crunchy-postgres-operator-rhmp
+    name: postgresql
     channel: v5
-    source: redhat-marketplace
+    source: community-operators
     sourceNamespace: openshift-marketplace
   openshiftGitOps:
     enabled: false

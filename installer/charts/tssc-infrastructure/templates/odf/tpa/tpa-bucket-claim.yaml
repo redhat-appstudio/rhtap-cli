@@ -1,0 +1,10 @@
+{{- if .Values.infrastructure.odf.tpa.enabled }}
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: {{ .Values.infrastructure.odf.tpa.bucketClaimName }}
+  namespace: {{ .Values.infrastructure.odf.tpa.namespace }}
+spec:
+  bucketName: {{ .Values.infrastructure.odf.tpa.bucketName }}
+  storageClassName: {{ .Values.infrastructure.odf.tpa.storageClassName }}
+{{- end }}

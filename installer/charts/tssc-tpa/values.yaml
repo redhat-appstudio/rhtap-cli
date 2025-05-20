@@ -73,8 +73,7 @@ redhat-trusted-profile-analyzer:
   ingress: &tpaIngress
     className: openshift-default
   storage: &tpaStorage
-    type: filesystem
-    size: 32Gi
+    type: __OVERWRITE_ME__
   database:
     sslMode: disable
     host:

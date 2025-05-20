@@ -13,6 +13,9 @@
 {{- $minIOOperatorEnabled := or $tpa.Enabled $quay.Enabled -}}
 {{- $odfEnabled := or $tpa.Enabled $quay.Enabled -}}
 {{- $odfNamespace := "openshift-storage" -}}
+{{- $odfTPABucketClaimName := "tpa" -}}
+{{- $odfTPABucketName := "tssc-tpa-obj-store" -}}
+{{- $odfCAConfigMapName := "odf-trusted-ca" -}}
 ---
 debug:
   ci: false
@@ -155,6 +158,14 @@ infrastructure:
     backingStorageSize: 100Gi
     backingStoreName: noobaa-pv-backing-store
     namespace: {{ $odfNamespace }}
+    tpa:
+      enabled: {{ $tpa.Enabled }}
+      bucketClaimName: {{ $odfTPABucketClaimName }}
+      bucketName: {{ $odfTPABucketName }}
+      namespace: {{ $tpa.Namespace }}
+      storageClassName: {{ printf "%s.noobaa.io" $odfNamespace }}
+      ingressRouterCA: {{ $ingressRouterCA }}
+      caConfigMapName: {{ $odfCAConfigMapName }}
 
 #
 # tssc-backing-services
@@ -392,8 +403,29 @@ redhat-trusted-profile-analyzer:
   createDatabase: *tpaDatabase
   migrateDatabase: *tpaDatabase
   storage: &tpaStorage
-    type: filesystem
-    size: 32Gi
+    type: {{ $tpaStorageType }}
+    region: {{ printf "https://s3-%s.%s" $odfNamespace $ingressDomain }}
+    accessKey:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $odfTPABucketClaimName }}
+          key: AWS_ACCESS_KEY_ID
+    secretKey:
+      valueFrom:
+        secretKeyRef:
+          name: {{ $odfTPABucketClaimName }}
+          key: AWS_SECRET_ACCESS_KEY
+    bucket: {{ $odfTPABucketName }}
+  tls:
+    additionalTrustAnchor: /etc/trust-anchor/tls.crt
+  extraVolumes:
+    - name: trust-anchor
+      configMap:
+        name: {{ $odfCAConfigMapName }}
+  extraVolumeMounts:
+    - name: trust-anchor
+      readOnly: true
+      mountPath: /etc/trust-anchor
   oidc: &tpaOIDC
 {{- if $crc.Enabled }}
     issuerUrl: {{ printf "http://%s/%s" $keycloakRouteHost $tpaRealmPath }}

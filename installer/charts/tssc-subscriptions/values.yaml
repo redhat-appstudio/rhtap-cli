@@ -62,7 +62,7 @@ subscriptions:
     channel: stable-v1.2
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-  redHatQuay:
+  quay:
     enabled: false
     description: Red Hat Quay Operator
     apiResource: quayregistries.quay.redhat.com
@@ -71,7 +71,7 @@ subscriptions:
     channel: stable-3.14
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-  redHatAdvancedClusterSecurity:
+  advancedClusterSecurity:
     enabled: false
     description: Red Hat Advanced Cluster Security Operator
     apiResource: centrals.platform.stackrox.io
@@ -82,7 +82,7 @@ subscriptions:
     sourceNamespace: openshift-marketplace
     operatorGroup:
       upgradeStrategy: Default
-  redHatDeveloperHub:
+  developerHub:
     enabled: false
     description: Red Hat Developer Hub Operator
     apiResource: backstages.rhdh.redhat.com
@@ -91,7 +91,7 @@ subscriptions:
     channel: fast-1.6
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-  redHatOpenShiftDataFoundation:
+  openShiftDataFoundation:
     enabled: false
     description: Red Hat OpenShift Data Foundation (ODF)
     apiResource: noobaas.noobaa.io

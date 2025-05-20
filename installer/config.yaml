@@ -1,9 +1,9 @@
 ---
 tssc:
   namespace: &installerNamespace tssc
+  settings:
+    crc: false
   products:
-    crc:
-      enabled: false
     trustedProfileAnalyzer:
       enabled: &tpaEnabled true
       namespace: &trustedProfileAnalyzerNamespace tssc-tpa

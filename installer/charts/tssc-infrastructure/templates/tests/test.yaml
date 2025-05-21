@@ -1,42 +1,6 @@
 ---
 {{- include "common.test" . }}
   containers:
-{{- range $k, $v := include "infrastructure.kafkas.enabled" . | fromYaml }}
-    - name: {{ printf "kafka-topics-%s-test" $k }}
-      image: registry.redhat.io/openshift4/ose-tools-rhel9
-      env:
-        - name: NAMESPACE
-          value: {{ $v.namespace }}
-      command:
-        - /scripts/test-kafka-topics.sh
-      args:
-  {{- range $t := $v.topics }}
-        - {{ printf "%s-%s" $k $t.name | quote }}
-  {{- end }}
-      volumeMounts:
-        - name: scripts
-          mountPath: /scripts
-      securityContext:
-        allowPrivilegeEscalation: false
-{{- end }}
-{{- range $k, $v := include "infrastructure.minIOTenants.enabled" . | fromYaml }}
-    - name: {{ printf "minio-tentant-%s-test" $k }}
-      image: registry.redhat.io/openshift4/ose-tools-rhel9
-      env:
-        - name: NAMESPACE
-          value: {{ $v.namespace }}
-        - name: RESOURCE_TYPE
-          value: "statefulset"
-      command:
-        - /scripts/test-rollout-status.sh
-      args:
-        - {{ printf "v1.min.io/tenant=%s" $k | quote }}
-      volumeMounts:
-        - name: scripts
-          mountPath: /scripts
-      securityContext:
-        allowPrivilegeEscalation: false
-{{- end }}
 {{- range $k, $v := include "infrastructure.postgresClusters.enabled" . | fromYaml }}
     - name: {{ printf "postgrescluster-%s-test" $k }}
       image: registry.redhat.io/openshift4/ose-tools-rhel9

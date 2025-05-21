@@ -31,20 +31,20 @@ func TestNewConfigFromFile(t *testing.T) {
 		g.Expect(len(deps)).To(o.BeNumerically(">=", 1))
 	})
 
-	t.Run("GetFeature", func(t *testing.T) {
-		_, err := cfg.GetFeature("feature1")
+	t.Run("GetProduct", func(t *testing.T) {
+		_, err := cfg.GetProduct("product1")
 		g.Expect(err).NotTo(o.Succeed())
 
-		feature, err := cfg.GetFeature(RedHatDeveloperHub)
+		product, err := cfg.GetProduct(DeveloperHub)
 		g.Expect(err).To(o.Succeed())
-		g.Expect(feature).NotTo(o.BeNil())
-		g.Expect(feature.GetNamespace()).NotTo(o.BeEmpty())
+		g.Expect(product).NotTo(o.BeNil())
+		g.Expect(product.GetNamespace()).NotTo(o.BeEmpty())
 	})
 
 	t.Run("MarshalYAML and UnmarshalYAML", func(t *testing.T) {
 		payload, err := cfg.MarshalYAML()
 		g.Expect(err).To(o.Succeed())
-		g.Expect(string(payload)).To(o.ContainSubstring("rhtapCLI:"))
+		g.Expect(string(payload)).To(o.ContainSubstring("tssc:"))
 
 		err = cfg.UnmarshalYAML()
 		g.Expect(err).To(o.Succeed())
@@ -52,6 +52,6 @@ func TestNewConfigFromFile(t *testing.T) {
 
 	t.Run("String", func(t *testing.T) {
 		payload := cfg.String()
-		g.Expect(string(payload)).To(o.ContainSubstring("rhtapCLI:"))
+		g.Expect(string(payload)).To(o.ContainSubstring("tssc:"))
 	})
 }

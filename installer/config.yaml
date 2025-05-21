@@ -1,7 +1,7 @@
 ---
-rhtapCLI:
+tssc:
   namespace: &installerNamespace tssc
-  features:
+  products:
     crc:
       enabled: false
     trustedProfileAnalyzer:
@@ -19,7 +19,7 @@ rhtapCLI:
       namespace: &trustedArtifactSignerNamespace tssc-tas
       properties:
         manageSubscription: true
-    redHatDeveloperHub:
+    developerHub:
       enabled: &rhdhEnabled true
       namespace: &rhdhNamespace tssc-dh
       properties:
@@ -33,12 +33,12 @@ rhtapCLI:
         #   enabled: false
         #   orgs:
         #     - myOrg
-    redHatAdvancedClusterSecurity:
+    advancedClusterSecurity:
       enabled: &rhacsEnabled true
       namespace: &rhacsNamespace tssc-acs
       properties:
         manageSubscription: true
-    redHatQuay:
+    quay:
       enabled: &quayEnabled true
       namespace: &quayNamespace tssc-quay
       properties:

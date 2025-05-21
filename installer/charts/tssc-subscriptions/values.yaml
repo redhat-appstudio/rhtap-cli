@@ -1,14 +1,5 @@
 ---
 subscriptions:
-  amqStreams:
-    enabled: false
-    description: Red Hat AMQ Streams
-    apiResource: kafkas.kafka.strimzi.io
-    namespace: openshift-operators
-    name: amq-streams
-    channel: amq-streams-2.8.x
-    source: redhat-operators
-    sourceNamespace: openshift-marketplace
   crunchyData:
     enabled: false
     description: Crunchy-Data PostgreSQL Operator

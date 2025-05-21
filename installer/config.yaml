@@ -61,9 +61,6 @@ tssc:
     - chart: charts/tssc-subscriptions
       namespace: *installerNamespace
       enabled: true
-    - chart: charts/tssc-minio-operator
-      namespace: minio-operator
-      enabled: true
     - chart: charts/tssc-infrastructure
       namespace: *installerNamespace
       enabled: true

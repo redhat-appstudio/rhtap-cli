@@ -1,4 +1,4 @@
-{{- $crc := required "CRC settings" .Installer.Products.crc -}}
+{{- $crc := required "CRC settings" .Installer.Settings.crc -}}
 {{- $tas := required "TAS settings" .Installer.Products.trustedArtifactSigner -}}
 {{- $tpa := required "TPA settings" .Installer.Products.trustedProfileAnalyzer -}}
 {{- $keycloak := required "Keycloak settings" .Installer.Products.keycloak -}}
@@ -15,7 +15,7 @@
 {{- $odfNamespace := "openshift-storage" -}}
 ---
 debug:
-  ci: false
+  ci: {{ dig "ci" "debug" false .Installer.Settings -}}
 
 #
 # tssc-openshift
@@ -177,10 +177,10 @@ backingServices:
     route:
       host: {{ $keycloakRouteHost }}
       tls:
-        enabled: {{ not $crc.Enabled }}
+        enabled: {{ not $crc }}
         secretName: {{ $keycloakRouteTLSSecretName }}
         termination: reencrypt
-{{- if $crc.Enabled }}
+{{- if $crc }}
       annotations:
         route.openshift.io/termination: reencrypt
 {{- end }}
@@ -318,7 +318,7 @@ developerHub:
 {{- $tpaTestingUsersEnabled := false }}
 {{- $tpaRealmPath := "realms/chicken" }}
 {{- $protocol := "https" -}}
-{{- if $crc.Enabled }}
+{{- if $crc }}
   {{- $protocol = "http" }}
 {{- end }}
 
@@ -361,7 +361,7 @@ redhat-trusted-profile-analyzer:
   openshift: &tpaOpenShift
     # In practice it toggles "https" vs. "http" for TPA components, for CRC it's
     # easier to focus on "http" communication only.
-    useServiceCa: {{ not $crc.Enabled }}
+    useServiceCa: {{ not $crc }}
   guac: &tpaGUAC
     database: &guacDatabase
       name:
@@ -404,7 +404,7 @@ redhat-trusted-profile-analyzer:
           secretKeyRef:
             name: {{ $tpaKafkaSecretName }}
   oidc: &tpaOIDC
-{{- if $crc.Enabled }}
+{{- if $crc }}
     issuerUrl: {{ printf "http://%s/%s" $keycloakRouteHost $tpaRealmPath }}
 {{- else }}
     issuerUrl: {{ printf "https://%s/%s" $keycloakRouteHost $tpaRealmPath }}
@@ -439,7 +439,7 @@ trustification:
   guac: *tpaGUAC
   ingress: *tpaIngress
   tls:
-    serviceEnabled: "{{ not $crc.Enabled }}"
+    serviceEnabled: "{{ not $crc }}"
 
 #
 # tssc-tas
@@ -461,7 +461,7 @@ trustedArtifactSigner:
     fulcio:
       oidc:
         clientID: trusted-artifact-signer
-{{- if $crc.Enabled }}
+{{- if $crc }}
         issuerURL: {{ printf "http://%s/%s" $keycloakRouteHost $tasRealmPath }}
 {{- else }}
         issuerURL: {{ printf "https://%s/%s" $keycloakRouteHost $tasRealmPath }}

@@ -85,6 +85,9 @@ tssc:
     - chart: charts/tssc-tas
       namespace: *trustedArtifactSignerNamespace
       enabled: *tasEnabled
+    - chart: charts/tssc-tpa-realm
+      namespace: *trustedProfileAnalyzerNamespace
+      enabled: *tpaEnabled
     - chart: charts/tssc-tpa
       namespace: *trustedProfileAnalyzerNamespace
       enabled: *tpaEnabled

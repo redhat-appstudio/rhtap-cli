@@ -309,22 +309,40 @@ developerHub:
 {{ dig "Properties" "RBAC" "orgs" (list "${GITHUB__ORG}") $rhdh | toYaml | indent 6 }}
 
 #
-# tssc-tpa
+# tssc-tpa-realm
 #
 
 {{- $tpaAppDomain := printf "-%s.%s" $tpa.Namespace $ingressDomain }}
-{{- $tpaGUACDatabaseSecretName := "guac-pguser-guac" }}
 {{- $tpaOIDCClientsSecretName := "tpa-realm-chicken-clients" }}
 {{- $tpaTestingUsersEnabled := false }}
-{{- $tpaRealmPath := "realms/chicken" }}
 {{- $protocol := "https" -}}
 {{- if $crc.Enabled }}
   {{- $protocol = "http" }}
 {{- end }}
+{{- $tpaRealmPath := "realms/chicken" }}
+{{- $tpaOIDCIssuerURL := printf "%s://%s/%s" $protocol $keycloakRouteHost $tpaRealmPath }}
 
-trustedProfileAnalyzer:
-  enabled: {{ $tpa.Enabled }}
+trustedProfileAnalyzerRealm:
+  enabled: {{ $keycloak.Enabled }}
   appDomain: "{{ $tpaAppDomain }}"
+  keycloakCR:
+    namespace: {{ $keycloak.Namespace }}
+    name: keycloak
+  oidcIssuerURL: {{ $tpaOIDCIssuerURL }}
+  oidcClientsSecretName: {{ $tpaOIDCClientsSecretName }}
+  clients:
+    walker:
+      enabled: true
+    testingManager:
+      enabled: {{ $tpaTestingUsersEnabled }}
+    testingUser:
+      enabled: {{ $tpaTestingUsersEnabled }}
+  frontendRedirectUris:
+    - "http://localhost:8080"
+{{- range list "console" "sbom" "vex" }}
+    - "{{ printf "%s://%s-%s.%s" $protocol . $tpa.Namespace $ingressDomain }}"
+    - "{{ printf "%s://%s-%s.%s/*" $protocol . $tpa.Namespace $ingressDomain }}"
+{{- end }}
   integrationSecret:
     bombasticAPI: {{
       printf "%s://sbom-%s.%s"
@@ -334,25 +352,15 @@ trustedProfileAnalyzer:
     }}
     namespace: {{ .Installer.Namespace }}
     name: tssc-trustification-integration
-  keycloakRealmImport:
-    enabled: {{ $keycloak.Enabled }}
-    keycloakCR:
-      namespace: {{ $keycloak.Namespace }}
-      name: keycloak
-    oidcClientsSecretName: {{ $tpaOIDCClientsSecretName }}
-    clients:
-      walker:
-        enabled: true
-      testingManager:
-        enabled: {{ $tpaTestingUsersEnabled }}
-      testingUser:
-        enabled: {{ $tpaTestingUsersEnabled }}
-    frontendRedirectUris:
-      - "http://localhost:8080"
-{{- range list "console" "sbom" "vex" }}
-      - "{{ printf "%s://%s-%s.%s" $protocol . $tpa.Namespace $ingressDomain }}"
-      - "{{ printf "%s://%s-%s.%s/*" $protocol . $tpa.Namespace $ingressDomain }}"
-{{- end }}
+
+#
+# tssc-tpa
+#
+
+{{- $tpaGUACDatabaseSecretName := "guac-pguser-guac" }}
+
+trustedProfileAnalyzer:
+  enabled: {{ $tpa.Enabled }}
 
 redhat-trusted-profile-analyzer:
   appDomain: "{{ $tpaAppDomain }}"
@@ -404,11 +412,7 @@ redhat-trusted-profile-analyzer:
           secretKeyRef:
             name: {{ $tpaKafkaSecretName }}
   oidc: &tpaOIDC
-{{- if $crc.Enabled }}
-    issuerUrl: {{ printf "http://%s/%s" $keycloakRouteHost $tpaRealmPath }}
-{{- else }}
-    issuerUrl: {{ printf "https://%s/%s" $keycloakRouteHost $tpaRealmPath }}
-{{- end }}
+    issuerUrl: {{ $tpaOIDCIssuerURL }}
     clients:
       walker:
         clientSecret:

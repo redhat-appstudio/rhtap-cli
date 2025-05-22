@@ -1,16 +1,3 @@
-{{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport }}
-{{- if $keycloak.enabled -}}
-Keycloak Realm Import:
-  - Namespace: {{ $keycloak.keycloakCR.namespace }}
-    Name:      {{ $keycloak.keycloakCR.name }}
-
-Keycloak "chicken" Realm Credentials:
-  - Namespace:    {{ .Release.Namespace }}
-    Username:     chicken-admin 
-    Admin Secret: {{ $keycloak.adminSecretName }}
-    OIDC Secret:  {{ $keycloak.oidcClientsSecretName }}
-
-{{ end -}}
 {{- $tpa := .Values.trustedProfileAnalyzer }}
 {{- if $tpa.enabled }}
   {{- $trustification := .Values.trustification -}}

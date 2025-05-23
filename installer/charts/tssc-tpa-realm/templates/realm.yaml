@@ -1,6 +1,6 @@
-{{- $keycloak := .Values.trustedProfileAnalyzer.keycloakRealmImport -}}
-{{- if $keycloak.enabled }}
-  {{- $appDomain := .Values.trustedProfileAnalyzer.appDomain -}}
+{{- $realm := .Values.trustedProfileAnalyzerRealm -}}
+{{- if $realm.enabled }}
+  {{- $appDomain := .Values.trustedProfileAnalyzerRealm.appDomain -}}
   {{- $adminUsername := "admin" -}}
 #
 # Realm Admin
@@ -10,7 +10,7 @@
 ---
   {{- 
     $adminSecretObj := 
-      (lookup "v1" "Secret" .Release.Namespace $keycloak.adminSecretName) |
+      (lookup "v1" "Secret" .Release.Namespace $realm.adminSecretName) |
       default dict
   -}}
   {{- $adminSecretData := (get $adminSecretObj "data") | default dict -}}
@@ -25,7 +25,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: {{
     required ".adminSsecretName is required"
-    $keycloak.adminSecretName
+    $realm.adminSecretName
   }}
 type: Opaque
 data:
@@ -39,7 +39,7 @@ data:
 ---
   {{- 
     $oidcSecretObj := 
-      (lookup "v1" "Secret" .Release.Namespace $keycloak.oidcClientsSecretName) |
+      (lookup "v1" "Secret" .Release.Namespace $realm.oidcClientsSecretName) |
       default dict
   -}}
   {{- $oidcSecretData := (get $oidcSecretObj "data") | default dict -}}
@@ -54,11 +54,11 @@ metadata:
   namespace: {{ .Release.Namespace }}
   name: {{
     required ".oidcClientsSecretName is required"
-    $keycloak.oidcClientsSecretName
+    $realm.oidcClientsSecretName
   }}
 type: Opaque
 data:
-  {{- range $k, $v := .Values.trustedProfileAnalyzer.keycloakRealmImport.clients -}}
+  {{- range $k, $v := .Values.trustedProfileAnalyzerRealm.clients -}}
     {{- $s := (get $oidcSecretData $k) | default (include "generate.client.secret" . | b64enc) }}
     {{- $oidcCredentials := mergeOverwrite $oidcCredentials (dict $k $s) }}
   {{ $k }}: {{ $s }}
@@ -75,35 +75,35 @@ metadata:
   labels:
     app: keycloak
   namespace: {{
-    required "trustedProfileAnalyzer.integrationSecret.namespace is required"
-      .Values.trustedProfileAnalyzer.integrationSecret.namespace
+    required ".trustedProfileAnalyzerRealm.integrationSecret.namespace is required"
+      .Values.trustedProfileAnalyzerRealm.integrationSecret.namespace
   }}
   name: {{
-    required "trustedProfileAnalyzer.integrationSecret.name is required"
-      .Values.trustedProfileAnalyzer.integrationSecret.name
+    required ".trustedProfileAnalyzerRealm.integrationSecret.name is required"
+      .Values.trustedProfileAnalyzerRealm.integrationSecret.name
   }}
 type: Opaque
 stringData:
   bombastic_api_url: {{
-    required "trustedProfileAnalyzer.integrationSecret.bombasticAPI is required"
-      .Values.trustedProfileAnalyzer.integrationSecret.bombasticAPI
+    required ".trustedProfileAnalyzerRealm.integrationSecret.bombasticAPI is required"
+      .Values.trustedProfileAnalyzerRealm.integrationSecret.bombasticAPI
   }}
   oidc_issuer_url: {{
-    required "trustification.oidc.issuerUrl is required"
-      .Values.trustification.oidc.issuerUrl
+    required ".trustedProfileAnalyzerRealm.oidcIssuerURL is required"
+      .Values.trustedProfileAnalyzerRealm.oidcIssuerURL
   }}
   oidc_client_id: {{
-    required "trustedProfileAnalyzer.integrationSecret.oidcClientID is required"
-      .Values.trustedProfileAnalyzer.integrationSecret.oidcClientID
+    required ".trustedProfileAnalyzerRealm.integrationSecret.oidcClientID is required"
+      .Values.trustedProfileAnalyzerRealm.integrationSecret.oidcClientID
   }}
   oidc_client_secret: {{
     get $oidcCredentials
-      .Values.trustedProfileAnalyzer.integrationSecret.oidcClientID |
+      .Values.trustedProfileAnalyzerRealm.integrationSecret.oidcClientID |
         b64dec
   }}
   supported_cyclonedx_version: "{{
-    required "trustedProfileAnalyzer.integrationSecret.cycloneDXVersion is required"
-      .Values.trustedProfileAnalyzer.integrationSecret.cycloneDXVersion
+    required ".trustedProfileAnalyzerRealm.integrationSecret.cycloneDXVersion is required"
+      .Values.trustedProfileAnalyzerRealm.integrationSecret.cycloneDXVersion
   }}"
 #
 # Keycloak Realm Import
@@ -116,13 +116,13 @@ metadata:
     app: keycloak
   namespace: {{
     required ".keycloakCR.namespace is required"
-      $keycloak.keycloakCR.namespace
+      $realm.keycloakCR.namespace
   }}
-  name: {{ printf "%s-chicken" $keycloak.keycloakCR.name }}
+  name: {{ printf "%s-chicken" $realm.keycloakCR.name }}
 spec:
   keycloakCRName: {{
     required ".keycloakCR.name is required"
-      $keycloak.keycloakCR.name
+      $realm.keycloakCR.name
   }}
   realm:
     accessCodeLifespan: 60
@@ -1114,8 +1114,8 @@ spec:
         protocol: openid-connect
         publicClient: true
         redirectUris: {{
-          required ".keycloakRealmImport.frontendRedirectUris is required"
-            $keycloak.frontendRedirectUris |
+          required ".frontendRedirectUris is required"
+            $realm.frontendRedirectUris |
               toYaml |
               nindent 10
         }}
@@ -1229,7 +1229,7 @@ spec:
           - email
           - create:document
         directAccessGrantsEnabled: false
-        enabled: {{ $keycloak.clients.testingManager.enabled }}
+        enabled: {{ $realm.clients.testingManager.enabled }}
         frontchannelLogout: false
         fullScopeAllowed: true
         implicitFlowEnabled: false
@@ -1299,7 +1299,7 @@ spec:
           - read:document
           - email
         directAccessGrantsEnabled: false
-        enabled: {{ $keycloak.clients.testingUser.enabled }}
+        enabled: {{ $realm.clients.testingUser.enabled }}
         frontchannelLogout: false
         fullScopeAllowed: true
         implicitFlowEnabled: false
@@ -1370,7 +1370,7 @@ spec:
           - email
           - create:document
         directAccessGrantsEnabled: false
-        enabled: {{ $keycloak.clients.walker.enabled }}
+        enabled: {{ $realm.clients.walker.enabled }}
         frontchannelLogout: false
         fullScopeAllowed: true
         implicitFlowEnabled: false

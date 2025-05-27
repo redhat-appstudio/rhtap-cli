@@ -361,6 +361,7 @@ trustedProfileAnalyzerRealm:
 
 trustedProfileAnalyzer:
   enabled: {{ $tpa.Enabled }}
+  oidcIssuerURL: {{ $tpaOIDCIssuerURL }}
 
 redhat-trusted-profile-analyzer:
   appDomain: "{{ $tpaAppDomain }}"

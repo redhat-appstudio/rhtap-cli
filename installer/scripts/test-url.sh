@@ -29,12 +29,15 @@ probe_url() {
             --show-error \
             --fail \
             --location \
+            --insecure \
+            --max-time 30 \
             --output /dev/null \
             --write-out "%{http_code}" \
             "${URL}"
-    )
-    if [[ "${?}" -ne 0 ]]; then
-        echo "# ERROR: Failed to fetch URL '${URL}'."
+    ) || curl_exit=${?}
+    
+    if [[ "${curl_exit:-0}" -ne 0 ]]; then
+        echo "# ERROR: Failed to fetch URL '${URL}', returned '${curl_exit}'." >&2
         return 1
     fi
 
@@ -43,7 +46,7 @@ probe_url() {
         return 0
     else
         echo "# ERROR: '${URL}' returned status code '${response_code}'" \
-            " expected ${STATUS_CODE}."
+            " expected ${STATUS_CODE}." >&2
         return 1
     fi
 }
@@ -81,6 +84,6 @@ if test_url; then
     exit 0
 else
     echo "# ERROR: URL '${URL}' is not accessible or returned an" \
-        "unexpected status code."
+        "unexpected status code." >&2
     exit 1
 fi

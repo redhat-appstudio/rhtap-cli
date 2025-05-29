@@ -95,5 +95,4 @@ spec:
         # Deploy tssc
         source ${env_file}
         ./integration-tests/scripts/ci-oc-login.sh
-        ./integration-tests/scripts/minio.sh
         ./integration-tests/scripts/install.sh

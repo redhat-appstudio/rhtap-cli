@@ -1,4 +1,4 @@
-{{- $crc := required "CRC settings" .Installer.Products.crc -}}
+{{- $crc := required "CRC settings" .Installer.Settings.crc -}}
 {{- $tas := required "TAS settings" .Installer.Products.trustedArtifactSigner -}}
 {{- $tpa := required "TPA settings" .Installer.Products.trustedProfileAnalyzer -}}
 {{- $keycloak := required "Keycloak settings" .Installer.Products.keycloak -}}
@@ -14,7 +14,7 @@
 {{- $odfNamespace := "openshift-storage" -}}
 ---
 debug:
-  ci: false
+  ci: {{ dig "ci" "debug" false .Installer.Settings -}}
 
 #
 # tssc-openshift
@@ -141,10 +141,10 @@ backingServices:
     route:
       host: {{ $keycloakRouteHost }}
       tls:
-        enabled: {{ not $crc.Enabled }}
+        enabled: {{ not $crc }}
         secretName: {{ $keycloakRouteTLSSecretName }}
         termination: reencrypt
-{{- if $crc.Enabled }}
+{{- if $crc }}
       annotations:
         route.openshift.io/termination: reencrypt
 {{- end }}
@@ -280,7 +280,7 @@ developerHub:
 {{- $tpaOIDCClientsSecretName := "tpa-realm-chicken-clients" }}
 {{- $tpaTestingUsersEnabled := false }}
 {{- $protocol := "https" -}}
-{{- if $crc.Enabled }}
+{{- if $crc }}
   {{- $protocol = "http" }}
 {{- end }}
 {{- $tpaRealmPath := "realms/chicken" }}
@@ -334,7 +334,7 @@ redhat-trusted-profile-analyzer:
   openshift: &tpaOpenShift
     # In practice it toggles "https" vs. "http" for TPA components, for CRC it's
     # easier to focus on "http" communication only.
-    useServiceCa: {{ not $crc.Enabled }}
+    useServiceCa: {{ not $crc }}
   database: &tpaDatabase
     name:
       valueFrom:
@@ -397,7 +397,7 @@ trustification:
   oidc: *tpaOIDC
   ingress: *tpaIngress
   tls:
-    serviceEnabled: "{{ not $crc.Enabled }}"
+    serviceEnabled: "{{ not $crc }}"
 
 #
 # tssc-tas
@@ -419,7 +419,7 @@ trustedArtifactSigner:
     fulcio:
       oidc:
         clientID: trusted-artifact-signer
-{{- if $crc.Enabled }}
+{{- if $crc }}
         issuerURL: {{ printf "http://%s/%s" $keycloakRouteHost $tasRealmPath }}
 {{- else }}
         issuerURL: {{ printf "https://%s/%s" $keycloakRouteHost $tasRealmPath }}

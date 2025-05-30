@@ -16,8 +16,12 @@ spec:
         - name: delete-tekton-config
           image: quay.io/openshift/origin-cli:latest
           resources:
+            ephemeral-storage: 100Mi
             limits:
               memory: 128Mi
+            requests:
+              memory: 100Mi
+              cpu: 0.1
           command:
             - /bin/bash
             - -c

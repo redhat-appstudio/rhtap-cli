@@ -16,6 +16,10 @@ spec:
     - name: konflux-test-infra-secret
       description: The name of secret where testing infrastructures credentials are stored.
       type: string
+    - name: PICT_FILE_PATH
+      description: Path to pict file - non default paths are used for periodic jobs.
+      default: 'integration-tests/pict-models/default.pict'
+      type: string
   tasks:
     - name: test-metadata
       taskRef:
@@ -45,15 +49,19 @@ spec:
             env:
               - name: JOB_SPEC
                 value: $(tasks.test-metadata.results.job-spec)
+              - name: PICT_FILE_LOCATION
+                value: $(params.PICT_FILE_PATH)
             script: |
               #!/usr/bin/env bash
               set -x
+              echo "Using pict file on path:"
+              echo $PICT_FILE_LOCATION
               ## Download the pict file from the repository under directory integration-tests/pict-models/default.pict
               GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
               REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
               BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
 
-              curl -o pict.txt https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/integration-tests/pict-models/default.pict
+              curl -o pict.txt https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/$PICT_FILE_LOCATION
               ##Workaround: Base64 encode the pict file to avoid issues with removing double quotes
               base64 -w 0 < pict.txt > $(results.pict-file.path)
     - name: generate-configs
@@ -69,12 +77,21 @@ spec:
             env:
               - name: PICT_FILE
                 value: $(tasks.get-pict-file.results.pict-file)
+              - name: PICT_FILE_LOCATION
+                value: $(params.PICT_FILE_PATH)
             script: |
               #!/usr/bin/env bash
               set -x
               base64 -d <<< "$(tasks.get-pict-file.results.pict-file)" > main.pict
               cat main.pict
-              pict ./main.pict -o:1 -f:json > $(results.configs-json.path)
+              if [[ $PICT_FILE_LOCATION  =~ "periodic" ]]; then
+                ## Generate pict file for periodic job
+                ## (This parameter parameter: -o:1 ensures only 4 configs are generated(by default it is 2 - so it generates more configs, but we are changing this also for pr checks to 1, so it will generate 4 configs)
+                pict ./main.pict -r -o:1 -f:json > $(results.configs-json.path)
+              else
+                ## Use pict file for PR checks
+                pict ./main.pict -o:1 -f:json > $(results.configs-json.path)
+              fi
     - name: start-nested-pipelines
       params:
         - name: job-spec

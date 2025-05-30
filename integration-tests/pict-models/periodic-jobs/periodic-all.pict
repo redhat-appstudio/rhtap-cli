@@ -1,24 +1,17 @@
 #
-# This is file used for integration tests (PR checks, post-merge checks)
+# This is file used for github periodic job
+# See default.pict file for information about parameters
 #
 
-# OCP: valid OCP versions, for example: 4.18, 4.17, 4.16
-# ACS: valid values is "new" and "hosted"
-# Registry: valid values are "quay", "quay.io", "artifactory" and "nexus"
-# TPA: valid values are "new" and "hosted"
-# SCM: valid values are "github", "gitlab" and "bitbucket"
-# Pipeline: valid values are "tekton", "jenkins", "gitlabci", "actions"
-# AUTH: valid values are "github" and "gitlab"
-
 OCP: 4.18, 4.17, 4.16
-AUTH: github
-ACS: new
-Registry: quay.io
-TPA: new
-SCM: github
-Pipeline: tekton
+AUTH: github, gitlab
+ACS: new, hosted
+Registry: quay.io, quay, artifactory, nexus
+TPA: new, hosted
+SCM: github, gitlab, bitbucket
+Pipeline: tekton, gitlabci, actions, jenkins
 
-# Constraints
+# Constraints (copied from default.pict)
 ## Parameter value validation. This doesn't work with the current pict docker image, we can uncomment it when we figure out it in future
 [ACS] IN {"new", "hosted"};
 [Registry] IN {"quay", "quay.io", "artifactory", "nexus"};

@@ -3,5 +3,5 @@ apiVersion: v2
 name: tssc-tas
 description: Red Hat Trusted Artifact Signer
 type: application
-version: ".0"
+version: "1.6.0"
 appVersion: "1.2"

@@ -3,7 +3,7 @@ apiVersion: v2
 name: tssc-tpa
 description: TSSC Trusted Profile Analyzer
 type: application
-version: ".0"
+version: "1.6.0"
 appVersion: "2.0.1"
 dependencies:
   - name: redhat-trusted-profile-analyzer

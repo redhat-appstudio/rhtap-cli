@@ -23,7 +23,7 @@ tssc:
       enabled: &rhdhEnabled true
       namespace: &rhdhNamespace tssc-dh
       properties:
-        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/main/all.yaml
+        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release-v1.6.x/all.yaml
         manageSubscription: true
         # namespacePrefixes:
         #   - tssc-app

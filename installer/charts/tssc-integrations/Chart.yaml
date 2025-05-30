@@ -3,4 +3,4 @@ apiVersion: v2
 name: tssc-integrations
 description: TSSC Integrations
 type: application
-version: ".0"
+version: "1.6.0"

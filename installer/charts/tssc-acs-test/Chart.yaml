@@ -3,5 +3,5 @@ apiVersion: v2
 name: tssc-acs-test
 description: TSSC Advanced Cluster Security
 type: application
-version: ".0"
-appVersion: ""
+version: "1.6.0"
+appVersion: "4.7"

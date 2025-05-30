@@ -3,4 +3,4 @@ apiVersion: v2
 name: tssc-infrastructure
 description: TSSC Infrastructure
 type: application
-version: ".0"
+version: "1.6.0"

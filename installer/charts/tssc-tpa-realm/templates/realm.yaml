@@ -1359,8 +1359,8 @@ spec:
         authenticationFlowBindingOverrides: {}
         bearerOnly: false
         clientAuthenticatorType: client-secret
-        clientId: cli
-        secret: {{ get $oidcCredentials "cli" | b64dec }}
+        clientId: walker
+        secret: {{ get $oidcCredentials "walker" | b64dec }}
         consentRequired: false
         defaultClientScopes:
           - web-origins
@@ -1372,7 +1372,7 @@ spec:
           - update:document
           - delete:document
         directAccessGrantsEnabled: false
-        enabled: {{ $realm.clients.cli.enabled }}
+        enabled: {{ $realm.clients.walker.enabled }}
         frontchannelLogout: false
         fullScopeAllowed: true
         implicitFlowEnabled: false
@@ -1843,7 +1843,7 @@ spec:
         security-admin-console: []
         testing-manager: []
         testing-user: []
-        cli: []
+        walker: []
       realm:
         - attributes: {}
           clientRole: false
@@ -1949,9 +1949,9 @@ spec:
           - default-roles-chicken
           - chicken-manager
         requiredActions: []
-        serviceAccountClientId: cli
+        serviceAccountClientId: walker
         totp: false
-        username: service-account-cli
+        username: service-account-walker
     verifyEmail: false
     waitIncrementSeconds: 60
     webAuthnPolicyAcceptableAaguids: []

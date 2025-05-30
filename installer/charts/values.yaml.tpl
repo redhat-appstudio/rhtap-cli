@@ -295,7 +295,7 @@ trustedProfileAnalyzerRealm:
   oidcIssuerURL: {{ $tpaOIDCIssuerURL }}
   oidcClientsSecretName: {{ $tpaOIDCClientsSecretName }}
   clients:
-    cli:
+    walker:
       enabled: true
     testingManager:
       enabled: {{ $tpaTestingUsersEnabled }}
@@ -374,7 +374,7 @@ redhat-trusted-profile-analyzer:
           valueFrom:
             secretKeyRef:
               name: {{ $tpaOIDCClientsSecretName }}
-              key: cli
+              key: walker
 {{- if $tpaTestingUsersEnabled }}
       testingUser:
         clientSecret:

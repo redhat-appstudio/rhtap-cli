@@ -21,7 +21,7 @@ trustedProfileAnalyzerRealm:
   clients:
     # The main TPA actor, responsible to parse the information from SBOMs and
     # other source into its database.
-    cli:
+    walker:
       enabled: true
     # Testing user, meant to manage TPA's whole installation.
     testingManager:
@@ -43,7 +43,7 @@ trustedProfileAnalyzerRealm:
     # Bombastic API URL.
     bombasticAPI: __OVERWRITE_ME__
     # OIDC client ID to interact with the Bombastic API endpoint.
-    oidcClientID: cli
+    oidcClientID: walker
     # Secret namespace and name.
     namespace: __OVERWRITE_ME__
     name: __OVERWRITE_ME__

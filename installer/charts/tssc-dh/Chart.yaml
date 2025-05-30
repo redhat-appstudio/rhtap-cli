@@ -2,5 +2,5 @@ apiVersion: v2
 name: tssc-dh
 description: Red Hat Developer Hub
 type: application
-version: 1.5.0
-appVersion: "1.5"
+version: ".0"
+appVersion: ""

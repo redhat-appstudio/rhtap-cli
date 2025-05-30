@@ -100,3 +100,7 @@ tssc:
     - chart: charts/tssc-integrations
       namespace: *installerNamespace
       enabled: true
+  features:
+    redHatDeveloperHub:
+      properties:
+        catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release-v.x/all.yaml

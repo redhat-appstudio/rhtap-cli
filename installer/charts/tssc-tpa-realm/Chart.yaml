@@ -3,4 +3,4 @@ apiVersion: v2
 name: tssc-tpa-realm
 description: TSSC Trusted Profile Analyzer Keycloak Chicken realm import
 type: application
-version: 1.5.0
+version: ".0"

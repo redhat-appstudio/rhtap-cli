@@ -3,5 +3,5 @@ apiVersion: v2
 name: tssc-quay
 description: TSSC Quay
 type: application
-version: 1.5.0
-appVersion: 3.14
+version: ".0"
+appVersion: ""

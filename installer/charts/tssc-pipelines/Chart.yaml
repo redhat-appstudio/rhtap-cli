@@ -3,5 +3,5 @@ apiVersion: v2
 name: tssc-pipelines
 description: TSSC OpenShift Pipelines
 type: application
-version: 1.5.0
-appVersion: 1.18
+version: ".0"
+appVersion: "1.18"

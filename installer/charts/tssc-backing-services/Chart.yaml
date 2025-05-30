@@ -3,4 +3,4 @@ apiVersion: v2
 name: tssc-backing-services
 description: TSSC Backing Services
 type: application
-version: 1.5.0
+version: ".0"

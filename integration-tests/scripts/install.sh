@@ -80,15 +80,90 @@ jenkins_integration() {
   fi
 }
 
+# Function to create GitLab app for UI E2E tests
+create_gitlab_app() {
+    # Clean up any existing app first
+    if [[ "${UI_E2E_ENABLED:-false}" == "true" ]]; then
+        cleanup_gitlab_app
+        
+        echo "[INFO] Creating GitLab app for UI E2E tests"
+        
+        # Get required URLs
+        BACKSTAGE_URL="https://$(kubectl -n tssc-dh get route backstage-developer-hub -o 'jsonpath={.spec.host}')"
+        CALLBACK_URL="${BACKSTAGE_URL}/api/auth/gitlab/handler/frame"
+        
+        # Create application in GitLab
+        APP_RESPONSE=$(curl -s -X POST "https://gitlab.com/api/v4/applications" \
+            -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+                \"name\": \"rhtap-ui-e2e-$(date +%s)\",
+                \"redirect_uri\": \"${CALLBACK_URL}\",
+                \"scopes\": \"api read_user read_repository\"
+            }")
+        
+        # Extract app ID and secret
+        GITLAB_APP_ID=$(echo "${APP_RESPONSE}" | jq -r '.application_id')
+        GITLAB_APP_SECRET=$(echo "${APP_RESPONSE}" | jq -r '.secret')
+        
+        # Store app details for cleanup
+        mkdir -p "${ARTIFACT_DIR}"
+        echo "${GITLAB_APP_ID}" > "${ARTIFACT_DIR}/gitlab_app_id"
+        echo "${GITLAB_APP_SECRET}" > "${ARTIFACT_DIR}/gitlab_app_secret"
+        
+        # Update GitLab integration with new app credentials
+        GITLAB__APP__ID="${GITLAB_APP_ID}"
+        GITLAB__APP_SECRET="${GITLAB_APP_SECRET}"
+        
+        # Register cleanup on script exit
+        trap cleanup_gitlab_app EXIT
+        
+        echo "[INFO] Created GitLab app with ID: ${GITLAB_APP_ID}"
+    else
+        GITLAB__APP__ID="${GITLAB__APP__ID:-$(cat /usr/local/rhtap-cli-install/gitlab-app-id 2>/dev/null || echo "")}"
+        GITLAB__APP_SECRET="${GITLAB__APP_SECRET:-$(cat /usr/local/rhtap-cli-install/gitlab-app-secret 2>/dev/null || echo "")}"
+    fi
+}
+
+# Function to clean up GitLab app
+cleanup_gitlab_app() {
+    # Only clean up if we're in UI E2E mode
+    if [[ "${UI_E2E_ENABLED:-false}" != "true" ]]; then
+        return 0
+    fi
+    
+    echo "[INFO] Running GitLab app cleanup"
+    
+    if [[ -f "${ARTIFACT_DIR}/gitlab_app_id" ]]; then
+        local app_id
+        app_id=$(cat "${ARTIFACT_DIR}/gitlab_app_id" 2>/dev/null || true)
+        
+        if [[ -n "${app_id}" && -n "${GITLAB_TOKEN:-}" ]]; then
+            echo "[INFO] Deleting GitLab app: ${app_id}"
+            curl -s -X DELETE "https://gitlab.com/api/v4/applications/${app_id}" \
+                -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" || true
+        fi
+        
+        # Clean up local files
+        rm -f "${ARTIFACT_DIR}/gitlab_app_id"
+        rm -f "${ARTIFACT_DIR}/gitlab_app_secret"
+    fi
+}
+
 gitlab_integration() {
   if [[ "${scm_config}" == "gitlab" || "$auth_config" = "gitlab" ]]; then
     echo "[INFO] Configure Gitlab integration into TSSC"
 
     GITLAB__TOKEN="${GITLAB__TOKEN:-$(cat /usr/local/rhtap-cli-install/gitlab_token)}"
-
-    GITLAB__APP__ID="${GITLAB__APP__ID:-$(cat /usr/local/rhtap-cli-install/gitlab-app-id)}"
-    GITLAB__APP_SECRET="${GITLAB__APP_SECRET:-$(cat /usr/local/rhtap-cli-install/gitlab-app-secret)}"
     GITLAB__GROUP="${GITLAB__GROUP:-$(cat /usr/local/rhtap-cli-install/gitlab-group)}"
+    
+    # Create GitLab app if UI E2E tests are enabled
+    if [[ "${UI_E2E_ENABLED:-false}" == "true" ]]; then
+        create_gitlab_app
+    else
+        GITLAB__APP__ID="${GITLAB__APP__ID:-$(cat /usr/local/rhtap-cli-install/gitlab-app-id)}"
+        GITLAB__APP_SECRET="${GITLAB__APP_SECRET:-$(cat /usr/local/rhtap-cli-install/gitlab-app-secret)}"
+    fi
 
     ./bin/tssc integration --kube-config "$KUBECONFIG" gitlab --token="${GITLAB__TOKEN}" --app-id="${GITLAB__APP__ID}" --app-secret="${GITLAB__APP_SECRET}" --group="${GITLAB__GROUP}"
   fi

@@ -187,6 +187,46 @@ spec:
         - name: ocp-version
           value: "$(params.ocp-version)"
   finally:
+    - name: cleanup-gitlab-app
+      when:
+        - input: "$(params.UI_E2E_ENABLED)"
+          operator: in
+          values:
+            - "true"
+      taskSpec:
+        params:
+          - name: GITLAB_TOKEN
+          - name: ARTIFACT_DIR
+        steps:
+          - name: cleanup
+            image: quay.io/konflux-ci/ocp-4.15:cli
+            script: |
+              #!/bin/bash
+              set -euo pipefail
+              
+              # Check if we have an app to clean up
+              if [[ -f "${ARTIFACT_DIR}/gitlab_app_id" ]]; then
+                APP_ID=$(cat "${ARTIFACT_DIR}/gitlab_app_id")
+                echo "[INFO] Cleaning up GitLab app: ${APP_ID}"
+                
+                # Delete the application
+                curl -s -X DELETE "https://gitlab.com/api/v4/applications/${APP_ID}" \
+                  -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" || true
+                
+                # Clean up local files
+                rm -f "${ARTIFACT_DIR}/gitlab_app_id"
+                rm -f "${ARTIFACT_DIR}/gitlab_app_secret"
+                
+                echo "[INFO] GitLab app cleaned up"
+              else
+                echo "[INFO] No GitLab app to clean up"
+              fi
+      params:
+        - name: GITLAB_TOKEN
+          value: $(params.GITLAB_TOKEN)
+        - name: ARTIFACT_DIR
+          value: $(params.ARTIFACT_DIR)
+
     - name: deprovision-rosa-collect-artifacts
       taskRef:
         resolver: git

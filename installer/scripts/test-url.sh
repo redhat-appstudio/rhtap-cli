@@ -19,6 +19,7 @@ declare -r STATUS_CODE="${STATUS_CODE:-200}"
 # Tests if the URL is online and returns the expected HTTP status code.
 probe_url() {
     local response_code
+    local curl_exit
 
     echo "# INFO: Probing URL '${URL}' for the status code '${STATUS_CODE}'... "
 

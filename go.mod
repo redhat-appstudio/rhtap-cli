@@ -4,7 +4,7 @@ go 1.23.6
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/google/go-github/scrape v0.0.0-20250505194155-9a4137d1ff1d
+	github.com/google/go-github/scrape 304d3d0f6ed9
 	github.com/google/go-github/v71 v71.0.0
 	github.com/onsi/gomega v1.35.1
 	github.com/openshift/api v0.0.0-20250502141415-7152b1b11175

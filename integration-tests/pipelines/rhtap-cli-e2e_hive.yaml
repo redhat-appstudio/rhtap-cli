@@ -99,7 +99,6 @@ spec:
               oc login $(cat /usr/local/hive-creds/kube_api_url) -u cluster-admin -p $(cat /usr/local/hive-creds/password)
               oc whoami
               oc get clusterpool -n hive
-              set -x
               oc create -f - <<EOF
               apiVersion: hive.openshift.io/v1
               kind: ClusterClaim
@@ -121,10 +120,10 @@ spec:
               kubeadminpass=$(oc get secret $admin_pass_secret -n $cp_namespace -o jsonpath={.data.password} |base64 -d)
               echo "oc login --insecure-skip-tls-verify=true $api_url -u kubeadmin -p $kubeadminpass" > $(step.results.ocp-login-command.path)
 
-              export KUBECONFIG=/tmp/kube.config
               kubeconfig_secret=$(oc get clusterdeployment -n $cp_namespace  $cp_namespace -o jsonpath={.spec.clusterMetadata.adminKubeconfigSecretRef.name})
-              oc get secret -n $cp_namespace $kubeconfig_secret -o jsonpath={.data.kubeconfig} |base64 -d > $KUBECONFIG
 
+              oc get secret -n $cp_namespace $kubeconfig_secret -o jsonpath={.data.kubeconfig} |base64 -d > /tmp/ephemereal.config
+              export KUBECONFIG=/tmp/ephemereal.config
               csr_max_retries=5
               csr_sleep_duration=10
               approved_csrs=false

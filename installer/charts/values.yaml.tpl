@@ -10,7 +10,7 @@
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 {{- $ingressRouterCA := required "OpenShift RouterCA" .OpenShift.Ingress.RouterCA -}}
 {{- $openshiftMinorVersion := required "OpenShift Version" .OpenShift.MinorVersion -}}
-{{- $odfEnabled := or $tpa.Enabled $quay.Enabled -}}
+{{- $odfEnabled := $quay.Enabled -}}
 {{- $odfNamespace := "openshift-storage" -}}
 ---
 debug:

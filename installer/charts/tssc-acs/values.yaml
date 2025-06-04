@@ -50,3 +50,6 @@ acs:
     matcher:
       scaling: *acsScannerScaling
       resources: *acsScannerResources
+  # Namespace that integrates secrets
+  tssc:
+    namespace: __OVERWRITE_ME__

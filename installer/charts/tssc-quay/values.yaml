@@ -62,4 +62,7 @@ quay:
     # Clair vulnerability scanner local database.
     clairpostgres:
       resources: *postgresResources
+  # Namespace that integrates secrets
+  tssc:
+    namespace: __OVERWRITE_ME__
 

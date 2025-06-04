@@ -87,3 +87,6 @@ argoCD:
           requests:
             cpu: 125m
             memory: 128Mi
+  # Namespace that integrates secrets
+  tssc:
+    namespace: __OVERWRITE_ME__

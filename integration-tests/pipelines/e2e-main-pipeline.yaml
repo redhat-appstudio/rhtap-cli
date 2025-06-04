@@ -163,7 +163,7 @@ spec:
                 SCM=$(echo "$config" | jq -r '.[] | select(.key == "SCM").value')
                 PIPELINE=$(echo "$config" | jq -r '.[] | select(.key == "Pipeline").value')
                 AUTH=$(echo "$config" | jq -r '.[] | select(.key == "AUTH").value')
-
+                set -x
                 PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
                   --param ocp-version="$OCP_VERSION"\
                   --param job-spec="$JOB_SPEC"\
@@ -183,7 +183,7 @@ spec:
                   --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
                   --prefix-name "e2e-$OCP_VERSION"\
                   -o name)
-
+                set +x
                   echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
 
                   PIPELINERUNS_ARRAY+=($PIPELINE_RUN)

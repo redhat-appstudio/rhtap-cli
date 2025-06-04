@@ -57,7 +57,7 @@ spec:
         - name: rhtap-cli-volume
           mountPath: /usr/local/rhtap-cli-install
         - name: tssc-bin
-          mountPath: /usr/local/bin
+          mountPath: /usr/local/tssc-bin
       script: |
         #!/usr/bin/env bash
         set -o errexit

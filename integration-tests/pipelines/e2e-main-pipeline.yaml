@@ -174,7 +174,7 @@ spec:
                   --param scm_config="$SCM" \
                   --param pipeline_config="$PIPELINE" \
                   --param auth_config="$AUTH" \
-                  --param tssc_image="${tssc_image}"
+                  --param tssc_image="${tssc_image}" \
                   --use-param-defaults \
                   --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
                   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \

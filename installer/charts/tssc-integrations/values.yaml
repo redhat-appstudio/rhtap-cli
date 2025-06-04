@@ -7,3 +7,5 @@ integrations:
     namespace: __OVERWRITE_ME__
   quay:
     enabled: __OVERWRITE_ME__
+  tssc:
+    namespace: __OVERWRITE_ME__

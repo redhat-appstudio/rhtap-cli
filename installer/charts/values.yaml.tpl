@@ -173,6 +173,8 @@ acs: &acs
   test:
     scanner:
       image: registry.access.redhat.com/ubi9:latest
+  tssc:
+    namespace: {{ .Installer.Namespace }}
 acsTest: *acs
 
 #
@@ -198,6 +200,8 @@ argoCD:
     name: tssc-argocd-integration
     namespace: {{ .Installer.Namespace }}
   ingressDomain: {{ $ingressDomain }}
+  tssc:
+    namespace: {{ .Installer.Namespace }}
 
 #
 # tssc-pipelines
@@ -226,6 +230,8 @@ quay:
   replicas:
     quay: 1
     clair: 1
+  tssc:
+    namespace: {{ .Installer.Namespace }}
 
 #
 # tssc-integrations
@@ -239,6 +245,8 @@ integrations:
     namespace: {{ $gitops.Namespace }}
   quay:
     enabled: {{ $quay.Enabled }}
+  tssc:
+    namespace: {{ .Installer.Namespace }}
 #   github:
 #     clientId: ""
 #     clientSecret: ""

@@ -1,4 +1,10 @@
 {{- define "pipelines.TektonConfigPatch" -}}
+metadata:
+  annotations:
+    meta.helm.sh/release-name: {{ .Chart.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/managed-by: Helm
 spec:
   chain:
     transparency.enabled: 'true'

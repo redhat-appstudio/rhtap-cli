@@ -126,7 +126,7 @@ action() {
         for ns in "${NAMESPACES[@]}"; do
             kubectl delete namespace "$ns" &
             echo "Deleting namespace $ns..."
-            for cr in "applications.argoproj.io" "kafkatopics.kafka.strimzi.io" "persistentvolumeclaims"; do
+            for cr in "applications.argoproj.io" "persistentvolumeclaims"; do
                 sleep 3
                 while [ "$(oc get "$cr" -n "$ns" -o name | wc -l)" != "0" ]; do
                     for kt in $(oc get "$cr" -n "$ns" -o name); do

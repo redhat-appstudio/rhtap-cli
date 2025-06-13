@@ -14,7 +14,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: patch-tekton-config
-          image: quay.io/openshift/origin-cli:latest
+          image: registry.redhat.io/openshift4/ose-cli:latest
           resources:
             ephemeral-storage: 100Mi
             limits:

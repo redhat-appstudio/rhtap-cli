@@ -15,7 +15,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: patch-console
-          image: quay.io/openshift/origin-cli:latest
+          image: registry.redhat.io/openshift4/ose-cli:latest
           command:
             - /bin/bash
             - -c

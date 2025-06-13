@@ -29,11 +29,23 @@ spec:
     - name: auth_config
       type: string
       description: "The authentication provider for tssc. Valid values are 'github' and 'gitlab'."
+    - name: tssc-image
+      type: string
+      description: "The tssc image containing the tssc binary."
   volumes:
     - name: rhtap-cli-volume
       secret:
         secretName: rhtap-cli-install
+    - name: tssc-bin
+      emptyDir: {}
   steps:
+    - name: copy-tssc
+      image: $(params.tssc-image)
+      command: ["/bin/sh", "-c"]
+      args: ["cp /usr/local/bin/tssc /tssc-bin/ && chmod +x /tssc-bin/tssc"]
+      volumeMounts:
+        - name: tssc-bin
+          mountPath: /tssc-bin
     - name: install
       image: quay.io/redhat-user-workloads/rhtap-shared-team-tenant/rhtap-e2e/rhtap-e2e:56a53cd5d68adf7e7b0dccdc6c483a866d457cef
       env:
@@ -44,6 +56,8 @@ spec:
       volumeMounts:
         - name: rhtap-cli-volume
           mountPath: /usr/local/rhtap-cli-install
+        - name: tssc-bin
+          mountPath: /usr/local/tssc-bin
       script: |
         #!/usr/bin/env bash
         set -o errexit

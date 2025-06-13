@@ -1,0 +1,12 @@
+---
+{{- include "common.test" . }}
+  containers:
+    - name: signing-secrets
+      image: quay.io/codeready-toolchain/oc-client-base:latest
+      command:
+        - /scripts/test-signing-secrets.sh
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        allowPrivilegeEscalation: false

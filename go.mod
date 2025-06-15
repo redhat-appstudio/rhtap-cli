@@ -1,6 +1,8 @@
 module github.com/redhat-appstudio/rhtap-cli
 
-go 1.22.5
+go 1.23.0
+
+toolchain go1.23.9
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
@@ -136,7 +138,7 @@ require (
 	golang.org/x/net v0.31.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.9.0 // indirect
-	golang.org/x/sys v0.27.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/term v0.26.0 // indirect
 	golang.org/x/text v0.20.0 // indirect
 	golang.org/x/time v0.7.0 // indirect

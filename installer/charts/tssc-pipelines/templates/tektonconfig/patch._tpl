@@ -1,0 +1,21 @@
+{{- define "pipelines.TektonConfigPatch" -}}
+metadata:
+  annotations:
+    meta.helm.sh/release-name: {{ .Chart.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+spec:
+  chain:
+    generateSigningSecret: true
+    transparency.enabled: 'true'
+    transparency.url: http://rekor-server.tssc-tas.svc
+  platforms:
+    openshift:
+      pipelinesAsCode:
+        settings:
+          application-name: TSSC CI
+          remember-ok-to-test: 'false'
+  pruner:
+    keep: 2
+{{- end }}

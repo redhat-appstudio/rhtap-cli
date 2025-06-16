@@ -1,0 +1,25 @@
+{{- define "pipelines.TektonConfigRbac" -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: patch-tekton-config-role
+  labels: {{- include "common.postDeployDeleteLabels" . | nindent 4 }}
+rules:
+  - apiGroups: ["operator.tekton.dev"]
+    resources: ["tektonconfigs"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: patch-tekton-config-rolebinding
+  labels: {{- include "common.postDeployDeleteLabels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: patch-tekton-config-sa
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: patch-tekton-config-role
+  apiGroup: rbac.authorization.k8s.io
+{{- end -}}

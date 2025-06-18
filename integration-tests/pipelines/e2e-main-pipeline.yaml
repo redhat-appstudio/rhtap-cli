@@ -125,6 +125,8 @@ spec:
             script: |
               #!/usr/bin/env bash
 
+              tssc_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="rhtap-cli").containerImage')
+
               # Waits for condition for all started pipelines
               function waitFor() {
                   CONDITION=$1 MESSAGE_RUNNING=$2 MESSAGE_DONE=$3 timeout --foreground 120m /bin/bash -c '
@@ -178,7 +180,6 @@ spec:
                 SCM=$(echo "$config" | jq -r '.[] | select(.key == "SCM").value')
                 PIPELINE=$(echo "$config" | jq -r '.[] | select(.key == "Pipeline").value')
                 AUTH=$(echo "$config" | jq -r '.[] | select(.key == "AUTH").value')
-
                 PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
                   --param ocp-version="$OCP_VERSION"\
                   --param job-spec="$JOB_SPEC"\
@@ -189,6 +190,7 @@ spec:
                   --param scm_config="$SCM" \
                   --param pipeline_config="$PIPELINE" \
                   --param auth_config="$AUTH" \
+                  --param tssc-image="${tssc_image}" \
                   --use-param-defaults \
                   --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
                   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
@@ -197,7 +199,6 @@ spec:
                   --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
                   --prefix-name "e2e-$OCP_VERSION"\
                   -o name)
-
                   echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
 
                   PIPELINERUNS_ARRAY+=($PIPELINE_RUN)

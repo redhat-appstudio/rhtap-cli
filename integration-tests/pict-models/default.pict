@@ -16,7 +16,7 @@ ACS: new
 Registry: quay.io
 TPA: new
 SCM: github
-Pipeline: tekton
+Pipeline: jenkins
 
 # Constraints
 ## Parameter value validation. This doesn't work with the current pict docker image, we can uncomment it when we figure out it in future

@@ -177,7 +177,7 @@ spec:
               # --- Console URL Accessibility Check ---
               echo "--- Starting Console Accessibility Check ---"
 
-              console_url="https://$(oc get route console -n openshift-console -o jsonpath='{.spec.host}' 2>/dev/null)"
+              console_url="https://$(oc get route console -n openshift-console -o jsonpath='{.spec.host}')"
 
               if [[ -z "$console_url" ]]; then
                 echo "Error: Could not retrieve OpenShift console URL."

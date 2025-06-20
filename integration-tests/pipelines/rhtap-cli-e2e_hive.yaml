@@ -56,6 +56,9 @@ spec:
     - name: auth_config
       type: string
       description: "The authentication provider for rhtap. Valid values are 'github' and 'gitlab'."
+    - name: tssc-image
+      type: string
+      description: "The container image for the RHTAP CLI tool to be used during installation."
   tasks:
     - name: create-oci-container
       taskRef:
@@ -235,6 +238,8 @@ spec:
           value: $(params.pipeline_config)
         - name: auth_config
           value: $(params.auth_config)
+        - name: tssc-image
+          value: $(params.tssc-image)
     - name: sprayproxy-provision
       when:
         - input: "$(params.pipeline_config)"

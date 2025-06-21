@@ -20,6 +20,10 @@ spec:
       description: Path to pict file - non default paths are used for periodic jobs.
       default: 'integration-tests/pict-models/default.pict'
       type: string
+    - name: UI_E2E_ENABLED
+      description: 'Whether to enable UI E2E tests with GitLab app creation'
+      default: 'false'
+      type: string
   tasks:
     - name: test-metadata
       taskRef:

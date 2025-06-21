@@ -248,9 +248,48 @@ install_tssc() {
 
 }
 
+# GitLab app cleanup function - detects and deletes existing apps
+cleanup_gitlab_apps() {
+  if [[ -n "${GITLAB__TOKEN:-}" ]]; then
+    echo "[INFO] Cleaning up existing GitLab applications"
+    
+    local gitlab_api_url="${GITLAB__URL:-https://gitlab.com}/api/v4"
+    local apps_response
+    
+    # Get all applications
+    apps_response=$(curl -s -H "PRIVATE-TOKEN: ${GITLAB__TOKEN}" "${gitlab_api_url}/applications" 2>/dev/null || echo "[]")
+    
+    if [[ "$apps_response" != "[]" && -n "$apps_response" ]]; then
+      local app_count
+      app_count=$(echo "$apps_response" | jq '. | length' 2>/dev/null || echo "0")
+      
+      if [[ "$app_count" -gt 0 ]]; then
+        echo "[INFO] Found $app_count GitLab application(s) to delete"
+        
+        # Delete each application
+        echo "$apps_response" | jq -r '.[].id' 2>/dev/null | while read -r app_id; do
+          if [[ -n "$app_id" && "$app_id" != "null" ]]; then
+            echo "[INFO] Deleting GitLab app ID: $app_id"
+            curl -s -X DELETE -H "PRIVATE-TOKEN: ${GITLAB__TOKEN}" "${gitlab_api_url}/applications/${app_id}" >/dev/null 2>&1 || true
+          fi
+        done
+        
+        echo "[INFO] GitLab applications cleanup completed"
+      else
+        echo "[INFO] No GitLab applications found to delete"
+      fi
+    else
+      echo "[INFO] No GitLab applications found to delete"
+    fi
+  else
+    echo "[INFO] GITLAB__TOKEN not set, skipping GitLab apps cleanup"
+  fi
+}
+
 ci_enabled
 update_dh_catalog_url
 disable_quay
 disable_acs
 disable_tpa
 install_tssc
+cleanup_gitlab_apps

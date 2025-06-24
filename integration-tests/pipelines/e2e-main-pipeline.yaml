@@ -126,6 +126,10 @@ spec:
               #!/usr/bin/env bash
 
               tssc_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="rhtap-cli").containerImage')
+              if [[ -z "$tssc_image" ]]; then
+                echo "rhtap-cli image was not found in SNAPSHOT, using default"
+                tssc_image="quay.io/rhtap/rhtap-cli:latest"
+              fi
 
               # Waits for condition for all started pipelines
               function waitFor() {

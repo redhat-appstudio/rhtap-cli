@@ -10,7 +10,7 @@ spec:
   backoffLimit: 30
   template:
     spec:
-      serviceAccountName: {{ .Release.Name }}
+      serviceAccountName: patch-tekton-config-sa
       restartPolicy: OnFailure
       containers:
         - name: patch-tekton-config

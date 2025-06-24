@@ -209,6 +209,8 @@ argoCD:
 
 pipelines:
   namespace: {{ $pipelines.Namespace }}
+  tssc:
+    namespace: {{ .Installer.Namespace }}
 
 #
 # tssc-quay

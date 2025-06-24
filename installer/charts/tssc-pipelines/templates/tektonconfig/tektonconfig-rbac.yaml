@@ -1,4 +1,11 @@
 {{- define "pipelines.TektonConfigRbac" -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: patch-tekton-config-sa
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "common.postDeployDeleteLabels" . | nindent 4 }}
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

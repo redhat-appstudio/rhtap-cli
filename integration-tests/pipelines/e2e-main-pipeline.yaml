@@ -126,6 +126,7 @@ spec:
               #!/usr/bin/env bash
 
               tssc_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="rhtap-cli").containerImage')
+              tssc_test_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="tssc-test").containerImage')
 
               # Waits for condition for all started pipelines
               function waitFor() {
@@ -191,6 +192,7 @@ spec:
                   --param pipeline_config="$PIPELINE" \
                   --param auth_config="$AUTH" \
                   --param tssc-image="${tssc_image}" \
+                  --param tssc-test-image="${tssc_test_image}" \
                   --use-param-defaults \
                   --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
                   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \

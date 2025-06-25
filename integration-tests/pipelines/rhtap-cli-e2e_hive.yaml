@@ -109,7 +109,7 @@ spec:
                 name: $(context.pipelineRun.name)
                 namespace: hive
               spec:
-                clusterPoolName: rhopp-test-clusterpool
+                clusterPoolName: clusterpool
               EOF
               ## wait for cluster for up to 30 minutes
               if ! kubectl wait --for=condition=ClusterRunning clusterclaims.hive.openshift.io/$(context.pipelineRun.name) -n hive --timeout 30m; then

@@ -179,38 +179,39 @@ spec:
 
 
               oc whoami
-              oc whoami --show-console
-              # Check if routes are available (OpenShift-specific resource)
-              echo "Checking if routes are available..."
-              if ! oc api-resources | grep -q "routes"; then
-                echo "Warning: Routes are not available. This might not be an OpenShift cluster or it's not fully ready."
-                echo "Waiting for OpenShift components to be ready..."
-                sleep 30
-                if ! oc api-resources | grep -q "routes"; then
-                  echo "Error: Routes still not available. This doesn't appear to be an OpenShift cluster."
-                  exit 1
-                fi
-              fi
+              console_url=$(oc whoami --show-console)
+              echo "Console URL: $console_url"
+              # # Check if routes are available (OpenShift-specific resource)
+              # echo "Checking if routes are available..."
+              # if ! oc api-resources | grep -q "routes"; then
+              #   echo "Warning: Routes are not available. This might not be an OpenShift cluster or it's not fully ready."
+              #   echo "Waiting for OpenShift components to be ready..."
+              #   sleep 30
+              #   if ! oc api-resources | grep -q "routes"; then
+              #     echo "Error: Routes still not available. This doesn't appear to be an OpenShift cluster."
+              #     exit 1
+              #   fi
+              # fi
 
-              # Check if openshift-console namespace exists
-              echo "Checking if openshift-console namespace exists..."
-              if ! oc get namespace openshift-console &>/dev/null; then
-                echo "Error: openshift-console namespace not found."
-                exit 1
-              fi
+              # # Check if openshift-console namespace exists
+              # echo "Checking if openshift-console namespace exists..."
+              # if ! oc get namespace openshift-console &>/dev/null; then
+              #   echo "Error: openshift-console namespace not found."
+              #   exit 1
+              # fi
 
-              # Wait for console route to be available
-              echo "Waiting for console route to be available..."
-              for ((k=1; k<=10; k++)); do
-                if oc get route console -n openshift-console &>/dev/null; then
-                  echo "Console route found."
-                  break
-                fi
-                echo "Console route not found, attempt $k/10. Waiting 30 seconds..."
-                sleep 30
-              done
+              # # Wait for console route to be available
+              # echo "Waiting for console route to be available..."
+              # for ((k=1; k<=10; k++)); do
+              #   if oc get route console -n openshift-console &>/dev/null; then
+              #     echo "Console route found."
+              #     break
+              #   fi
+              #   echo "Console route not found, attempt $k/10. Waiting 30 seconds..."
+              #   sleep 30
+              # done
 
-              console_url="https://$(oc get route console -n openshift-console -o jsonpath='{.spec.host}' 2>/dev/null)"
+              # console_url="https://$(oc get route console -n openshift-console -o jsonpath='{.spec.host}' 2>/dev/null)"
 
               if [[ -z "$console_url" ]]; then
                 echo "Error: Could not retrieve OpenShift console URL."

@@ -88,6 +88,8 @@ spec:
       params:
         - name: oci-container-repo
           value: $(params.oci-container-repo)
+        - name: oci-container-expiration
+          value: $(params.oci-container-expiration)
         - name: oci-container-tag
           value: $(context.pipelineRun.name)
     - name: provision-rosa

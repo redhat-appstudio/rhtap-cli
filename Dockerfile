@@ -3,7 +3,7 @@
 #
 
 FROM registry.redhat.io/openshift4/ose-tools-rhel9@sha256:5b742e0a953095151f6a0fbecac41f25e0062a9dd48637c4f48379f856554e20 AS ose-tools
-FROM registry.access.redhat.com/ubi9/go-toolset:1.23.9-1749636489 AS builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.23.9-1750969886 AS builder
 
 USER root
 WORKDIR /workdir/tssc

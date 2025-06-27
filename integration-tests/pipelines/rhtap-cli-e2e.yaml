@@ -33,6 +33,10 @@ spec:
       default: 'quay.io/konflux-test-storage/rhtap-team/rhtap-cli'
       description: The ORAS container used to store all test artifacts.
       type: string
+    - name: oci-container-expiration
+      type: string
+      default: 30d
+      description: Change default expiration of image from 1y to 30 days - https://github.com/konflux-ci/tekton-integration-catalog/blob/main/common/tasks/create-oci-artifact/0.1/create-oci-artifact.yaml#L23
     - name: job-spec
       type: string
     - name: konflux-test-infra-secret
@@ -84,6 +88,8 @@ spec:
       params:
         - name: oci-container-repo
           value: $(params.oci-container-repo)
+        - name: oci-container-expiration
+          value: $(params.oci-container-expiration)
         - name: oci-container-tag
           value: $(context.pipelineRun.name)
     - name: provision-rosa

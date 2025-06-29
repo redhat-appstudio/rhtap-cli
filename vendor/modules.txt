@@ -205,9 +205,6 @@ github.com/google/go-cmp/cmp/internal/value
 # github.com/google/go-github/scrape v0.0.0-20250610212921-ad671c46a896
 ## explicit; go 1.23.0
 github.com/google/go-github/scrape
-# github.com/google/go-github/v71 v71.0.0
-## explicit; go 1.23.0
-github.com/google/go-github/v71/github
 # github.com/google/go-github/v72 v72.0.0
 ## explicit; go 1.23.0
 github.com/google/go-github/v72/github
@@ -360,7 +357,7 @@ github.com/openshift/api/config/v1alpha2
 github.com/openshift/api/operator/v1
 github.com/openshift/api/operator/v1alpha1
 github.com/openshift/api/project/v1
-# github.com/openshift/client-go v0.0.0-20250603093317-900624865677
+# github.com/openshift/client-go v0.0.0-20250623095455-7b2007868c76
 ## explicit; go 1.23.0
 github.com/openshift/client-go/config/applyconfigurations/config/v1
 github.com/openshift/client-go/config/applyconfigurations/internal

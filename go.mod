@@ -7,7 +7,7 @@ require (
 	github.com/google/go-github/scrape v0.0.0-20240710201133-173aa01e10b0
 	github.com/google/go-github/v61 v61.0.0
 	github.com/onsi/gomega v1.33.1
-	github.com/openshift/api v0.0.0-20241107155230-d37bb9f7e380
+	github.com/openshift/api 41708f612339
 	github.com/openshift/client-go v0.0.0-20241107164952-923091dd2b1a
 	github.com/pkg/errors v0.9.1
 	github.com/quay/claircore v1.5.33

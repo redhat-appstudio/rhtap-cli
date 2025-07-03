@@ -1,4 +1,10 @@
 {{- define "pipelines.TektonConfigPatch" -}}
+  {{- $rekor_url := "" }}
+  {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "tssc-tas-integration") | default dict -}}
+  {{- $secretData := (get $secretObj "data") | default dict -}}
+  {{- if $secretData }}
+    {{- $rekor_url = $secretData.rekor_url | b64dec }}
+  {{- end }}
 metadata:
   annotations:
     meta.helm.sh/release-name: {{ .Chart.Name }}
@@ -9,7 +15,7 @@ spec:
   chain:
     generateSigningSecret: true
     transparency.enabled: 'true'
-    transparency.url: http://rekor-server.tssc-tas.svc
+    transparency.url: {{ $rekor_url }}
   platforms:
     openshift:
       pipelinesAsCode:

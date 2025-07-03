@@ -73,15 +73,15 @@ tssc:
     - chart: charts/tssc-gitops
       namespace: *gitopsNamespace
       enabled: *gitopsEnabled
+    - chart: charts/tssc-tas
+      namespace: *trustedArtifactSignerNamespace
+      enabled: *tasEnabled
     - chart: charts/tssc-pipelines
       namespace: *installerNamespace
       enabled: *pipelinesEnabled
     - chart: charts/tssc-quay
       namespace: *quayNamespace
       enabled: *quayEnabled
-    - chart: charts/tssc-tas
-      namespace: *trustedArtifactSignerNamespace
-      enabled: *tasEnabled
     - chart: charts/tssc-tpa-realm
       namespace: *trustedProfileAnalyzerNamespace
       enabled: *tpaEnabled

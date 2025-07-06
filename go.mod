@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/google/go-github/scrape v0.0.0-20250627155722-0c6bd9186d03
 	github.com/google/go-github/v73 v73.0.0
-	github.com/onsi/gomega v1.35.1
+	github.com/onsi/gomega v1.37.0
 	github.com/openshift/api v0.0.0-20250627132400-41708f612339
 	github.com/openshift/client-go v0.0.0-20250623095455-7b2007868c76
 	github.com/pkg/errors v0.9.1

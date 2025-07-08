@@ -184,7 +184,8 @@ spec:
                 SCM=$(echo "$config" | jq -r '.[] | select(.key == "SCM").value')
                 PIPELINE=$(echo "$config" | jq -r '.[] | select(.key == "Pipeline").value')
                 AUTH=$(echo "$config" | jq -r '.[] | select(.key == "AUTH").value')
-                PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+
+                PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/rhopp/rhtap-cli/refs/heads/RHTAP-4382_hive/integration-tests/pipelines/rhtap-cli-e2e_hive.yaml \
                   --param ocp-version="$OCP_VERSION"\
                   --param job-spec="$JOB_SPEC"\
                   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \

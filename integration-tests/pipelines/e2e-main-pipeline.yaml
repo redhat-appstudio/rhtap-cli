@@ -16,6 +16,9 @@ spec:
         - name: konflux-test-infra-secret
           description: The name of secret where testing infrastructures credentials are stored.
           type: string
+        - name: cloud-credential-key
+          description: The key secret from konflux-test-infra-secret where all AWS ROSA configurations are stored.
+          type: string
     tasks:
         - name: test-metadata
           taskRef:
@@ -158,6 +161,7 @@ spec:
                             --param job-spec="$JOB_SPEC"\
                             --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
                             --param rhads-config="$RHADS_CONFIG_CONTENT" \
+                            --param cloud-credential-key="$(params.cloud-credential-key)" \
                             $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
                             $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
                             --use-param-defaults \

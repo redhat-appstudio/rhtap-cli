@@ -1,0 +1,25 @@
+{
+    "templates": [
+        "go"
+    ],
+    "tssc": [
+        {
+            "git": "github",
+            "ci": "tekton",
+            "registry": "quay.io",
+            "tpa": "local",
+            "acs": "remote"
+        },
+        {
+            "git": "gitlab",
+            "ci": "tekton",
+            "registry": "quay.io",
+            "tpa": "local",
+            "acs": "remote"
+        }
+    ],
+    "tests": [
+        "test1",
+        "test2"
+    ]
+}

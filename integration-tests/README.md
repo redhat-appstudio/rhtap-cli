@@ -12,23 +12,33 @@ In order to succesfully run this integration test one must:
         * `server-token`
         * `server-url`
     * `rhtap-cli-install` used by `rhtap-install` task with keys:
-        * `quay-dockerconfig-json: `
+
         * `docker_io: `
         * `rhdh-github-client-id`
         * `acs-central-endpoint`
         * `acs-api-token`
-        * `bitbucket-username`
-        * `jenkins-username`
-        * `jenkins-api-token`
-        * `gitlab_token`
-        * `quay-api-token`
-        * `jenkins-url`
         * `rhdh-github-client-secret`
+        * `bitbucket-username`
         * `bitbucket-app-password`
         * `rhdh-github-webhook-secret`
         * `github_token`
         * `rhdh-github-app-id`
         * `rhdh-github-private-key`
+        * `gitlab-app-id`
+        * `gitlab-app-secret`
+        * `gitlab-group`
+        * `gitlab_token`
+        * `jenkins-username`
+        * `jenkins-url`
+        * `jenkins-api-token`
+        * `artifactory-dockerconfig-json`
+        * `artifactory-token`
+        * `artifactory-url`
+        * `nexus-dockerconfig-json`
+        * `nexus-ui-url`
+        * `quay-dockerconfig-json`
+        * `quay-api-token`
+
     * `konflux-test-infra` with keys:
         * `qe-cloud-credentials-us-east-1` - this is current default key holding AWS credentials json. Other key might be used based on what's defined in `cloud-credential-key` parameter of `rhtap-cli-e2e` Pipeline.
         * `github-bot-commenter-token`
@@ -38,15 +48,22 @@ In order to succesfully run this integration test one must:
 
 ### e2e-main-pipeline
 
-This is the main pipeline used by our IntegrationTestScenario. It has 3 phases
-1) Downloads & parses [Pict](https://github.com/Microsoft/pict/blob/main/doc/pict.md) file from fork's location `./integration-tests/pict-models/default.pict`. This defines the matrix for this e2e run
-2) Creates new PipelineRun for each row of the matrix defined by used Pict model file using [rhtap-cli-e2e Pipeline](./pipelines/rhtap-cli-e2e.yaml)
-3) Waits for all "nested" pipelines to finish.
+This is the main pipeline used by our IntegrationTestScenario. It has 3 phases:
+1) Gets test metadata and processes the rhads-config file from the repository to extract OpenShift versions and other configuration
+2) Creates new PipelineRun for each OpenShift version specified in the rhads-config using [rhtap-cli-e2e Pipeline](./pipelines/rhtap-cli-e2e.yaml)
+3) Waits for all "nested" pipelines to finish and reports their status
+
+The pipeline automatically determines which repository and branch to use based on the job specification - for rhtap-cli repository changes, it uses the PR's repository and branch; for other repositories, it uses the default redhat-appstudio/rhtap-cli repository with the main branch.
 
 ### rhtap-cli-e2e
 
-Pipeline that given parameters:
-1) Creates ephemeral cluster
-2) Installs TSSC
-3) Runs rhtap-e2e tests
-4) Teardown (archive artifacts, destroy cluster, ...)
+Pipeline that provisions infrastructure and runs end-to-end tests for RHADS. Given parameters, it:
+1) Creates ephemeral ROSA cluster on AWS
+2) Installs TSSC using the installer from the appropriate repository version
+3) Runs comprehensive end-to-end tests using the `tssc-e2e` task, which validates the entire TSSC system functionality including:
+   - Application onboarding workflows
+   - CI/CD pipeline execution
+   - Security scanning integration
+   - Supply chain validation
+   - Integration with external services (GitHub, Quay, etc.)
+4) Teardown (archives artifacts, destroys cluster, cleans up resources)

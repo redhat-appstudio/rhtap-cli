@@ -42,28 +42,17 @@ spec:
     - name: konflux-test-infra-secret
       description: The name of secret where testing infrastructures credentials are stored.
       type: string
-    - name: acs_config
+    - name: rhads-config
       type: string
-      description: "The ACS option for tssc installation. Valid values are 'new' and 'hosted'."
-    - name: tpa_config
-      type: string
-      description: "The TPA option for tssc installation. Valid values are 'new' and 'hosted'."
-    - name: registry_config
-      type: string
-      description: "The image registry option for tssc installation. Valid values are 'quay', 'quay.io' and 'artifactory'."
-    - name: scm_config
-      type: string
-      description: "The SCM option for tssc installation. Valid values are 'github' , 'gitlab' and 'bitbucket'."
-    - name: pipeline_config
-      type: string
-      description: "The Pipeline option for tssc installation. Valid values are 'tekton' and 'jenkins'."
-    - name: auth_config
-      type: string
-      description: "The authentication provider for tssc. Valid values are 'github' and 'gitlab'."
+      description: "The rhads-config file in string format."
     - name: tssc-image
       type: string
       description: "Image from where the `tssc` binary will be extracted (from path /usr/local/bin)."
       default: "quay.io/rhtap/rhtap-cli:latest"
+    - name: tssc-test-image
+      type: string
+      description: "Image from where the `tssc-test` binary will be extracted (from path /usr/local/bin)."
+      default: "quay.io/redhat-user-workloads/rhtap-shared-team-tenant/tssc-test:latest"
   tasks:
     - name: rosa-hcp-metadata
       taskRef:
@@ -135,30 +124,11 @@ spec:
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
         - name: job-spec
           value: "$(params.job-spec)"
-        - name: acs_config
-          value: $(params.acs_config)
-        - name: tpa_config
-          value: $(params.tpa_config)
-        - name: registry_config
-          value: $(params.registry_config)
-        - name: scm_config
-          value: $(params.scm_config)
-        - name: pipeline_config
-          value: $(params.pipeline_config)
-        - name: auth_config
-          value: $(params.auth_config)
+        - name: rhads-config
+          value: $(params.rhads-config)
         - name: tssc-image
           value: $(params.tssc-image)
     - name: sprayproxy-provision
-      when:
-        - input: "$(params.pipeline_config)"
-          operator: in
-          values:
-            - "tekton"
-        - input: "$(params.scm_config)"
-          operator: in
-          values:
-            - "github"
       runAfter:
         - rhtap-install
       taskRef:
@@ -180,11 +150,11 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/redhat-appstudio/rhtap-e2e.git
+            value: https://github.com/redhat-appstudio/tssc-test.git
           - name: revision
             value: main
           - name: pathInRepo
-            value: integration-tests/tasks/rhtap-e2e.yaml
+            value: integration-tests/tasks/tssc-e2e.yaml
       params:
         - name: job-spec
           value: $(params.job-spec)
@@ -192,12 +162,8 @@ spec:
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
         - name: oci-container
           value: $(tasks.create-oci-container.results.oci-container)
-        - name: scm_config
-          value: $(params.scm_config)
-        - name: pipeline_config
-          value: $(params.pipeline_config)
-        - name: ocp-version
-          value: "$(params.ocp-version)"
+        - name: tssc-test-image
+          value: $(params.tssc-test-image)
   finally:
     - name: deprovision-rosa-collect-artifacts
       taskRef:

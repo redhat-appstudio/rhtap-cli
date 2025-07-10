@@ -19,7 +19,6 @@ spec:
       type: string
     - name: cloud-credential-key
       type: string
-      default: "qe-cloud-credentials-us-east-1"
       description: The key secret from konflux-test-infra-secret where all AWS ROSA configurations are stored.
     - name: replicas
       description: 'The number of replicas for the cluster nodes.'

@@ -402,8 +402,8 @@ github.com/prometheus/procfs/internal/util
 # github.com/quay/claircore v1.5.37
 ## explicit; go 1.23.0
 github.com/quay/claircore/pkg/tarfs
-# github.com/rivo/uniseg v0.2.0
-## explicit; go 1.12
+# github.com/rivo/uniseg v0.4.7
+## explicit; go 1.18
 github.com/rivo/uniseg
 # github.com/rubenv/sql-migrate v1.7.2
 ## explicit; go 1.23.0

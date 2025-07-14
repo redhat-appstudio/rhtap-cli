@@ -12,8 +12,8 @@
         },
         {
             "git": "gitlab",
-            "ci": "tekton",
-            "registry": "quay.io",
+            "ci": "gitlabci",
+            "registry": "artifactory",
             "tpa": "local",
             "acs": "remote"
         }

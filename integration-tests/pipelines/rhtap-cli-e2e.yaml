@@ -149,9 +149,9 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/redhat-appstudio/tssc-test.git
+            value: https://github.com/chetna14manku/tssc-test.git
           - name: revision
-            value: main
+            value: fix-registry-org
           - name: pathInRepo
             value: integration-tests/tasks/tssc-e2e.yaml
       params:

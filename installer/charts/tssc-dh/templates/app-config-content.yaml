@@ -53,23 +53,7 @@ auth:
         tenantId: ${AZURE__TENANT__ID}
     {{- end }}
   {{- end }}
-  {{- if $githubSecretObj }}
-    {{- $signInPage = "github" }}
-    github:
-      production:
-        clientId: ${GITHUB__APP__CLIENT__ID}
-        clientSecret: ${GITHUB__APP__CLIENT__SECRET}
-      {{- if ne ($githubSecretObj.data.host | b64dec) "github.com" }}
-        enterpriseInstanceUrl: ${GITHUB__URL}
-      {{- end }}
-      {{- if not .Values.developerHub.enableRBAC }}
-        signIn:
-          resolvers:
-            - resolver: usernameMatchingUserEntityName
-              dangerouslyAllowSignInWithoutUserInCatalog: true
-      {{- end }}
-  {{- end }}
-  {{- $gitlabSecretData := ($gitlabSecretObj.data | default dict) }}
+    {{- $gitlabSecretData := ($gitlabSecretObj.data | default dict) }}
   {{- if $gitlabSecretData }}
     {{- if and $gitlabSecretData.clientId $gitlabSecretData.clientSecret }}
     {{- $signInPage = "gitlab" }}
@@ -85,6 +69,22 @@ auth:
             - resolver: usernameMatchingUserEntityName
               dangerouslyAllowSignInWithoutUserInCatalog: true
     {{- end }}
+  {{- end }}
+  {{- if $githubSecretObj }}
+    {{- $signInPage = "github" }}
+    github:
+      production:
+        clientId: ${GITHUB__APP__CLIENT__ID}
+        clientSecret: ${GITHUB__APP__CLIENT__SECRET}
+      {{- if ne ($githubSecretObj.data.host | b64dec) "github.com" }}
+        enterpriseInstanceUrl: ${GITHUB__URL}
+      {{- end }}
+      {{- if not .Values.developerHub.enableRBAC }}
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName
+              dangerouslyAllowSignInWithoutUserInCatalog: true
+      {{- end }}
   {{- end }}
 backend:
   auth:

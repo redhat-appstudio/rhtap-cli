@@ -8,7 +8,7 @@ import (
 	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/k8s"
 
-	"github.com/spf13/pflag"
+	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -33,12 +33,14 @@ type AzureIntegration struct {
 }
 
 // PersistentFlags sets the persistent flags for the Azure integration.
-func (g *AzureIntegration) PersistentFlags(p *pflag.FlagSet) {
+func (g *AzureIntegration) PersistentFlags(c *cobra.Command) {
+	p := c.PersistentFlags()
+
 	p.BoolVar(&g.force, "force", g.force,
 		"Overwrite the existing secret")
 
 	p.StringVar(&g.host, "host", g.host,
-		"Azure host, defaults to 'dev.azure.com'")
+		"Azure host")
 	p.StringVar(&g.token, "token", g.token,
 		"Azure API token")
 	p.StringVar(&g.org, "organization", g.org,
@@ -49,6 +51,14 @@ func (g *AzureIntegration) PersistentFlags(p *pflag.FlagSet) {
 		"Azure client secret")
 	p.StringVar(&g.tenantId, "tenant-id", g.tenantId,
 		"Azure tenant ID")
+
+	for _, f := range []string{
+		"host", "organization", "client-id", "client-secret", "tenant-id",
+	} {
+		if err := c.MarkPersistentFlagRequired(f); err != nil {
+			panic(err)
+		}
+	}
 }
 
 // log logger with contextual information.
@@ -193,7 +203,7 @@ func NewAzureIntegration(logger *slog.Logger, kube *k8s.Kube) *AzureIntegration 
 		kube:   kube,
 
 		force:        false,
-		host:         "",
+		host:         defaultPublicAzureHost,
 		token:        "",
 		org:          "",
 		clientId:     "",

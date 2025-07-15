@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/redhat-appstudio/rhtap-cli/pkg/k8s"
+
 	"github.com/spf13/cobra"
 )
 

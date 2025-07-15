@@ -9,8 +9,8 @@ import (
 
 	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/k8s"
+	"github.com/spf13/cobra"
 
-	"github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -29,7 +29,9 @@ type JenkinsIntegration struct {
 }
 
 // PersistentFlags sets the persistent flags for the Jenkins integration.
-func (j *JenkinsIntegration) PersistentFlags(p *pflag.FlagSet) {
+func (j *JenkinsIntegration) PersistentFlags(c *cobra.Command) {
+	p := c.PersistentFlags()
+
 	p.BoolVar(&j.force, "force", j.force,
 		"Overwrite the existing secret")
 
@@ -39,6 +41,12 @@ func (j *JenkinsIntegration) PersistentFlags(p *pflag.FlagSet) {
 		"Jenkins user to connect to the service")
 	p.StringVar(&j.url, "url", j.url,
 		"Jenkins URL to the service")
+
+	for _, f := range []string{"token", "username", "url"} {
+		if err := c.MarkPersistentFlagRequired(f); err != nil {
+			panic(err)
+		}
+	}
 }
 
 // log logger with contextual information.

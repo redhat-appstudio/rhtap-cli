@@ -9,8 +9,8 @@ import (
 
 	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/k8s"
+	"github.com/spf13/cobra"
 
-	"github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -28,7 +28,9 @@ type NexusIntegration struct {
 }
 
 // PersistentFlags sets the persistent flags for the Nexus integration.
-func (n *NexusIntegration) PersistentFlags(p *pflag.FlagSet) {
+func (n *NexusIntegration) PersistentFlags(c *cobra.Command) {
+	p := c.PersistentFlags()
+
 	p.BoolVar(&n.force, "force", n.force,
 		"Overwrite the existing secret")
 
@@ -36,6 +38,12 @@ func (n *NexusIntegration) PersistentFlags(p *pflag.FlagSet) {
 		"Nexus dockerconfigjson, e.g. '{ \"auths\": { \"****\": { \"auth\": \"****\", \"email\": \"\" }}}'")
 	p.StringVar(&n.url, "url", n.url,
 		"Nexus URL")
+
+	for _, f := range []string{"dockerconfigjson", "url"} {
+		if err := c.MarkPersistentFlagRequired(f); err != nil {
+			panic(err)
+		}
+	}
 }
 
 // log logger with contextual information.

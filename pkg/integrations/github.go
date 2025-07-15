@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/go-github/scrape"
 	"github.com/google/go-github/v73/github"
-	"github.com/spf13/pflag"
+	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -36,7 +36,10 @@ type GithubIntegration struct {
 }
 
 // PersistentFlags sets the persistent flags for the GitHub integration.
-func (g *GithubIntegration) PersistentFlags(p *pflag.FlagSet) {
+// func (g *GithubIntegration) PersistentFlags(p *pflag.FlagSet) {
+func (g *GithubIntegration) PersistentFlags(cmd *cobra.Command) {
+	p := cmd.PersistentFlags()
+
 	p.BoolVar(&g.force, "force", g.force,
 		"Overwrite the existing secret")
 
@@ -50,6 +53,10 @@ func (g *GithubIntegration) PersistentFlags(p *pflag.FlagSet) {
 		"GitHub App webhook URL")
 	p.StringVar(&g.token, "token", g.token,
 		"GitHub personal access token")
+
+	if err := cmd.MarkPersistentFlagRequired("token"); err != nil {
+		panic(err)
+	}
 }
 
 // log logger with contextual information.

@@ -162,7 +162,7 @@ spec:
         - name: oci-container
           value: $(tasks.create-oci-container.results.oci-container)
         - name: tssc-test-image
-          value: $(params.tssc-test-image)
+          value: quay.io/redhat-user-workloads/rhtap-shared-team-tenant/tssc-test@sha256:6d1c82a2d4cb29d0310c58ba2b79ec102991baa9cdc1afb68588155509cab06c
   finally:
     - name: deprovision-rosa-collect-artifacts
       taskRef:

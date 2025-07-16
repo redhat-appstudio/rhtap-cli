@@ -22,11 +22,9 @@ spec:
       description: The key secret from konflux-test-infra-secret where all AWS ROSA configurations are stored.
     - name: replicas
       description: 'The number of replicas for the cluster nodes.'
-      default: "3"
       type: string
     - name: machine-type
       description: 'The type of machine to use for the cluster nodes.'
-      default: "m6i.4xlarge"
       type: string
     - name: oci-container-repo
       default: 'quay.io/konflux-test-storage/rhtap-team/rhtap-cli'

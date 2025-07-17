@@ -8,7 +8,7 @@ import (
 	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/k8s"
 
-	"github.com/spf13/pflag"
+	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -32,7 +32,9 @@ type GitLabIntegration struct {
 }
 
 // PersistentFlags sets the persistent flags for the GitLab integration.
-func (g *GitLabIntegration) PersistentFlags(p *pflag.FlagSet) {
+func (g *GitLabIntegration) PersistentFlags(c *cobra.Command) {
+	p := c.PersistentFlags()
+
 	p.BoolVar(&g.force, "force", g.force,
 		"Overwrite the existing secret")
 
@@ -46,6 +48,12 @@ func (g *GitLabIntegration) PersistentFlags(p *pflag.FlagSet) {
 		"GitLab API token")
 	p.StringVar(&g.group, "group", g.group,
 		"GitLab group name")
+
+	for _, f := range []string{"token", "group"} {
+		if err := c.MarkPersistentFlagRequired(f); err != nil {
+			panic(err)
+		}
+	}
 }
 
 // log logger with contextual information.

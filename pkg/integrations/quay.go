@@ -10,7 +10,7 @@ import (
 	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/k8s"
 
-	"github.com/spf13/pflag"
+	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -33,7 +33,9 @@ type QuayIntegration struct {
 }
 
 // PersistentFlags sets the persistent flags for the Quay integration.
-func (q *QuayIntegration) PersistentFlags(p *pflag.FlagSet) {
+func (q *QuayIntegration) PersistentFlags(c *cobra.Command) {
+	p := c.PersistentFlags()
+
 	p.BoolVar(&q.force, "force", q.force,
 		"Overwrite the existing secret")
 
@@ -45,6 +47,12 @@ func (q *QuayIntegration) PersistentFlags(p *pflag.FlagSet) {
 		"Quay API token")
 	p.StringVar(&q.url, "url", q.url,
 		"Quay URL")
+
+	for _, f := range []string{"dockerconfigjson", "token", "url"} {
+		if err := c.MarkPersistentFlagRequired(f); err != nil {
+			panic(err)
+		}
+	}
 }
 
 // log logger with contextual information.

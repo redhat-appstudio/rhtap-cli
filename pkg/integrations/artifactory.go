@@ -10,7 +10,7 @@ import (
 	"github.com/redhat-appstudio/rhtap-cli/pkg/config"
 	"github.com/redhat-appstudio/rhtap-cli/pkg/k8s"
 
-	"github.com/spf13/pflag"
+	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -29,7 +29,9 @@ type ArtifactoryIntegration struct {
 }
 
 // PersistentFlags sets the persistent flags for the Artifactory integration.
-func (a *ArtifactoryIntegration) PersistentFlags(p *pflag.FlagSet) {
+func (a *ArtifactoryIntegration) PersistentFlags(c *cobra.Command) {
+	p := c.PersistentFlags()
+
 	p.BoolVar(&a.force, "force", a.force,
 		"Overwrite the existing secret")
 
@@ -39,6 +41,12 @@ func (a *ArtifactoryIntegration) PersistentFlags(p *pflag.FlagSet) {
 		"Artifactory API token")
 	p.StringVar(&a.url, "url", a.url,
 		"Artifactory URL")
+
+	for _, f := range []string{"dockerconfigjson", "token", "url"} {
+		if err := c.MarkPersistentFlagRequired(f); err != nil {
+			panic(err)
+		}
+	}
 }
 
 // log logger with contextual information.

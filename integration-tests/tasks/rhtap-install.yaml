@@ -11,24 +11,9 @@ spec:
     - name: job-spec
       type: string
       description: "The job specification containing details of the test execution."
-    - name: acs_config
+    - name: rhads-config
       type: string
-      description: "The ACS option for tssc installation. Valid values are 'new' and 'hosted'."
-    - name: tpa_config
-      type: string
-      description: "The TPA option for tssc installation. Valid values are 'new' and 'hosted'."
-    - name: registry_config
-      type: string
-      description: "The image registry option for tssc installation. Valid values are 'quay', 'quayio' and 'artifactory'."
-    - name: scm_config
-      type: string
-      description: "The SCM option for tssc installation. Valid values are 'github' , 'gitlab' and 'bitbucket'."
-    - name: pipeline_config
-      type: string
-      description: "The Pipeline option for tssc installation. Valid values are 'tekton' and 'jenkins'."
-    - name: auth_config
-      type: string
-      description: "The authentication provider for tssc. Valid values are 'github' and 'gitlab'."
+      description: "The rhads-config file in string format."
     - name: tssc-image
       type: string
       description: "The tssc image containing the tssc binary."
@@ -65,7 +50,6 @@ spec:
         set -o pipefail
 
         GIT_REPO="${GIT_REPO:-$(echo "$JOB_SPEC" | jq -r '.git.repo // empty')}"
-
         if [ -z "$GIT_REPO" ]; then
           echo "[ERROR] GIT_REPO is not set in JOB_SPEC"
           exit 1
@@ -77,7 +61,6 @@ spec:
         if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
             GIT_URL="${GIT_URL:-$(echo "$JOB_SPEC" | jq -r '.git.source_repo_url')}"
             GIT_REVISION="${GIT_REVISION:-$(echo "$JOB_SPEC" | jq -r '.git.commit_sha')}"
-
             echo -e "INFO: Cloning repository '$GIT_REPO' with revision '$GIT_REVISION' from URL '$GIT_URL'"
             git clone "${GIT_URL}" .
             git checkout "${GIT_REVISION}"
@@ -86,14 +69,31 @@ spec:
             git clone https://github.com/redhat-appstudio/rhtap-cli.git .
         fi
 
-        # Generate the .env file for tssc installation based on the configuration given in the pict file
+        # Generate the .env file for tssc installation based on the configuration given in the rhads-config
         env_file="integration-tests/scripts/.ci-env"
-        echo "export acs_config=\"$(params.acs_config)\"" >> ${env_file}
-        echo "export tpa_config=\"$(params.tpa_config)\"" >> ${env_file}
-        echo "export registry_config=\"$(params.registry_config)\"" >> ${env_file}
-        echo "export scm_config=\"$(params.scm_config)\"" >> ${env_file}
-        echo "export pipeline_config=\"$(params.pipeline_config)\"" >> ${env_file}
-        echo "export auth_config=\"$(params.auth_config)\"" >> ${env_file}
+
+        # Extract configuration items from rhads-config string
+        RHADS_CONFIG_CONTENT="$(params.rhads-config)"
+        ACS_CONFIG=$(echo "$RHADS_CONFIG_CONTENT" | tr ' ' '\n' | grep "^ACS=" | cut -d'=' -f2- | tr -d '"')
+        TPA_CONFIG=$(echo "$RHADS_CONFIG_CONTENT" | tr ' ' '\n' | grep "^TPA=" | cut -d'=' -f2- | tr -d '"')
+        REGISTRY_CONFIG=$(echo "$RHADS_CONFIG_CONTENT" | tr ' ' '\n' | grep "^REGISTRY=" | cut -d'=' -f2- | tr -d '"')
+        SCM_CONFIG=$(echo "$RHADS_CONFIG_CONTENT" | tr ' ' '\n' | grep "^SCM=" | cut -d'=' -f2- | tr -d '"')
+        PIPELINE_CONFIG=$(echo "$RHADS_CONFIG_CONTENT" | tr ' ' '\n' | grep "^PIPELINE=" | cut -d'=' -f2- | tr -d '"')
+
+        echo "Extracted configuration values:"
+        echo "  ACS: $ACS_CONFIG"
+        echo "  TPA: $TPA_CONFIG"
+        echo "  Registry: $REGISTRY_CONFIG"
+        echo "  SCM: $SCM_CONFIG"
+        echo "  Pipeline: $PIPELINE_CONFIG"
+
+        # Export configuration values to .env file
+        echo "export acs_config=\"$ACS_CONFIG\"" >> ${env_file}
+        echo "export tpa_config=\"$TPA_CONFIG\"" >> ${env_file}
+        echo "export registry_config=\"$REGISTRY_CONFIG\"" >> ${env_file}
+        echo "export scm_config=\"$SCM_CONFIG\"" >> ${env_file}
+        echo "export pipeline_config=\"$PIPELINE_CONFIG\"" >> ${env_file}
+        echo "export auth_config=\"github\"" >> ${env_file}
 
         # Check if GIT_REPO is tssc-sample-templates and update Developer Hub catalog url based on PR changes
         if [[ "${GIT_REPO}" = "tssc-sample-templates" ]]; then

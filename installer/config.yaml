@@ -38,11 +38,6 @@ tssc:
       namespace: &rhacsNamespace tssc-acs
       properties:
         manageSubscription: true
-    quay:
-      enabled: &quayEnabled true
-      namespace: &quayNamespace tssc-quay
-      properties:
-        manageSubscription: true
     openShiftGitOps:
       enabled: &gitopsEnabled true
       namespace: &gitopsNamespace tssc-gitops
@@ -79,9 +74,6 @@ tssc:
     - chart: charts/tssc-pipelines
       namespace: *installerNamespace
       enabled: *pipelinesEnabled
-    - chart: charts/tssc-quay
-      namespace: *quayNamespace
-      enabled: *quayEnabled
     - chart: charts/tssc-tpa-realm
       namespace: *trustedProfileAnalyzerNamespace
       enabled: *tpaEnabled

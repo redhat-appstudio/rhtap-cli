@@ -9,8 +9,6 @@
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 {{- $ingressRouterCA := required "OpenShift RouterCA" .OpenShift.Ingress.RouterCA -}}
 {{- $openshiftMinorVersion := required "OpenShift Version" .OpenShift.MinorVersion -}}
-{{- $odfEnabled := false -}}
-{{- $odfNamespace := "openshift-storage" -}}
 ---
 debug:
   ci: {{ dig "ci" "debug" false .Installer.Settings -}}
@@ -45,15 +43,11 @@ openshift:
 {{- if $rhdh.Enabled }}
     - {{ $rhdh.Namespace }}
 {{- end }}
-{{- if $odfEnabled }}
-    - {{ $odfNamespace }}
-{{- end }}
 
 #
 # tssc-subscriptions
 #
 
-{{- $odfChannel := printf "stable-%s" $openshiftMinorVersion }}
 
 subscriptions:
   crunchyData:
@@ -82,14 +76,6 @@ subscriptions:
   developerHub:
     enabled: {{ $rhdh.Enabled }}
     managed: {{ and $rhdh.Enabled $rhdh.Properties.manageSubscription }}
-  openShiftDataFoundation:
-    enabled: {{ $odfEnabled }}
-    managed: {{ $odfEnabled }}
-    namespace: {{ $odfNamespace }}
-    channel: {{ $odfChannel }}
-    operatorGroup:
-      targetNamespaces:
-        - {{ $odfNamespace }}
 
 #
 # tssc-infrastructure
@@ -108,11 +94,6 @@ infrastructure:
   openShiftPipelines:
     enabled: {{ $pipelines.Enabled }}
     namespace: {{ $pipelines.Namespace }}
-  odf:
-    enabled: {{ $odfEnabled }}
-    backingStorageSize: 100Gi
-    backingStoreName: noobaa-pv-backing-store
-    namespace: {{ $odfNamespace }}
 
 #
 # tssc-backing-services

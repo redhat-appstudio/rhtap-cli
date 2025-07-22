@@ -83,7 +83,7 @@ spec:
                 # Download PICT tool
                 if ! command -v pict &> /dev/null; then
                   echo "Installing PICT tool..."
-                  wget -O pict https://github.com/Microsoft/pict/releases/download/v3.7.4/pict
+                  curl -L -o pict https://github.com/Microsoft/pict/releases/download/v3.7.4/pict
                   chmod +x pict
                   export PATH=$PATH:$(pwd)
                 fi

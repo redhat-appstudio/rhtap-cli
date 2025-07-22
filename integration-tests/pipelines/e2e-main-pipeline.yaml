@@ -77,8 +77,11 @@ spec:
                 
                 # Download and generate PICT configurations directly in this task
                 GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
-                REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
-                BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+                #REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
+                #BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+
+                REPO_ORG="jkopriva"
+                BRANCH="RHTAP-5920"
                 
                 # Download PICT tool
                 if ! command -v pict &> /dev/null; then

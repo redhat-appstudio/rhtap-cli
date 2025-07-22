@@ -83,12 +83,22 @@ spec:
                 REPO_ORG="jkopriva"
                 BRANCH="RHTAP-5920"
                 
-                # Download PICT tool
+                # Download and build PICT tool
                 if ! command -v pict &> /dev/null; then
                   echo "Installing PICT tool..."
-                  curl -L -o pict https://github.com/Microsoft/pict/releases/download/v3.7.4/pict
+                  # Clone the PICT repository
+                  git clone https://github.com/Microsoft/pict.git pict-repo
+                  cd pict-repo
+                  # Build using CMake
+                  cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
+                  cmake --build build
+                  # Copy the binary to parent directory
+                  cp build/cli/pict ../pict
+                  cd ..
                   chmod +x pict
                   export PATH=$PATH:$(pwd)
+                  # Clean up source code
+                  rm -rf pict-repo
                 fi
 
                 # Download periodic.pict file

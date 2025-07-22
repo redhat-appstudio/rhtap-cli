@@ -27,6 +27,10 @@ spec:
       description: 'The number of replicas for the cluster nodes.'
       default: "3"
       type: string
+    - name: use-periodic-configs
+      description: 'Enable periodic testing mode with multiple configurations generated from PICT file'
+      default: "false"
+      type: string
   tasks:
     - name: test-metadata
       taskRef:
@@ -43,6 +47,7 @@ spec:
           value: $(params.SNAPSHOT)
         - name: test-name
           value: $(context.pipelineRun.name)
+
     - name: process-rhads-config
       taskSpec:
         volumes:
@@ -50,28 +55,95 @@ spec:
             emptyDir: {}
         results:
           - name: rhads-config
-            description: JSON formatted configuration data
+            description: JSON formatted configuration data (single config or array of configs)
         steps:
           - name: get-rhads-config
             image: quay.io/konflux-ci/appstudio-utils:ab6b0b8e40e440158e7288c73aff1cf83a2cc8a9@sha256:24179f0efd06c65d16868c2d7eb82573cce8e43533de6cea14fec3b7446e0b14
             env:
               - name: JOB_SPEC
                 value: $(tasks.test-metadata.results.job-spec)
+              - name: USE_PERIODIC_CONFIGS
+                value: $(params.use-periodic-configs)
+
             volumeMounts:
               - name: shared-data
                 mountPath: /shared
             script: |
               #!/usr/bin/env bash
+              set -euo pipefail
 
-              echo "Downloading rhads-config file:"
-              GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
-              REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
-              BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+              if [[ "$USE_PERIODIC_CONFIGS" == "true" ]]; then
+                echo "Using periodic configurations generated from PICT"
+                
+                # Download and generate PICT configurations directly in this task
+                GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
+                REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
+                BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+                
+                # Download PICT tool
+                if ! command -v pict &> /dev/null; then
+                  echo "Installing PICT tool..."
+                  wget -O pict https://github.com/Microsoft/pict/releases/download/v3.7.4/pict
+                  chmod +x pict
+                  export PATH=$PATH:$(pwd)
+                fi
 
-              rhads_config_file_location="integration-tests/config/rhads-config"
-              curl -o rhads-config https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/$rhads_config_file_location
+                # Download periodic.pict file
+                pict_file_location="integration-tests/config/periodic/periodic.pict"
+                curl -o periodic.pict https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/$pict_file_location
 
-              cat rhads-config | tee $(results.rhads-config.path)
+                # Generate pairwise configurations
+                echo "Running PICT to generate test configurations..."
+                pict periodic.pict > pict_output.txt
+
+                # Convert PICT output to JSON array of rhads-config strings
+                echo "Converting PICT output to rhads-config format..."
+                python3 -c "
+                import sys
+                import json
+
+                # Read PICT output
+                with open('pict_output.txt', 'r') as f:
+                    lines = f.readlines()
+
+                # Parse header and data
+                header = lines[0].strip().split('\t')
+                configs = []
+
+                for line in lines[1:]:
+                    if line.strip():
+                        values = line.strip().split('\t')
+                        config_dict = dict(zip(header, values))
+                        
+                        # Convert to rhads-config format
+                        rhads_config = []
+                        rhads_config.append(f'OCP=\"{config_dict.get(\"OCP\", \"4.18\")}\"')
+                        rhads_config.append(f'AUTH=\"{config_dict.get(\"AUTH\", \"github\")}\"')
+                        rhads_config.append(f'ACS=\"{config_dict.get(\"ACS\", \"new\")}\"')
+                        rhads_config.append(f'REGISTRY=\"{config_dict.get(\"Registry\", \"quay.io\")}\"')
+                        rhads_config.append(f'TPA=\"{config_dict.get(\"TPA\", \"new\")}\"')
+                        rhads_config.append(f'SCM=\"{config_dict.get(\"SCM\", \"github\")}\"')
+                        rhads_config.append(f'PIPELINE=\"{config_dict.get(\"Pipeline\", \"tekton\")}\"')
+                        
+                        configs.append('\n'.join(rhads_config))
+
+                # Output as JSON array
+                print(json.dumps(configs))
+                " | tee $(results.rhads-config.path)
+              else
+                echo "Using traditional single rhads-config file"
+                GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
+                REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
+                BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+
+                rhads_config_file_location="integration-tests/config/rhads-config"
+                curl -o rhads-config https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/$rhads_config_file_location
+
+                # Return single config as a simple string (not JSON array in traditional mode)
+                                 cat rhads-config | tee $(results.rhads-config.path)
+               fi
+      runAfter:
+        - test-metadata
     - name: start-nested-pipelines
       params:
         - name: job-spec
@@ -90,6 +162,8 @@ spec:
                 value: $(tasks.test-metadata.results.job-spec)
               - name: RHADS_CONFIG
                 value: $(tasks.process-rhads-config.results.rhads-config)
+              - name: USE_PERIODIC_CONFIGS
+                value: $(params.use-periodic-configs)
               - name: KONFLUX_APPLICATION_NAME
                 valueFrom:
                   fieldRef:
@@ -104,19 +178,109 @@ spec:
                     fieldPath: metadata.namespace
             script: |
               #!/usr/bin/env bash
+              set -euo pipefail
 
-              # Load the RHADS configuration
-              RHADS_CONFIG_CONTENT=$(echo $RHADS_CONFIG)
-              echo "$RHADS_CONFIG_CONTENT"
-
+              echo "Processing RHADS configuration(s)..."
+              
               # get the tssc image and tssc-test image from the snapshot
               tssc_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="rhtap-cli").containerImage')
               tssc_test_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="tssc-test").containerImage')
 
-              # Extract OCP versions from RHADS config
-              [[ $RHADS_CONFIG_CONTENT =~ OCP=\"([^\"]+)\" ]] && IFS=',' read -ra OCP_VERSIONS <<< "${BASH_REMATCH[1]}"
+              GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
+              KONFLUX_URL="https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com"
 
-              echo "Running tests for OCP versions: ${OCP_VERSIONS[*]}"
+              if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
+                REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
+                BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+              else
+                REPO_ORG="redhat-appstudio"
+                BRANCH="main"
+              fi
+
+              PIPELINERUNS_ARRAY=()
+
+              if [[ "$USE_PERIODIC_CONFIGS" == "true" ]]; then
+                echo "Running in periodic mode with multiple configurations"
+                # Parse JSON array of configurations
+                CONFIG_COUNT=$(echo "$RHADS_CONFIG" | jq '. | length')
+                echo "Found $CONFIG_COUNT configurations to process"
+                
+                for ((i=0; i<CONFIG_COUNT; i++)); do
+                  RHADS_CONFIG_CONTENT=$(echo "$RHADS_CONFIG" | jq -r ".[$i]")
+                  echo "Processing configuration $((i+1))/$CONFIG_COUNT:"
+                  echo "$RHADS_CONFIG_CONTENT"
+                  
+                  # Extract OCP versions from this specific config
+                  [[ $RHADS_CONFIG_CONTENT =~ OCP=\"([^\"]+)\" ]] && IFS=',' read -ra OCP_VERSIONS <<< "${BASH_REMATCH[1]}"
+                  
+                  # Create a unique suffix for this configuration
+                  CONFIG_SUFFIX="config$((i+1))"
+                  
+                  # Loop through each OCP version for this configuration
+                  for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
+                    echo "Starting sub-pipeline for OCP version: $OCP_VERSION (Configuration $((i+1)))"
+
+                    PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                      --param ocp-version="$OCP_VERSION"\
+                      --param job-spec="$JOB_SPEC"\
+                      --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
+                      --param rhads-config="$RHADS_CONFIG_CONTENT" \
+                      --param cloud-credential-key="$(params.cloud-credential-key)" \
+                      --param machine-type="$(params.ocp-instance-type)" \
+                      --param replicas="$(params.ocp-replicas)" \
+                      $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
+                      $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
+                      --use-param-defaults \
+                      --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
+                      --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
+                      --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
+                      --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
+                      --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
+                      --prefix-name "e2e-$OCP_VERSION-$CONFIG_SUFFIX"\
+                      -o name)
+
+                    echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                    PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
+                  done
+                done
+              else
+                echo "Running in traditional mode with single configuration"
+                # Traditional single config mode
+                RHADS_CONFIG_CONTENT=$(echo $RHADS_CONFIG)
+                echo "$RHADS_CONFIG_CONTENT"
+
+                # Extract OCP versions from RHADS config
+                [[ $RHADS_CONFIG_CONTENT =~ OCP=\"([^\"]+)\" ]] && IFS=',' read -ra OCP_VERSIONS <<< "${BASH_REMATCH[1]}"
+
+                echo "Running tests for OCP versions: ${OCP_VERSIONS[*]}"
+
+                # Loop through each OCP version and start a sub-pipeline for each
+                for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
+                  echo "Starting sub-pipeline for OCP version: $OCP_VERSION"
+
+                  PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                    --param ocp-version="$OCP_VERSION"\
+                    --param job-spec="$JOB_SPEC"\
+                    --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
+                    --param rhads-config="$RHADS_CONFIG_CONTENT" \
+                    --param cloud-credential-key="$(params.cloud-credential-key)" \
+                    --param machine-type="$(params.ocp-instance-type)" \
+                    --param replicas="$(params.ocp-replicas)" \
+                    $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
+                    $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
+                    --use-param-defaults \
+                    --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
+                    --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
+                    --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
+                    --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
+                    --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
+                    --prefix-name "e2e-$OCP_VERSION"\
+                    -o name)
+
+                  echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                  PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
+                done
+              fi
 
               # Waits for condition for all started pipelines
               function waitFor() {
@@ -144,48 +308,6 @@ spec:
                     done
                   '
               }
-
-              set -euo pipefail
-
-              GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
-              KONFLUX_URL="https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com"
-
-              if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
-                REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
-                BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
-              else
-                REPO_ORG="redhat-appstudio"
-                BRANCH="main"
-              fi
-
-              PIPELINERUNS_ARRAY=()
-
-              # Loop through each OCP version and start a sub-pipeline for each
-              for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
-                echo "Starting sub-pipeline for OCP version: $OCP_VERSION"
-
-                PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
-                  --param ocp-version="$OCP_VERSION"\
-                  --param job-spec="$JOB_SPEC"\
-                  --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
-                  --param rhads-config="$RHADS_CONFIG_CONTENT" \
-                  --param cloud-credential-key="$(params.cloud-credential-key)" \
-                  --param machine-type="$(params.ocp-instance-type)" \
-                  --param replicas="$(params.ocp-replicas)" \
-                  $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
-                  $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
-                  --use-param-defaults \
-                  --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
-                  --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
-                  --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
-                  --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                  --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
-                  --prefix-name "e2e-$OCP_VERSION"\
-                  -o name)
-
-                echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
-                PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
-              done
 
               #Serialize plrs array to be able to export it as var
               export PIPELINERUNS_ARRAY_SERIALIZED="${PIPELINERUNS_ARRAY[*]}"

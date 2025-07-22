@@ -93,7 +93,8 @@ spec:
 
                 # Download periodic.pict file
                 pict_file_location="integration-tests/config/periodic/periodic.pict"
-                curl -o periodic.pict https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/$pict_file_location
+                #curl -o periodic.pict https://raw.githubusercontent.com/$REPO_ORG/$GIT_REPO/refs/heads/$BRANCH/$pict_file_location
+                curl -o periodic.pict https://raw.githubusercontent.com/jkopriva/rhtap-cli/refs/heads/RHTAP-5290/integration-tests/config/periodic/periodic.pict
 
                 cat periodic.pict
 

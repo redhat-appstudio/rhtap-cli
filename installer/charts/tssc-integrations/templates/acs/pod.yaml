@@ -90,7 +90,7 @@ spec:
         allowPrivilegeEscalation: false
   {{- end }}
   {{- $secretQuay := (lookup "v1" "Secret" .Release.Namespace "tssc-quay-integration") }}
-  {{- if and (or $integrations.acs.enabled $integrations.quay.enabled) $secretQuay }}
+  {{- if and $integrations.acs.enabled $secretQuay }}
     {{- $noop = false }}
     #
     # Create the Quay integration.

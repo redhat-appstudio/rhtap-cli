@@ -249,7 +249,7 @@ spec:
                 echo "$RHADS_CONFIG" > "$TEMP_FILE"
                 
                 # Split the file using the separator
-                CONFIG_COUNT=$(grep -o '---CONFIG_SEPARATOR---' "$TEMP_FILE" | wc -l)
+                CONFIG_COUNT=$(grep -o -e "---CONFIG_SEPARATOR---" "$TEMP_FILE" | wc -l)
                 CONFIG_COUNT=$((CONFIG_COUNT + 1))  # Add 1 because there's one more config than separators
                 
                 echo "Found $CONFIG_COUNT configurations to process"

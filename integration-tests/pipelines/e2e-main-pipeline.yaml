@@ -224,27 +224,27 @@ spec:
                       OCP_VERSION="${BASH_REMATCH[1]}"
                       echo "Starting sub-pipeline for OCP version: $OCP_VERSION (Configuration $CONFIG_INDEX)"
 
-                      PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
-                        --param ocp-version="$OCP_VERSION"\
-                        --param job-spec="$JOB_SPEC"\
-                        --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
-                        --param rhads-config="$CONFIG" \
-                        --param cloud-credential-key="$(params.cloud-credential-key)" \
-                        --param machine-type="$(params.ocp-instance-type)" \
-                        --param replicas="$(params.ocp-replicas)" \
-                        $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
-                        $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
-                        --use-param-defaults \
-                        --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
-                        --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
-                        --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
-                        --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                        --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
-                        --prefix-name "e2e-$OCP_VERSION-config$CONFIG_INDEX"\
-                        -o name)
+                      # PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                      #   --param ocp-version="$OCP_VERSION"\
+                      #   --param job-spec="$JOB_SPEC"\
+                      #   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
+                      #   --param rhads-config="$CONFIG" \
+                      #   --param cloud-credential-key="$(params.cloud-credential-key)" \
+                      #   --param machine-type="$(params.ocp-instance-type)" \
+                      #   --param replicas="$(params.ocp-replicas)" \
+                      #   $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
+                      #   $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
+                      #   --use-param-defaults \
+                      #   --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
+                      #   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
+                      #   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
+                      #   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
+                      #   --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
+                      #   --prefix-name "e2e-$OCP_VERSION-config$CONFIG_INDEX"\
+                      #   -o name)
 
                       echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
-                      PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
+                      #PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
                     else
                       echo "Warning: Could not extract OCP version from configuration $CONFIG_INDEX"
                     fi
@@ -267,27 +267,27 @@ spec:
                 for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
                   echo "Starting sub-pipeline for OCP version: $OCP_VERSION"
 
-                  PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
-                    --param ocp-version="$OCP_VERSION"\
-                    --param job-spec="$JOB_SPEC"\
-                    --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
-                    --param rhads-config="$RHADS_CONFIG_CONTENT" \
-                    --param cloud-credential-key="$(params.cloud-credential-key)" \
-                    --param machine-type="$(params.ocp-instance-type)" \
-                    --param replicas="$(params.ocp-replicas)" \
-                    $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
-                    $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
-                    --use-param-defaults \
-                    --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
-                    --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
-                    --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
-                    --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                    --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
-                    --prefix-name "e2e-$OCP_VERSION"\
-                    -o name)
+                  # PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                  #   --param ocp-version="$OCP_VERSION"\
+                  #   --param job-spec="$JOB_SPEC"\
+                  #   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
+                  #   --param rhads-config="$RHADS_CONFIG_CONTENT" \
+                  #   --param cloud-credential-key="$(params.cloud-credential-key)" \
+                  #   --param machine-type="$(params.ocp-instance-type)" \
+                  #   --param replicas="$(params.ocp-replicas)" \
+                  #   $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
+                  #   $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
+                  #   --use-param-defaults \
+                  #   --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
+                  #   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
+                  #   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
+                  #   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
+                  #   --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
+                  #   --prefix-name "e2e-$OCP_VERSION"\
+                  #   -o name)
 
                   echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
-                  PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
+                  #PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
                 done
               fi
 

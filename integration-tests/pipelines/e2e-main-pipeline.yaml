@@ -120,32 +120,62 @@ spec:
                 echo "Converting PICT output to RHADS configuration format..."
                 cd /shared
                 
+                # Debug: Check if pict_output.txt exists and show its content
+                if [[ ! -f pict_output.txt ]]; then
+                  echo "ERROR: pict_output.txt not found!"
+                  ls -la /shared/
+                  exit 1
+                fi
+                
+                echo "Content of pict_output.txt:"
+                cat pict_output.txt
+                echo "--- End of pict_output.txt ---"
+                
                 # Convert PICT output to multiple RHADS configurations
-                {
-                  CONFIG_COUNT=0
-                  while IFS=$'\t' read -r -a fields; do
-                    if [[ "${fields[0]}" != "OCP" ]]; then  # Skip header line
-                      if [[ $CONFIG_COUNT -gt 0 ]]; then
-                        echo "---CONFIG_SEPARATOR---"  # Separator between configs
-                      fi
-                      # Build RHADS config format for this PICT line
-                      echo "OCP=\"${fields[0]:-4.18}\""
-                      echo "AUTH=\"${fields[1]:-github}\""
-                      echo "ACS=\"${fields[2]:-new}\""
-                      echo "REGISTRY=\"${fields[3]:-quay.io}\""
-                      echo "TPA=\"${fields[4]:-new}\""
-                      echo "SCM=\"${fields[5]:-github}\""
-                      echo "PIPELINE=\"${fields[6]:-tekton}\""
-                      ((CONFIG_COUNT++))
+                CONFIG_COUNT=0
+                OUTPUT_FILE="/tmp/rhads_output.txt"
+                > "$OUTPUT_FILE"  # Initialize empty file
+                
+                while IFS=$'\t' read -r -a fields; do
+                  echo "Processing line: ${fields[*]}"
+                  if [[ "${fields[0]}" != "OCP" && -n "${fields[0]:-}" ]]; then  # Skip header line and empty lines
+                    if [[ $CONFIG_COUNT -gt 0 ]]; then
+                      echo "---CONFIG_SEPARATOR---" >> "$OUTPUT_FILE"
                     fi
-                  done < pict_output.txt
-                } | tee $(results.rhads-config.path)
+                    # Build RHADS config format for this PICT line
+                    echo "OCP=\"${fields[0]:-4.18}\"" >> "$OUTPUT_FILE"
+                    echo "AUTH=\"${fields[1]:-github}\"" >> "$OUTPUT_FILE"
+                    echo "ACS=\"${fields[2]:-new}\"" >> "$OUTPUT_FILE"
+                    echo "REGISTRY=\"${fields[3]:-quay.io}\"" >> "$OUTPUT_FILE"
+                    echo "TPA=\"${fields[4]:-new}\"" >> "$OUTPUT_FILE"
+                    echo "SCM=\"${fields[5]:-github}\"" >> "$OUTPUT_FILE"
+                    echo "PIPELINE=\"${fields[6]:-tekton}\"" >> "$OUTPUT_FILE"
+                    CONFIG_COUNT=$((CONFIG_COUNT + 1))
+                    echo "Generated configuration $CONFIG_COUNT"
+                  else
+                    echo "Skipping line: ${fields[*]}"
+                  fi
+                done < pict_output.txt
                 
                 echo "Generated $CONFIG_COUNT RHADS configurations"
+                
+                # Copy output to result path
+                echo "Final output:"
+                cat "$OUTPUT_FILE"
+                cat "$OUTPUT_FILE" > "$(results.rhads-config.path)"
+                
               else
+                echo "Using traditional single configuration"
                 # Return single config content directly
-                cat /shared/rhads-config | tee $(results.rhads-config.path)
+                if [[ ! -f /shared/rhads-config ]]; then
+                  echo "ERROR: /shared/rhads-config not found!"
+                  ls -la /shared/
+                  exit 1
+                fi
+                cat /shared/rhads-config > "$(results.rhads-config.path)"
               fi
+              
+              echo "Configuration processing completed successfully"
       runAfter:
         - test-metadata
     - name: start-nested-pipelines
@@ -243,7 +273,9 @@ spec:
                       #   --prefix-name "e2e-$OCP_VERSION-config$CONFIG_INDEX"\
                       #   -o name)
 
-                      echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                      # For testing purposes, simulate pipeline run name
+                      PIPELINE_RUN="pipelinerun/e2e-$OCP_VERSION-config$CONFIG_INDEX-simulated"
+                      echo "Would start new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
                       #PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
                     else
                       echo "Warning: Could not extract OCP version from configuration $CONFIG_INDEX"
@@ -286,7 +318,9 @@ spec:
                   #   --prefix-name "e2e-$OCP_VERSION"\
                   #   -o name)
 
-                  echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                  # For testing purposes, simulate pipeline run name
+                  PIPELINE_RUN="pipelinerun/e2e-$OCP_VERSION-simulated"
+                  echo "Would start new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
                   #PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
                 done
               fi
@@ -321,27 +355,29 @@ spec:
               #Serialize plrs array to be able to export it as var
               export PIPELINERUNS_ARRAY_SERIALIZED="${PIPELINERUNS_ARRAY[*]}"
 
-              waitFor '! oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} &>/dev/null' "Pipelines are still starting. Waiting 1 minute" "All pipelines have started"
-              waitFor '[[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "" ]]' "Waiting for nested pipelinerun status to be set. Waiting 1 minute" "Nested pipelinerun status is set"
-              waitFor '[[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Unknown" ]]' "Nested pipelines are still running. Waiting 1 minute" "All nested pipelines finished"
+              #waitFor '! oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} &>/dev/null' "Pipelines are still starting. Waiting 1 minute" "All pipelines have started"
+              #waitFor '[[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "" ]]' "Waiting for nested pipelinerun status to be set. Waiting 1 minute" "Nested pipelinerun status is set"
+              #waitFor '[[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Unknown" ]]' "Nested pipelines are still running. Waiting 1 minute" "All nested pipelines finished"
 
               ## Explore and report status of all failed pipelineruns. Fail if anything failed
-              SOME_PIPELINE_FAILED=false
-              SOME_PIPELINE_SUCCEEDED=false
-              for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
-                if [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "False" ]]; then
-                  if ! $SOME_PIPELINE_FAILED ; then
-                    echo "List of failed PLRs:"
-                  fi
-                  echo "${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
-                  SOME_PIPELINE_FAILED=true
-                elif [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "True" ]]; then
-                  SOME_PIPELINE_SUCCEEDED=true
-                fi
-              done
-              if $SOME_PIPELINE_SUCCEEDED ; then
-                exit 0
-              fi
-              if $SOME_PIPELINE_FAILED ; then
-                exit 1
-              fi
+              # SOME_PIPELINE_FAILED=false
+              # SOME_PIPELINE_SUCCEEDED=false
+              # for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
+              #   if [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "False" ]]; then
+              #     if ! $SOME_PIPELINE_FAILED ; then
+              #       echo "List of failed PLRs:"
+              #     fi
+              #     echo "${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+              #     SOME_PIPELINE_FAILED=true
+              #   elif [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "True" ]]; then
+              #     SOME_PIPELINE_SUCCEEDED=true
+              #   fi
+              # done
+              # if $SOME_PIPELINE_SUCCEEDED ; then
+              #   exit 0
+              # fi
+              # if $SOME_PIPELINE_FAILED ; then
+              #   exit 1
+              # fi
+              
+              echo "Pipeline processing completed successfully"

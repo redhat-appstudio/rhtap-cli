@@ -117,10 +117,31 @@ spec:
               set -euo pipefail
 
               if [[ "$USE_PERIODIC_CONFIGS" == "true" ]]; then
-                # Just pass the raw PICT output content
-                echo "Passing raw PICT output content..."
+                echo "Converting PICT output to RHADS configuration format..."
                 cd /shared
-                cat pict_output.txt | tee $(results.rhads-config.path)
+                
+                # Convert PICT output to multiple RHADS configurations
+                {
+                  CONFIG_COUNT=0
+                  while IFS=$'\t' read -r -a fields; do
+                    if [[ "${fields[0]}" != "OCP" ]]; then  # Skip header line
+                      if [[ $CONFIG_COUNT -gt 0 ]]; then
+                        echo "---CONFIG_SEPARATOR---"  # Separator between configs
+                      fi
+                      # Build RHADS config format for this PICT line
+                      echo "OCP=\"${fields[0]:-4.18}\""
+                      echo "AUTH=\"${fields[1]:-github}\""
+                      echo "ACS=\"${fields[2]:-new}\""
+                      echo "REGISTRY=\"${fields[3]:-quay.io}\""
+                      echo "TPA=\"${fields[4]:-new}\""
+                      echo "SCM=\"${fields[5]:-github}\""
+                      echo "PIPELINE=\"${fields[6]:-tekton}\""
+                      ((CONFIG_COUNT++))
+                    fi
+                  done < pict_output.txt
+                } | tee $(results.rhads-config.path)
+                
+                echo "Generated $CONFIG_COUNT RHADS configurations"
               else
                 # Return single config content directly
                 cat /shared/rhads-config | tee $(results.rhads-config.path)
@@ -184,45 +205,30 @@ spec:
 
               if [[ "$USE_PERIODIC_CONFIGS" == "true" ]]; then
                 echo "Running in periodic mode with multiple configurations"
-                # Parse raw PICT output content line by line
-                echo "Processing PICT output:"
+                echo "Processing RHADS configurations:"
                 echo "$RHADS_CONFIG"
                 
-                CONFIG_COUNT=0
-                while IFS=$'\t' read -r -a fields; do
-                  if [[ "${fields[0]}" != "OCP" ]]; then  # Skip header line
-                    ((CONFIG_COUNT++))
-                  fi
-                done <<< "$RHADS_CONFIG"
-                
-                echo "Found $CONFIG_COUNT configurations to process"
-                
+                # Split configurations by separator and process each one
                 CONFIG_INDEX=0
-                while IFS=$'\t' read -r -a fields; do
-                  if [[ "${fields[0]}" != "OCP" ]]; then  # Skip header line
+                IFS='---CONFIG_SEPARATOR---' read -ra CONFIGS <<< "$RHADS_CONFIG"
+                
+                for CONFIG in "${CONFIGS[@]}"; do
+                  if [[ -n "${CONFIG// }" ]]; then  # Skip empty configs
                     ((CONFIG_INDEX++))
                     
-                    # Build rhads-config string from PICT fields
-                    RHADS_CONFIG_CONTENT="OCP=\"${fields[0]:-4.18}\"\nAUTH=\"${fields[1]:-github}\"\nACS=\"${fields[2]:-new}\"\nREGISTRY=\"${fields[3]:-quay.io}\"\nTPA=\"${fields[4]:-new}\"\nSCM=\"${fields[5]:-github}\"\nPIPELINE=\"${fields[6]:-tekton}\""
+                    echo "Processing configuration $CONFIG_INDEX:"
+                    echo "$CONFIG"
                     
-                    echo "Processing configuration $CONFIG_INDEX/$CONFIG_COUNT:"
-                    echo -e "$RHADS_CONFIG_CONTENT"
-                    
-                    # Extract OCP versions from this specific config
-                    [[ $RHADS_CONFIG_CONTENT =~ OCP=\"([^\"]+)\" ]] && IFS=',' read -ra OCP_VERSIONS <<< "${BASH_REMATCH[1]}"
-                    
-                    # Create a unique suffix for this configuration
-                    CONFIG_SUFFIX="config$CONFIG_INDEX"
-                    
-                    # Loop through each OCP version for this configuration
-                    for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
+                    # Extract OCP version from this configuration
+                    if [[ $CONFIG =~ OCP=\"([^\"]+)\" ]]; then
+                      OCP_VERSION="${BASH_REMATCH[1]}"
                       echo "Starting sub-pipeline for OCP version: $OCP_VERSION (Configuration $CONFIG_INDEX)"
 
                       PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
                         --param ocp-version="$OCP_VERSION"\
                         --param job-spec="$JOB_SPEC"\
                         --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
-                        --param rhads-config="$(echo -e "$RHADS_CONFIG_CONTENT")" \
+                        --param rhads-config="$CONFIG" \
                         --param cloud-credential-key="$(params.cloud-credential-key)" \
                         --param machine-type="$(params.ocp-instance-type)" \
                         --param replicas="$(params.ocp-replicas)" \
@@ -234,14 +240,18 @@ spec:
                         --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
                         --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
                         --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
-                        --prefix-name "e2e-$OCP_VERSION-$CONFIG_SUFFIX"\
+                        --prefix-name "e2e-$OCP_VERSION-config$CONFIG_INDEX"\
                         -o name)
 
                       echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
                       PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
-                    done
+                    else
+                      echo "Warning: Could not extract OCP version from configuration $CONFIG_INDEX"
+                    fi
                   fi
-                done <<< "$RHADS_CONFIG"
+                done
+                
+                echo "Started $CONFIG_INDEX sub-pipelines for periodic testing"
               else
                 echo "Running in traditional mode with single configuration"
                 # Traditional single config mode - use content directly

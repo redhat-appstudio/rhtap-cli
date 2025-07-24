@@ -120,41 +120,32 @@ spec:
                 # Convert PICT output to JSON array of rhads-config strings
                 echo "Converting PICT output to rhads-config format..."
                 cd /shared
-                python3 -c "
-                import sys
-                import json
-
-                # Read PICT output
-                with open('pict_output.txt', 'r') as f:
-                    lines = f.readlines()
-
-                # Parse header and data
-                header = lines[0].strip().split('\t')
-                configs = []
-
-                for line in lines[1:]:
-                    if line.strip():
-                        values = line.strip().split('\t')
-                        config_dict = dict(zip(header, values))
-                        
-                        # Convert to rhads-config format
-                        rhads_config = []
-                        rhads_config.append(f'OCP=\"{config_dict.get(\"OCP\", \"4.18\")}\"')
-                        rhads_config.append(f'AUTH=\"{config_dict.get(\"AUTH\", \"github\")}\"')
-                        rhads_config.append(f'ACS=\"{config_dict.get(\"ACS\", \"new\")}\"')
-                        rhads_config.append(f'REGISTRY=\"{config_dict.get(\"Registry\", \"quay.io\")}\"')
-                        rhads_config.append(f'TPA=\"{config_dict.get(\"TPA\", \"new\")}\"')
-                        rhads_config.append(f'SCM=\"{config_dict.get(\"SCM\", \"github\")}\"')
-                        rhads_config.append(f'PIPELINE=\"{config_dict.get(\"Pipeline\", \"tekton\")}\"')
-                        
-                        configs.append('\n'.join(rhads_config))
-
-                # Output as JSON array
-                print(json.dumps(configs))
-                " | tee $(results.rhads-config.path)
+                
+                # Process PICT output and convert to base64-encoded JSON
+                {
+                  echo "["
+                  first=true
+                  while IFS=$'\t' read -r -a fields; do
+                    if [[ "${fields[0]}" != "OCP" ]]; then  # Skip header line
+                      if [[ "$first" == "false" ]]; then
+                        echo ","
+                      fi
+                      # Build rhads-config string
+                      config="OCP=\"${fields[0]:-4.18}\"\nAUTH=\"${fields[1]:-github}\"\nACS=\"${fields[2]:-new}\"\nREGISTRY=\"${fields[3]:-quay.io}\"\nTPA=\"${fields[4]:-new}\"\nSCM=\"${fields[5]:-github}\"\nPIPELINE=\"${fields[6]:-tekton}\""
+                      # Encode to base64 and output as JSON string
+                      echo -n "\"$(echo -e "$config" | base64 -w 0)\""
+                      first=false
+                    fi
+                  done < pict_output.txt
+                  echo
+                  echo "]"
+                } > temp_output.json
+                
+                # Ensure valid JSON and save result
+                cat temp_output.json | tee $(results.rhads-config.path)
               else
-                # Return single config as a simple string (not JSON array in traditional mode)
-                cat /shared/rhads-config | tee $(results.rhads-config.path)
+                # Return single config as base64-encoded string (for consistency)
+                base64 -w 0 /shared/rhads-config | tee $(results.rhads-config.path)
               fi
       runAfter:
         - test-metadata
@@ -220,7 +211,9 @@ spec:
                 echo "Found $CONFIG_COUNT configurations to process"
                 
                 for ((i=0; i<CONFIG_COUNT; i++)); do
-                  RHADS_CONFIG_CONTENT=$(echo "$RHADS_CONFIG" | jq -r ".[$i]")
+                  # Extract and decode base64-encoded configuration
+                  RHADS_CONFIG_B64=$(echo "$RHADS_CONFIG" | jq -r ".[$i]")
+                  RHADS_CONFIG_CONTENT=$(echo "$RHADS_CONFIG_B64" | base64 -d)
                   echo "Processing configuration $((i+1))/$CONFIG_COUNT:"
                   echo "$RHADS_CONFIG_CONTENT"
                   
@@ -259,8 +252,8 @@ spec:
                 done
               else
                 echo "Running in traditional mode with single configuration"
-                # Traditional single config mode
-                RHADS_CONFIG_CONTENT=$(echo $RHADS_CONFIG)
+                # Traditional single config mode - decode base64
+                RHADS_CONFIG_CONTENT=$(echo "$RHADS_CONFIG" | base64 -d)
                 echo "$RHADS_CONFIG_CONTENT"
 
                 # Extract OCP versions from RHADS config

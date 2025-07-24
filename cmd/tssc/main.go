@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/redhat-appstudio/rhtap-cli/pkg/cmd"
+	"github.com/redhat-appstudio/tssc/pkg/cmd"
 )
 
 func main() {

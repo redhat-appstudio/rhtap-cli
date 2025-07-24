@@ -3,11 +3,11 @@ package cmd
 import (
 	"os"
 
-	"github.com/redhat-appstudio/rhtap-cli/pkg/chartfs"
-	"github.com/redhat-appstudio/rhtap-cli/pkg/constants"
-	"github.com/redhat-appstudio/rhtap-cli/pkg/flags"
-	"github.com/redhat-appstudio/rhtap-cli/pkg/k8s"
-	"github.com/redhat-appstudio/rhtap-cli/pkg/subcmd"
+	"github.com/redhat-appstudio/tssc/pkg/chartfs"
+	"github.com/redhat-appstudio/tssc/pkg/constants"
+	"github.com/redhat-appstudio/tssc/pkg/flags"
+	"github.com/redhat-appstudio/tssc/pkg/k8s"
+	"github.com/redhat-appstudio/tssc/pkg/subcmd"
 
 	"github.com/spf13/cobra"
 )

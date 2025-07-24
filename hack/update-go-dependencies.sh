@@ -84,17 +84,16 @@ update_dependency() {
 }
 
 get_dependencies() {
-    mapfile -t DEPENDENCIES < <(
-        go list -mod=readonly -f '{{.Path}} {{.Indirect}}' -m all \
-        | awk '$2 == "false" { print $1 }' \
-        | tail -n +2 \
-    )
+    mapfile -t DEPENDENCIES < <(go list -mod=readonly -f '{{.Path}}' -m all)
 }
 
 action() {
     init
     get_dependencies
     for DEPENDENCY in "${DEPENDENCIES[@]}"; do
+        if ! grep -qE "[[:space:]]${DEPENDENCY}[[:space:]]" go.mod; then
+            continue
+        fi
         echo
         update_dependency
         echo

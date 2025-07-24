@@ -101,7 +101,7 @@ spec:
               if [[ "$USE_PERIODIC_CONFIGS" == "true" ]]; then
                 echo "Running PICT to generate test configurations..."
                 cd /shared
-                pict periodic.pict > pict_output.txt
+                pict -r -o:1 periodic.pict > pict_output.txt
                 cat pict_output.txt
               fi
           - name: process-config

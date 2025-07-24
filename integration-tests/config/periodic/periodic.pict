@@ -1,12 +1,11 @@
 #
 # This is file used for github periodic job
-# See default.pict file for information about parameters
 #
 
 OCP: 4.18, 4.17, 4.16
 AUTH: github, gitlab
 ACS: new, hosted
-Registry: quay.io, quay, artifactory, nexus
+Registry: quay.io, artifactory, nexus
 TPA: new, hosted
 SCM: github, gitlab, bitbucket
 Pipeline: tekton, gitlabci, actions, jenkins
@@ -14,7 +13,7 @@ Pipeline: tekton, gitlabci, actions, jenkins
 # Constraints (copied from default.pict)
 ## Parameter value validation. This doesn't work with the current pict docker image, we can uncomment it when we figure out it in future
 [ACS] IN {"new", "hosted"};
-[Registry] IN {"quay", "quay.io", "artifactory", "nexus"};
+[Registry] IN {"quay.io", "artifactory", "nexus"};
 [TPA] IN {"new", "hosted"};
 [SCM] IN {"github", "gitlab", "bitbucket"};
 [Pipeline] IN {"tekton", "jenkins", "gitlabci", "actions"};

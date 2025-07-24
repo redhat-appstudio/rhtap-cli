@@ -254,29 +254,29 @@ spec:
                       OCP_VERSION="${BASH_REMATCH[1]}"
                       echo "Starting sub-pipeline for OCP version: $OCP_VERSION (Configuration $CONFIG_INDEX)"
 
-                      # PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
-                      #   --param ocp-version="$OCP_VERSION"\
-                      #   --param job-spec="$JOB_SPEC"\
-                      #   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
-                      #   --param rhads-config="$CONFIG" \
-                      #   --param cloud-credential-key="$(params.cloud-credential-key)" \
-                      #   --param machine-type="$(params.ocp-instance-type)" \
-                      #   --param replicas="$(params.ocp-replicas)" \
-                      #   $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
-                      #   $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
-                      #   --use-param-defaults \
-                      #   --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
-                      #   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
-                      #   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
-                      #   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                      #   --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
-                      #   --prefix-name "e2e-$OCP_VERSION-config$CONFIG_INDEX"\
-                      #   -o name)
+                       PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                         --param ocp-version="$OCP_VERSION"\
+                         --param job-spec="$JOB_SPEC"\
+                         --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
+                         --param rhads-config="$CONFIG" \
+                         --param cloud-credential-key="$(params.cloud-credential-key)" \
+                         --param machine-type="$(params.ocp-instance-type)" \
+                         --param replicas="$(params.ocp-replicas)" \
+                         $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
+                         $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
+                         --use-param-defaults \
+                         --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
+                         --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
+                         --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
+                         --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
+                         --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
+                         --prefix-name "e2e-$OCP_VERSION-config$CONFIG_INDEX"\
+                         -o name)
 
                       # For testing purposes, simulate pipeline run name
-                      PIPELINE_RUN="pipelinerun/e2e-$OCP_VERSION-config$CONFIG_INDEX-simulated"
-                      echo "Would start new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
-                      #PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
+                      #PIPELINE_RUN="pipelinerun/e2e-$OCP_VERSION-config$CONFIG_INDEX-simulated"
+                      #echo "Would start new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                      PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
                     else
                       echo "Warning: Could not extract OCP version from configuration $CONFIG_INDEX"
                     fi
@@ -299,29 +299,29 @@ spec:
                 for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
                   echo "Starting sub-pipeline for OCP version: $OCP_VERSION"
 
-                  # PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
-                  #   --param ocp-version="$OCP_VERSION"\
-                  #   --param job-spec="$JOB_SPEC"\
-                  #   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
-                  #   --param rhads-config="$RHADS_CONFIG_CONTENT" \
-                  #   --param cloud-credential-key="$(params.cloud-credential-key)" \
-                  #   --param machine-type="$(params.ocp-instance-type)" \
-                  #   --param replicas="$(params.ocp-replicas)" \
-                  #   $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
-                  #   $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
-                  #   --use-param-defaults \
-                  #   --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
-                  #   --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
-                  #   --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
-                  #   --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                  #   --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
-                  #   --prefix-name "e2e-$OCP_VERSION"\
-                  #   -o name)
+                  PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                    --param ocp-version="$OCP_VERSION"\
+                    --param job-spec="$JOB_SPEC"\
+                    --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
+                    --param rhads-config="$RHADS_CONFIG_CONTENT" \
+                    --param cloud-credential-key="$(params.cloud-credential-key)" \
+                    --param machine-type="$(params.ocp-instance-type)" \
+                    --param replicas="$(params.ocp-replicas)" \
+                    $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
+                    $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
+                    --use-param-defaults \
+                    --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
+                    --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
+                    --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
+                    --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
+                    --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
+                    --prefix-name "e2e-$OCP_VERSION"\
+                    -o name)
 
                   # For testing purposes, simulate pipeline run name
-                  PIPELINE_RUN="pipelinerun/e2e-$OCP_VERSION-simulated"
-                  echo "Would start new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
-                  #PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
+                  #PIPELINE_RUN="pipelinerun/e2e-$OCP_VERSION-simulated"
+                  #echo "Would start new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                  PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
                 done
               fi
 
@@ -355,29 +355,29 @@ spec:
               #Serialize plrs array to be able to export it as var
               export PIPELINERUNS_ARRAY_SERIALIZED="${PIPELINERUNS_ARRAY[*]}"
 
-              #waitFor '! oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} &>/dev/null' "Pipelines are still starting. Waiting 1 minute" "All pipelines have started"
-              #waitFor '[[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "" ]]' "Waiting for nested pipelinerun status to be set. Waiting 1 minute" "Nested pipelinerun status is set"
-              #waitFor '[[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Unknown" ]]' "Nested pipelines are still running. Waiting 1 minute" "All nested pipelines finished"
+              waitFor '! oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} &>/dev/null' "Pipelines are still starting. Waiting 1 minute" "All pipelines have started"
+              waitFor '[[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "" ]]' "Waiting for nested pipelinerun status to be set. Waiting 1 minute" "Nested pipelinerun status is set"
+              waitFor '[[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "Unknown" ]]' "Nested pipelines are still running. Waiting 1 minute" "All nested pipelines finished"
 
-              ## Explore and report status of all failed pipelineruns. Fail if anything failed
-              # SOME_PIPELINE_FAILED=false
-              # SOME_PIPELINE_SUCCEEDED=false
-              # for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
-              #   if [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "False" ]]; then
-              #     if ! $SOME_PIPELINE_FAILED ; then
-              #       echo "List of failed PLRs:"
-              #     fi
-              #     echo "${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
-              #     SOME_PIPELINE_FAILED=true
-              #   elif [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "True" ]]; then
-              #     SOME_PIPELINE_SUCCEEDED=true
-              #   fi
-              # done
-              # if $SOME_PIPELINE_SUCCEEDED ; then
-              #   exit 0
-              # fi
-              # if $SOME_PIPELINE_FAILED ; then
-              #   exit 1
-              # fi
+              # Explore and report status of all failed pipelineruns. Fail if anything failed
+              SOME_PIPELINE_FAILED=false
+              SOME_PIPELINE_SUCCEEDED=false
+              for PIPELINE_RUN in "${PIPELINERUNS_ARRAY[@]}"; do
+                if [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "False" ]]; then
+                  if ! $SOME_PIPELINE_FAILED ; then
+                    echo "List of failed PLRs:"
+                  fi
+                  echo "${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                  SOME_PIPELINE_FAILED=true
+                elif [[ $(oc get pipelinerun/$PIPELINE_RUN -n ${KONFLUX_NAMESPACE} -o jsonpath="{.status.conditions[?(@.type==\"Succeeded\")].status}") == "True" ]]; then
+                  SOME_PIPELINE_SUCCEEDED=true
+                fi
+              done
+              if $SOME_PIPELINE_SUCCEEDED ; then
+                exit 0
+              fi
+              if $SOME_PIPELINE_FAILED ; then
+                exit 1
+              fi
               
               echo "Pipeline processing completed successfully"

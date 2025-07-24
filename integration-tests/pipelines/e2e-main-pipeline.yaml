@@ -240,12 +240,23 @@ spec:
                 
                 # Split configurations by separator and process each one
                 CONFIG_INDEX=0
-                IFS='---CONFIG_SEPARATOR---' read -ra CONFIGS <<< "$RHADS_CONFIG"
                 
-                echo "Found ${#CONFIGS[@]} configurations to process"
+                # Use a different approach to split configurations since IFS doesn't work well with multi-character separators
+                echo "Splitting configurations using separator..."
                 
-                # Create a pipeline for every RHADS config
-                for CONFIG in "${CONFIGS[@]}"; do
+                # First, let's try a different approach - split the configurations manually
+                TEMP_FILE="/tmp/split_configs.txt"
+                echo "$RHADS_CONFIG" > "$TEMP_FILE"
+                
+                # Split the file using the separator
+                CONFIG_COUNT=$(grep -o '---CONFIG_SEPARATOR---' "$TEMP_FILE" | wc -l)
+                CONFIG_COUNT=$((CONFIG_COUNT + 1))  # Add 1 because there's one more config than separators
+                
+                echo "Found $CONFIG_COUNT configurations to process"
+                
+                # Create a pipeline for every RHADS config using awk to split
+                CONFIG_INDEX=0
+                while IFS= read -r CONFIG; do
                   if [[ -n "${CONFIG// }" ]]; then  # Skip empty configs
                     ((CONFIG_INDEX++))
                     
@@ -256,7 +267,9 @@ spec:
                     # Extract OCP version from this configuration
                     if [[ $CONFIG =~ OCP=\"([^\"]+)\" ]]; then
                       OCP_VERSION="${BASH_REMATCH[1]}"
-                      echo "Starting sub-pipeline for OCP version: $OCP_VERSION (Configuration $CONFIG_INDEX)"
+                      echo "Successfully extracted OCP version: $OCP_VERSION from configuration $CONFIG_INDEX"
+                      echo "About to start sub-pipeline for OCP version: $OCP_VERSION (Configuration $CONFIG_INDEX)"
+                      echo "Pipeline command will be executed now..."
 
                       PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
                         --param ocp-version="$OCP_VERSION"\
@@ -267,7 +280,7 @@ spec:
                         --param machine-type="$(params.ocp-instance-type)" \
                         --param replicas="$(params.ocp-replicas)" \
                         $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
-                        $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
+                        $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-image=${tssc_test_image}"; fi) \
                         --use-param-defaults \
                         --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
                         --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
@@ -282,8 +295,10 @@ spec:
                     else
                       echo "Warning: Could not extract OCP version from configuration $CONFIG_INDEX"
                     fi
+                  else
+                    echo "Skipping empty configuration at index $CONFIG_INDEX"
                   fi
-                done
+                done < <(awk 'BEGIN{RS="---CONFIG_SEPARATOR---"} {gsub(/^[[:space:]]+|[[:space:]]+$/,"")} NF' "$TEMP_FILE")
                 
                 echo "Started $CONFIG_INDEX sub-pipelines for periodic testing"
               else
@@ -294,41 +309,36 @@ spec:
                 echo "$RHADS_CONFIG_CONTENT"
                 echo "=============================================================="
 
-                # Extract OCP versions from RHADS config (could be comma-separated)
+                # Extract OCP version from RHADS config (single value only in traditional mode)
                 if [[ $RHADS_CONFIG_CONTENT =~ OCP=\"([^\"]+)\" ]]; then
-                  OCP_VERSIONS_STRING="${BASH_REMATCH[1]}"
-                  IFS=',' read -ra OCP_VERSIONS <<< "$OCP_VERSIONS_STRING"
-                  
-                  echo "Found OCP versions: ${OCP_VERSIONS[*]}"
-                  echo "Creating a pipeline for each OCP version with the same RHADS config"
+                  OCP_VERSION="${BASH_REMATCH[1]}"
+                  echo "Found OCP version: $OCP_VERSION"
+                  echo "Creating single pipeline with traditional RHADS config"
 
-                  # Create a pipeline for each OCP version
-                  for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
-                    OCP_VERSION=$(echo "$OCP_VERSION" | xargs)  # Trim whitespace
-                    echo "Starting sub-pipeline for OCP version: $OCP_VERSION"
+                  # Create a single pipeline for this configuration
+                  echo "Starting sub-pipeline for OCP version: $OCP_VERSION"
 
-                    PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
-                      --param ocp-version="$OCP_VERSION"\
-                      --param job-spec="$JOB_SPEC"\
-                      --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
-                      --param rhads-config="$RHADS_CONFIG_CONTENT" \
-                      --param cloud-credential-key="$(params.cloud-credential-key)" \
-                      --param machine-type="$(params.ocp-instance-type)" \
-                      --param replicas="$(params.ocp-replicas)" \
-                      $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
-                      $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
-                      --use-param-defaults \
-                      --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
-                      --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
-                      --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
-                      --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                      --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
-                      --prefix-name "e2e-$OCP_VERSION"\
-                      -o name)
+                  PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                    --param ocp-version="$OCP_VERSION"\
+                    --param job-spec="$JOB_SPEC"\
+                    --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
+                    --param rhads-config="$RHADS_CONFIG_CONTENT" \
+                    --param cloud-credential-key="$(params.cloud-credential-key)" \
+                    --param machine-type="$(params.ocp-instance-type)" \
+                    --param replicas="$(params.ocp-replicas)" \
+                    $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
+                    $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
+                    --use-param-defaults \
+                    --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
+                    --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
+                    --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
+                    --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
+                    --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
+                    --prefix-name "e2e-$OCP_VERSION"\
+                    -o name)
 
-                    echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
-                    PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
-                  done
+                  echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                  PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
                 else
                   echo "Error: Could not extract OCP version from RHADS config"
                   exit 1

@@ -97,8 +97,10 @@ backend:
   cors:
     origin: ${BACKEND_URL}
 catalog:
-  {{- if and .Values.developerHub.RBAC.enabled $githubSecretObj }}
+  {{- if and .Values.developerHub.RBAC.enabled (or $githubSecretObj $gitlabSecretObj) }}
   providers:
+  {{- end }}
+  {{- if $githubSecretObj }}
     githubOrg:
       id: production
       githubUrl: ${GITHUB__URL}
@@ -108,6 +110,17 @@ catalog:
         initialDelay: { seconds: 30 }
         frequency: { minutes: 15 }
         timeout: { minutes: 5 }
+  {{- end }}
+  {{- if $gitlabSecretObj }}
+    gitlab:
+      default:
+        host: ${GITLAB__HOST}
+        orgEnabled: true
+        group: ${GITLAB__GROUP}
+        schedule:
+          initialDelay: { seconds: 30 }
+          frequency: { minutes: 15 }
+          timeout: { minutes: 5 }
   {{- end }}
   locations:
     - target: ${DEVELOPER_HUB__CATALOG__URL}

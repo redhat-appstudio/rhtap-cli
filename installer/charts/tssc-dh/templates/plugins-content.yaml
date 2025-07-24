@@ -1,5 +1,8 @@
 {{- define "tssc-dh.plugins-conf" }}
 {{- $integrationNamespace := .Values.developerHub.integrationSecrets.namespace }}
+# Lookup for all common secrets
+{{- $githubSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-github-integration") }}
+{{- $gitlabSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-gitlab-integration") }}
 includes:
   - dynamic-plugins.default.yaml
 plugins:
@@ -67,11 +70,11 @@ plugins:
                     allOf:
                       - isAzureDevOpsAvailable
 {{- end }}
-{{- if (lookup "v1" "Secret" $integrationNamespace "tssc-github-integration") }}
+{{- if $githubSecretObj }}
   - disabled: false
     package: ./dynamic-plugins/dist/backstage-community-plugin-github-actions
 {{- end }}
-{{- if (lookup "v1" "Secret" $integrationNamespace "tssc-gitlab-integration") }}
+{{- if $gitlabSecretObj }}
   - disabled: false
     package: ./dynamic-plugins/dist/immobiliarelabs-backstage-plugin-gitlab
   - disabled: false
@@ -178,16 +181,21 @@ plugins:
   #
   # RBAC
   #
-  {{- $githubSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-github-integration") }}
-  {{- if and .Values.developerHub.RBAC.enabled $githubSecretObj }}
+  {{- if and .Values.developerHub.RBAC.enabled (or $githubSecretObj $gitlabSecretObj) }}
   - package: ./dynamic-plugins/dist/backstage-community-plugin-rbac
     disabled: false
+  {{- if  $githubSecretObj }}
   - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-github-org-dynamic
     disabled: false
     pluginConfig:
       catalog:
         githubOrg:
           githubUrl: ${GITHUB__URL}
+  {{- end }}
+  {{- if  $gitlabSecretObj }}
+  - package: ./dynamic-plugins/dist/backstage-plugin-catalog-backend-module-gitlab-org-dynamic
+    disabled: false
+  {{- end }}
   {{- end }}
   #
   # Tech Docs

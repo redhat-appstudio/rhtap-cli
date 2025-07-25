@@ -259,6 +259,7 @@ spec:
                     CONFIG="${REMAINING_CONFIG%%---CONFIG_SEPARATOR---*}"
                     # Remove processed config and separator from remaining
                     REMAINING_CONFIG="${REMAINING_CONFIG#*---CONFIG_SEPARATOR---}"
+                    echo $CONFIG
                   else
                     # Last config (no separator after it)
                     CONFIG="$REMAINING_CONFIG"
@@ -267,6 +268,7 @@ spec:
                   
                   # Trim whitespace from config
                   CONFIG=$(echo "$CONFIG" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+                  echo $CONFIG
                   
                   if [[ -n "$CONFIG" ]]; then  # Skip empty configs
                     ((CONFIG_INDEX++))

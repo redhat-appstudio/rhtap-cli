@@ -285,7 +285,8 @@ spec:
                       echo "About to start sub-pipeline for OCP version: $OCP_VERSION (Configuration $CONFIG_INDEX)"
                       echo "Pipeline command will be executed now..."
 
-                      PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                      #PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                      PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/redhat-appstudio/rhtap-cli/refs/heads/main/integration-tests/pipelines/rhtap-cli-e2e.yaml \
                         --param ocp-version="$OCP_VERSION"\
                         --param job-spec="$JOB_SPEC"\
                         --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \

@@ -271,7 +271,7 @@ spec:
                    echo "DEBUG - Config after trimming:"
                    echo "$CONFIG"
                   
-                  if [[ -n "$CONFIG" ]]; then  # Skip empty configs
+                  # if [[ -n "$CONFIG" ]]; then  # Skip empty configs
                     ((CONFIG_INDEX++))
                     
                     echo "==================== Configuration $CONFIG_INDEX ===================="
@@ -309,9 +309,9 @@ spec:
                     else
                       echo "Warning: Could not extract OCP version from configuration $CONFIG_INDEX"
                     fi
-                  else
-                    echo "Skipping empty configuration"
-                  fi
+                  # else
+                  #   echo "Skipping empty configuration"
+                  # fi
                 done
                 
                 echo "Started $CONFIG_INDEX sub-pipelines for periodic testing"

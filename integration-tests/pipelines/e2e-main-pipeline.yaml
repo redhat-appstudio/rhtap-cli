@@ -273,7 +273,7 @@ spec:
                   
                   # if [[ -n "$CONFIG" ]]; then  # Skip empty configs
                     #((CONFIG_INDEX++))
-                    CONFIG_INDEX=$CONFIG_INDEX++
+                    CONFIG_INDEX=$(( $CONFIG_INDEX + 1 ))
                     echo "==================== Configuration $CONFIG_INDEX ===================="
                     echo "$CONFIG"
                     echo "================================================================"

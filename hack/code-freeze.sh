@@ -116,12 +116,12 @@ commit_freeze() {
 }
 
 update_ci() {
-    for PLR in ".tekton/rhtap-cli-pull-request.yaml" ".tekton/rhtap-cli-push.yaml"; do
+    for PLR in ".tekton/tssc-pull-request.yaml" ".tekton/tssc-push.yaml"; do
         sed -i --regexp-extended "s|== \"main\"|== \"$RELEASE_BRANCH\"|" "$PLR"
         sed -i --regexp-extended "s|  *appstudio\.openshift\.io/application: rhtap-cli|\0-${VERSION_XY//./-}|" "$PLR"
         sed -i --regexp-extended "s|  *appstudio\.openshift\.io/component: rhtap-cli|\0-${VERSION_XY//./-}|" "$PLR"
     done
-    yq -i '.spec.params |= map(select(.name != "image-expires-after"))' ".tekton/rhtap-cli-push.yaml"
+    yq -i '.spec.params |= map(select(.name != "image-expires-after"))' ".tekton/tssc-push.yaml"
 }
 
 commit_release() {

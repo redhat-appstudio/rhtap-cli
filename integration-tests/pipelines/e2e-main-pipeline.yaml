@@ -239,25 +239,36 @@ spec:
                 echo "$RHADS_CONFIG"
                 
                 # Split configurations by separator and process each one
-                CONFIG_INDEX=0
+                echo "Splitting configurations using bash string manipulation..."
                 
-                # Use a different approach to split configurations since IFS doesn't work well with multi-character separators
-                echo "Splitting configurations using separator..."
-                
-                # First, let's try a different approach - split the configurations manually
-                TEMP_FILE="/tmp/split_configs.txt"
-                echo "$RHADS_CONFIG" > "$TEMP_FILE"
-                
-                # Split the file using the separator
-                CONFIG_COUNT=$(grep -o -e "---CONFIG_SEPARATOR---" "$TEMP_FILE" | wc -l)
+                # Count configurations for informational purposes
+                CONFIG_COUNT=$(echo "$RHADS_CONFIG" | grep -o -e "---CONFIG_SEPARATOR---" | wc -l)
                 CONFIG_COUNT=$((CONFIG_COUNT + 1))  # Add 1 because there's one more config than separators
                 
                 echo "Found $CONFIG_COUNT configurations to process"
                 
-                # Create a pipeline for every RHADS config using awk to split
+                # Create a pipeline for every RHADS config using pure bash string manipulation
                 CONFIG_INDEX=0
-                while IFS= read -r CONFIG; do
-                  if [[ -n "${CONFIG// }" ]]; then  # Skip empty configs
+                
+                # Split the configurations using bash string manipulation
+                REMAINING_CONFIG="$RHADS_CONFIG"
+                while [[ -n "$REMAINING_CONFIG" ]]; do
+                  # Find the next separator
+                  if [[ "$REMAINING_CONFIG" == *"---CONFIG_SEPARATOR---"* ]]; then
+                    # Extract config before separator
+                    CONFIG="${REMAINING_CONFIG%%---CONFIG_SEPARATOR---*}"
+                    # Remove processed config and separator from remaining
+                    REMAINING_CONFIG="${REMAINING_CONFIG#*---CONFIG_SEPARATOR---}"
+                  else
+                    # Last config (no separator after it)
+                    CONFIG="$REMAINING_CONFIG"
+                    REMAINING_CONFIG=""
+                  fi
+                  
+                  # Trim whitespace from config
+                  CONFIG=$(echo "$CONFIG" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+                  
+                  if [[ -n "$CONFIG" ]]; then  # Skip empty configs
                     ((CONFIG_INDEX++))
                     
                     echo "==================== Configuration $CONFIG_INDEX ===================="
@@ -280,7 +291,7 @@ spec:
                         --param machine-type="$(params.ocp-instance-type)" \
                         --param replicas="$(params.ocp-replicas)" \
                         $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
-                        $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-image=${tssc_test_image}"; fi) \
+                        $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
                         --use-param-defaults \
                         --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
                         --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
@@ -296,9 +307,9 @@ spec:
                       echo "Warning: Could not extract OCP version from configuration $CONFIG_INDEX"
                     fi
                   else
-                    echo "Skipping empty configuration at index $CONFIG_INDEX"
+                    echo "Skipping empty configuration"
                   fi
-                done < <(awk 'BEGIN{RS="---CONFIG_SEPARATOR---"} {gsub(/^[[:space:]]+|[[:space:]]+$/,"")} NF' "$TEMP_FILE")
+                done
                 
                 echo "Started $CONFIG_INDEX sub-pipelines for periodic testing"
               else

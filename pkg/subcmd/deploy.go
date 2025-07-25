@@ -3,7 +3,6 @@ package subcmd
 import (
 	"fmt"
 	"log/slog"
-	"os"
 
 	"github.com/redhat-appstudio/tssc/pkg/chartfs"
 	"github.com/redhat-appstudio/tssc/pkg/config"
@@ -83,12 +82,7 @@ func (d *Deploy) Validate() error {
 
 // Run deploys the enabled dependencies listed on the configuration.
 func (d *Deploy) Run() error {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-
-	cfs, err := chartfs.NewChartFS(cwd)
+	cfs, err := chartfs.NewChartFSForCWD()
 	if err != nil {
 		return err
 	}

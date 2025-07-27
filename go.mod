@@ -140,7 +140,7 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.19.0 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.6.0 // indirect
-	sigs.k8s.io/yaml v1.4.0 // indirect
+	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
 replace github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.13.0

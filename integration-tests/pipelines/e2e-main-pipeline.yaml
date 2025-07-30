@@ -73,7 +73,6 @@ spec:
 
               if [[ "$USE_PERIODIC_CONFIGS" == "true" ]]; then
                 echo "Using periodic configurations generated from PICT"
-                
                 # Download periodic.pict file
                 curl -o /shared/periodic.pict https://raw.githubusercontent.com/jkopriva/rhtap-cli/refs/heads/RHTAP-5290/integration-tests/config/periodic/periodic.pict
                 cat /shared/periodic.pict
@@ -97,7 +96,6 @@ spec:
             script: |
               #!/usr/bin/env bash
               set -euo pipefail
-              
               if [[ "$USE_PERIODIC_CONFIGS" == "true" ]]; then
                 echo "Running PICT to generate test configurations..."
                 cd /shared
@@ -119,18 +117,15 @@ spec:
               if [[ "$USE_PERIODIC_CONFIGS" == "true" ]]; then
                 echo "Converting PICT output to RHADS configuration format..."
                 cd /shared
-                
                 # Debug: Check if pict_output.txt exists and show its content
                 if [[ ! -f pict_output.txt ]]; then
                   echo "ERROR: pict_output.txt not found!"
                   ls -la /shared/
                   exit 1
                 fi
-                
                 echo "Content of pict_output.txt:"
                 cat pict_output.txt
                 echo "--- End of pict_output.txt ---"
-                
                 # Download testplan template
                 echo "Downloading testplan template..."
                 curl -o testplan_template.json https://raw.githubusercontent.com/jkopriva/rhtap-cli/refs/heads/RHTAP-5290/integration-tests/config/periodic/testplan_template.json
@@ -140,12 +135,10 @@ spec:
                 fi
                 echo "Testplan template content:"
                 cat testplan_template.json
-                
                 # Convert PICT output to multiple RHADS configurations
                 CONFIG_COUNT=0
                 OUTPUT_FILE="/tmp/rhads_output.txt"
                 > "$OUTPUT_FILE"  # Initialize empty file
-                
                 while IFS=$'\t' read -r -a fields; do
                   echo "Processing line: ${fields[*]}"
                   if [[ "${fields[0]}" != "OCP" && -n "${fields[0]:-}" ]]; then  # Skip header line and empty lines
@@ -160,36 +153,28 @@ spec:
                     echo "TPA=\"${fields[4]:-new}\"" >> "$OUTPUT_FILE"
                     echo "SCM=\"${fields[5]:-github}\"" >> "$OUTPUT_FILE"
                     echo "PIPELINE=\"${fields[6]:-tekton}\"" >> "$OUTPUT_FILE"
-                    
                     # Generate corresponding testplan
                     echo "---TESTPLAN_START---" >> "$OUTPUT_FILE"
-                    
                     # Extract values for testplan
                     SCM_VALUE="${fields[5]:-github}"
                     PIPELINE_VALUE="${fields[6]:-tekton}"
                     REGISTRY_VALUE="${fields[3]:-quay.io}"
                     TPA_VALUE="${fields[4]:-new}"
                     ACS_VALUE="${fields[2]:-new}"
-                    
                     # Create testplan by replacing placeholders in template more precisely
                     sed "s/\"git\": \"github\"/\"git\": \"$SCM_VALUE\"/g; s/\"ci\": \"tekton\"/\"ci\": \"$PIPELINE_VALUE\"/g; s/\"registry\": \"quay.io\"/\"registry\": \"$REGISTRY_VALUE\"/g; s/\"tpa\": \"local\"/\"tpa\": \"$TPA_VALUE\"/g; s/\"acs\": \"local\"/\"acs\": \"$ACS_VALUE\"/g" testplan_template.json >> "$OUTPUT_FILE"
-                    
                     echo "---TESTPLAN_END---" >> "$OUTPUT_FILE"
-                    
                     CONFIG_COUNT=$((CONFIG_COUNT + 1))
                     echo "Generated configuration $CONFIG_COUNT with testplan"
                   else
                     echo "Skipping line: ${fields[*]}"
                   fi
                 done < pict_output.txt
-                
                 echo "Generated $CONFIG_COUNT RHADS configurations with testplans"
-                
                 # Copy output to result path
                 echo "Final output:"
                 cat "$OUTPUT_FILE"
                 cat "$OUTPUT_FILE" > "$(results.rhads-config.path)"
-                
               else
                 echo "Using traditional single configuration"
                 # Return single config content directly
@@ -200,7 +185,6 @@ spec:
                 fi
                 cat /shared/rhads-config > "$(results.rhads-config.path)"
               fi
-              
               echo "Configuration processing completed successfully"
       runAfter:
         - test-metadata
@@ -241,7 +225,6 @@ spec:
               set -euo pipefail
 
               echo "Processing RHADS configuration(s)..."
-              
               # get the tssc image and tssc-test image from the snapshot
               tssc_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="rhtap-cli").containerImage')
               tssc_test_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="tssc-test").containerImage')
@@ -263,19 +246,14 @@ spec:
                 echo "Running in periodic mode with multiple configurations"
                 echo "Processing RHADS configurations:"
                 echo "$RHADS_CONFIG"
-                
                 # Split configurations by separator and process each one
                 echo "Splitting configurations using bash string manipulation..."
-                
                 # Count configurations for informational purposes
                 CONFIG_COUNT=$(echo "$RHADS_CONFIG" | grep -o -e "---CONFIG_SEPARATOR---" | wc -l)
                 CONFIG_COUNT=$((CONFIG_COUNT + 1))  # Add 1 because there's one more config than separators
-                
                 echo "Found $CONFIG_COUNT configurations to process"
-                
                 # Create a pipeline for every RHADS config using pure bash string manipulation
                 CONFIG_INDEX=0
-                
                 # Split the configurations using bash string manipulation
                 REMAINING_CONFIG="$RHADS_CONFIG"
                 while [[ -n "$REMAINING_CONFIG" ]]; do
@@ -291,19 +269,16 @@ spec:
                     FULL_CONFIG="$REMAINING_CONFIG"
                     REMAINING_CONFIG=""
                   fi
-                  
                   # Trim whitespace from config
                   FULL_CONFIG=$(echo "$FULL_CONFIG" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
                   echo "DEBUG - Config after trimming:"
                   echo "$FULL_CONFIG"
-                  
                   # if [[ -n "$FULL_CONFIG" ]]; then  # Skip empty configs
                      #((CONFIG_INDEX++))
                      CONFIG_INDEX=$(( $CONFIG_INDEX + 1 ))
                      echo "==================== Configuration $CONFIG_INDEX ===================="
                      echo "$FULL_CONFIG"
                      echo "================================================================"
-                     
                      # Split RHADS config and testplan
                      if [[ "$FULL_CONFIG" == *"---TESTPLAN_START---"* ]]; then
                        # Extract RHADS config (before testplan)
@@ -311,16 +286,13 @@ spec:
                        # Extract testplan (between markers)
                        TESTPLAN_PART="${FULL_CONFIG#*---TESTPLAN_START---}"
                        TESTPLAN="${TESTPLAN_PART%%---TESTPLAN_END---*}"
-                       
                        # Trim whitespace from both parts
                        CONFIG=$(echo "$CONFIG" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
                        TESTPLAN=$(echo "$TESTPLAN" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-                       
                        echo "RHADS Config:"
                        echo "$CONFIG"
                        echo "Testplan:"
                        echo "$TESTPLAN"
-                       
                        # Encode testplan to base64
                        TESTPLAN_B64=$(echo "$TESTPLAN" | base64 -w 0)
                        echo "Testplan base64: $TESTPLAN_B64"
@@ -330,7 +302,6 @@ spec:
                        TESTPLAN_B64=""
                        echo "No testplan found for this configuration"
                      fi
-                     
                      # Extract OCP version from this configuration
                      if [[ $CONFIG =~ OCP=\"([^\"]+)\" ]]; then
                        OCP_VERSION="${BASH_REMATCH[1]}"
@@ -368,7 +339,6 @@ spec:
                    #   echo "Skipping empty configuration"
                    # fi
                 done
-                
                 echo "Started $CONFIG_INDEX sub-pipelines for periodic testing"
               else
                 echo "Running in traditional mode with single configuration"
@@ -470,5 +440,4 @@ spec:
               if $SOME_PIPELINE_FAILED ; then
                 exit 1
               fi
-              
               echo "Pipeline processing completed successfully"

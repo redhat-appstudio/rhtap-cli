@@ -348,9 +348,8 @@ spec:
                 echo "$RHADS_CONFIG_CONTENT"
                 echo "=============================================================="
 
-                # Extract OCP version from RHADS config (single value only in traditional mode)
-                if [[ $RHADS_CONFIG_CONTENT =~ OCP=\"([^\"]+)\" ]]; then
-                  OCP_VERSION="${BASH_REMATCH[1]}"
+                # Extract OCP versions from RHADS config
+                [[ $RHADS_CONFIG_CONTENT =~ OCP=\"([^\"]+)\" ]] && IFS=',' read -ra OCP_VERSIONS <<< "${BASH_REMATCH[1]}"
                   # Loop through each OCP version and start a sub-pipeline for each
                   for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
                     echo "Found OCP version: $OCP_VERSION"
@@ -381,10 +380,6 @@ spec:
                     echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
                     PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
                   done
-                else
-                  echo "Error: Could not extract OCP version from RHADS config"
-                  exit 1
-                fi
               fi
 
               echo "Total pipelines started: ${#PIPELINERUNS_ARRAY[@]}"

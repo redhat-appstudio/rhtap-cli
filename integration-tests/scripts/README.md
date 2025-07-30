@@ -33,9 +33,8 @@ export tpa_config="remote"
 export registry_config="quay,artifactory,nexus"
 ```
 
-**Options**: `quay`, `quay.io`, `artifactory`, `nexus` (can be multiple values)
-- `quay`: Uses local Quay registry installed in the cluster
-- `quay.io`: Integrates with external Quay.io service
+**Options**: `quay`, `artifactory`, `nexus` (can be multiple values)
+- `quay`: Integrates with external Quay.io service
 - `artifactory`: Integrates with Artifactory registry
 - `nexus`: Integrates with Nexus registry
 - Multiple values: Comma-separated list to integrate with multiple registries

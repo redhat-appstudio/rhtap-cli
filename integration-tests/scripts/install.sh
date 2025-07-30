@@ -132,22 +132,9 @@ gitlab_integration() {
   fi
 }
 
-# Workaround: This function has to be called before tssc import "installer/config.yaml" into cluster.
-# Currently, the tssc `config` subcommand lacks the ability to modify property values stored in cluster
-disable_quay() {
-  # if "quay" is not in registry_config array, then disable Quay installation
-  # Update the YAML anchor &quayEnabled from true to false (line 42 in config.yaml)
-  if [[ ! " ${registry_config[*]} " =~ " quay " ]]; then
-    echo "[INFO] Disable Quay installation by setting &quayEnabled anchor to false"
-    sed -i 's/enabled: &quayEnabled true/enabled: \&quayEnabled false/' "${config_file}"
-  else
-    echo "[INFO] Quay is in registry_config array, keeping &quayEnabled anchor as true"
-  fi
-}
-
-quayio_integration() {
-  if [[ " ${registry_config[*]} " =~  quay.io ]]; then
-    echo "[INFO] Configure quay.io integration into TSSC"
+quay_integration() {
+  if [[ " ${registry_config[*]} " =~  quay ]]; then
+    echo "[INFO] Configure quay integration into TSSC"
 
     QUAY__DOCKERCONFIGJSON="${QUAY__DOCKERCONFIGJSON:-$(cat /usr/local/rhtap-cli-install/quay-dockerconfig-json)}"
     QUAY__API_TOKEN="${QUAY__API_TOKEN:-$(cat /usr/local/rhtap-cli-install/quay-api-token)}"
@@ -241,7 +228,6 @@ nexus_integration() {
 create_cluster_config() {
   echo "[INFO] Creating the installer's cluster configuration"
   update_dh_catalog_url
-  disable_quay
   disable_acs
   disable_tpa
   
@@ -272,7 +258,7 @@ install_tssc() {
   github_integration
   gitlab_integration
   bitbucket_integration
-  quayio_integration
+  quay_integration
   artifactory_integration
   nexus_integration
 

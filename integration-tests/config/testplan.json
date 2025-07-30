@@ -6,7 +6,7 @@
       {
         "git": "github",
         "ci": "tekton",
-        "registry": "quay.io",
+        "registry": "quay",
         "tpa": "local",
         "acs": "local"
       },

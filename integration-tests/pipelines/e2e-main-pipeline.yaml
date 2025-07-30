@@ -351,33 +351,36 @@ spec:
                 # Extract OCP version from RHADS config (single value only in traditional mode)
                 if [[ $RHADS_CONFIG_CONTENT =~ OCP=\"([^\"]+)\" ]]; then
                   OCP_VERSION="${BASH_REMATCH[1]}"
-                  echo "Found OCP version: $OCP_VERSION"
-                  echo "Creating single pipeline with traditional RHADS config"
+                  # Loop through each OCP version and start a sub-pipeline for each
+                  for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
+                    echo "Found OCP version: $OCP_VERSION"
+                    echo "Creating single pipeline with traditional RHADS config"
 
-                  # Create a single pipeline for this configuration
-                  echo "Starting sub-pipeline for OCP version: $OCP_VERSION"
+                    # Create a single pipeline for this configuration
+                    echo "Starting sub-pipeline for OCP version: $OCP_VERSION"
 
-                  PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
-                    --param ocp-version="$OCP_VERSION"\
-                    --param job-spec="$JOB_SPEC"\
-                    --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
-                    --param rhads-config="$RHADS_CONFIG_CONTENT" \
-                    --param cloud-credential-key="$(params.cloud-credential-key)" \
-                    --param machine-type="$(params.ocp-instance-type)" \
-                    --param replicas="$(params.ocp-replicas)" \
-                    $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
-                    $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
-                    --use-param-defaults \
-                    --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
-                    --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
-                    --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
-                    --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
-                    --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
-                    --prefix-name "e2e-$OCP_VERSION"\
-                    -o name)
+                    PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                      --param ocp-version="$OCP_VERSION"\
+                      --param job-spec="$JOB_SPEC"\
+                      --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \
+                      --param rhads-config="$RHADS_CONFIG_CONTENT" \
+                      --param cloud-credential-key="$(params.cloud-credential-key)" \
+                      --param machine-type="$(params.ocp-instance-type)" \
+                      --param replicas="$(params.ocp-replicas)" \
+                      $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
+                      $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
+                      --use-param-defaults \
+                      --labels "appstudio.openshift.io/component=${KONFLUX_COMPONENT_NAME}" \
+                      --labels "appstudio.openshift.io/application=${KONFLUX_APPLICATION_NAME}" \
+                      --labels "pipelines.appstudio.openshift.io/type=$(context.pipelineRun.name)" \
+                      --labels "test.appstudio.openshift.io/scenario=pr-e2e-tests" \
+                      --labels "custom.appstudio.openshift.io/main-pipeline-run=$(context.pipelineRun.name)" \
+                      --prefix-name "e2e-$OCP_VERSION"\
+                      -o name)
 
-                  echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
-                  PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
+                    echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${PIPELINE_RUN}"
+                    PIPELINERUNS_ARRAY+=($PIPELINE_RUN)
+                  done
                 else
                   echo "Error: Could not extract OCP version from RHADS config"
                   exit 1

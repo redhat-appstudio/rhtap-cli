@@ -34,6 +34,7 @@ func (r *RootCmd) Cmd() *cobra.Command {
 		subcmd.NewInstaller(r.flags),
 		subcmd.NewMCPServer(r.flags, r.kube),
 		subcmd.NewTemplate(logger, r.flags, r.cfs, r.kube),
+		subcmd.NewTopology(logger, r.cfs, r.kube),
 	} {
 		r.cmd.AddCommand(subcmd.NewRunner(sub).Cmd())
 	}

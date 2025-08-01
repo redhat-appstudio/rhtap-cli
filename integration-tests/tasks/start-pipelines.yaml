@@ -10,7 +10,7 @@ metadata:
 spec:
   description: >-
     This task starts one or more rhtap-cli-e2e pipelines based on configuration.
-    It supports both single configuration mode and periodic configuration mode 
+    It supports both single configuration mode and periodic configuration mode
     (multiple configs with separators and testplans).
   params:
     - name: snapshot
@@ -88,7 +88,6 @@ spec:
         set -euo pipefail
 
         echo "Starting pipelines in mode: $MODE"
-        
         # Extract images from snapshot
         tssc_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="rhtap-cli").containerImage')
         tssc_test_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="tssc-test").containerImage')
@@ -112,9 +111,7 @@ spec:
           local config="$2"
           local testplan_b64="$3"
           local config_suffix="$4"
-          
           echo "Starting pipeline for OCP version: $ocp_version"
-          
           local pipeline_run
           pipeline_run=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
             --param ocp-version="$ocp_version" \
@@ -135,7 +132,6 @@ spec:
             --labels "custom.appstudio.openshift.io/main-pipeline-run=${CONTEXT_PIPELINE_RUN_NAME}" \
             --prefix-name "e2e-$ocp_version$config_suffix" \
             -o name)
-          
           echo "Started new pipelinerun: ${KONFLUX_URL}/ns/${KONFLUX_NAMESPACE}/applications/${KONFLUX_APPLICATION_NAME}/pipelineruns/${pipeline_run}"
           PIPELINERUNS_ARRAY+=($pipeline_run)
         }
@@ -144,12 +140,10 @@ spec:
           echo "Processing periodic configurations..."
           echo "RHADS Config data:"
           echo "$RHADS_CONFIG"
-          
           # Count configurations for informational purposes
           CONFIG_COUNT=$(echo "$RHADS_CONFIG" | grep -o -e "---CONFIG_SEPARATOR---" | wc -l)
           CONFIG_COUNT=$((CONFIG_COUNT + 1))  # Add 1 because there's one more config than separators
           echo "Found $CONFIG_COUNT configurations to process"
-          
           # Create a pipeline for every RHADS config using pure bash string manipulation
           CONFIG_INDEX=0
           # Split the configurations using bash string manipulation
@@ -166,15 +160,12 @@ spec:
               FULL_CONFIG="$REMAINING_CONFIG"
               REMAINING_CONFIG=""
             fi
-            
             # Trim whitespace from config
             FULL_CONFIG=$(echo "$FULL_CONFIG" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-            
             CONFIG_INDEX=$(( $CONFIG_INDEX + 1 ))
             echo "==================== Configuration $CONFIG_INDEX ===================="
             echo "$FULL_CONFIG"
             echo "================================================================"
-            
             # Split RHADS config and testplan
             if [[ "$FULL_CONFIG" == *"---TESTPLAN_START---"* ]]; then
               # Extract RHADS config (before testplan)
@@ -198,12 +189,10 @@ spec:
               TESTPLAN_B64=""
               echo "No testplan found for this configuration"
             fi
-            
             # Extract OCP version from this configuration
             if [[ $CONFIG =~ OCP=\"([^\"]+)\" ]]; then
               OCP_VERSION="${BASH_REMATCH[1]}"
               echo "Successfully extracted OCP version: $OCP_VERSION from configuration $CONFIG_INDEX"
-              
               # Start pipeline using shared function
               start_single_pipeline "$OCP_VERSION" "$CONFIG" "$TESTPLAN_B64" "-config$CONFIG_INDEX"
             else
@@ -211,22 +200,17 @@ spec:
             fi
           done
           echo "Started $CONFIG_INDEX sub-pipelines for periodic testing"
-          
         else
           echo "Processing single configuration..."
           RHADS_CONFIG_CONTENT=$(echo "$RHADS_CONFIG")
           echo "Configuration:"
           echo "$RHADS_CONFIG_CONTENT"
-          
           # Extract OCP versions from RHADS config
           [[ $RHADS_CONFIG_CONTENT =~ OCP=\"([^\"]+)\" ]] && IFS=',' read -ra OCP_VERSIONS <<< "${BASH_REMATCH[1]}"
-          
           echo "Running tests for OCP versions: ${OCP_VERSIONS[*]}"
-          
           # Loop through each OCP version and start a sub-pipeline for each
           for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
             echo "Starting sub-pipeline for OCP version: $OCP_VERSION"
-            
             # Start pipeline using shared function
             start_single_pipeline "$OCP_VERSION" "$RHADS_CONFIG_CONTENT" "" ""
           done
@@ -240,7 +224,7 @@ spec:
         # Wait for completion function
         waitFor() {
           local CONDITION="$1"
-          local MESSAGE_RUNNING="$2" 
+          local MESSAGE_RUNNING="$2"
           local MESSAGE_DONE="$3"
           timeout --foreground 120m /bin/bash -c '
             #deserialize plrs array

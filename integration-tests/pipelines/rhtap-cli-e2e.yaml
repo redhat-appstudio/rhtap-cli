@@ -147,11 +147,33 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/redhat-appstudio/tssc-test.git
+            value: https://github.com/jsmid1/tssc-test.git
           - name: revision
-            value: main
+            value: RHTAPUI-54
           - name: pathInRepo
             value: integration-tests/tasks/tssc-e2e.yaml
+      params:
+        - name: job-spec
+          value: $(params.job-spec)
+        - name: ocp-login-command
+          value: "$(tasks.provision-rosa.results.ocp-login-command)"
+        - name: oci-container
+          value: $(tasks.create-oci-container.results.oci-container)
+        - name: tssc-test-image
+          value: $(params.tssc-test-image)
+    - name: rhtap-ui-tests
+      runAfter:
+        - rhtap-e2e-tests
+      onError: continue
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/jsmid1/tssc-test.git
+          - name: revision
+            value: RHTAPUI-54
+          - name: pathInRepo
+            value: integration-tests/tasks/tssc-ui.yaml
       params:
         - name: job-spec
           value: $(params.job-spec)

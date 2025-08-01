@@ -187,11 +187,5 @@ spec:
           value: $(params.ocp-instance-type)
         - name: ocp-replicas
           value: $(params.ocp-replicas)
-        - name: konflux-application-name
-          value: $(context.pipelineRun.labels['appstudio\.openshift\.io/application'])
-        - name: konflux-component-name
-          value: $(context.pipelineRun.labels['appstudio\.openshift\.io/component'])
-        - name: konflux-namespace
-          value: $(context.pipelineRun.namespace)
         - name: context-pipeline-run-name
           value: $(context.pipelineRun.name)

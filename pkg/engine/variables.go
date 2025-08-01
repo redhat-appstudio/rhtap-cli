@@ -19,8 +19,17 @@ type Variables struct {
 
 // SetInstaller sets the installer configuration.
 func (v *Variables) SetInstaller(cfg *config.Spec) error {
+	v.Installer["Namespace"] = cfg.Namespace
 	var err error
-	v.Installer, err = UnstructuredType(cfg)
+	v.Installer["Settings"], err = UnstructuredType(cfg.Settings)
+	if err != nil {
+		return err
+	}
+	products := map[string]interface{}{}
+	for _, product := range cfg.Products {
+		products[product.KeyName()] = product
+	}
+	v.Installer["Products"], err = UnstructuredType(products)
 	return err
 }
 
@@ -57,7 +66,7 @@ func (v *Variables) SetOpenShift(ctx context.Context, kube *k8s.Kube) error {
 			"Domain":   ingressDomain,
 			"RouterCA": ingressRouterCA,
 		},
-		"Version": clusterVersion,
+		"Version":      clusterVersion,
 		"MinorVersion": minorVersion,
 	}
 

@@ -164,7 +164,7 @@ spec:
               for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
                 echo "Starting sub-pipeline for OCP version: $OCP_VERSION"
 
-                PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/xinredhat/rhtap-cli/refs/heads/test_ci/integration-tests/pipelines/rhtap-cli-e2e.yaml \
                   --param ocp-version="$OCP_VERSION"\
                   --param job-spec="$JOB_SPEC"\
                   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \

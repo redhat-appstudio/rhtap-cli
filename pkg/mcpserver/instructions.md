@@ -20,12 +20,12 @@ The installation process is divided into three main phases.
 
 ### Phase 1: Configuration (`AWAITING_CONFIGURATION`)
 
-This is the starting point. You must define the installation configuration.
+This is the starting point. You must define the installation configuration.  
 
-- Use `tssc_config_get` to view the current configuration.
-- Use `tssc_config_create` or `tssc_config_update` to set your desire configuration.
+- Use `tssc_config_get` to view the current configuration. Take note of each `.tscc.products[]` top comment to understand what each product does, so you can control whether to install it or not.  
+- Use `tssc_config_create` or `tssc_config_update` to set your desired cluster configuration, which determines which `.tssc.products[]` to install, along with global settings.  
 
-Once the configuration is successfully applied, we will move to the next phase.
+Once the configuration is successfully applied, we will proceed to the next phase.
 
 ### Phase 2: Integrations (`AWAITING_INTEGRATIONS`)
 

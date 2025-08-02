@@ -5,3 +5,6 @@ description: Red Hat Trusted Artifact Signer
 type: application
 version: "1.6.0"
 appVersion: "1.2"
+annotations:
+  tssc.redhat-appstudio.github.com/product-name: Trusted Artifact Signer
+  tssc.redhat-appstudio.github.com/depends-on: tssc-openshift, tssc-subscriptions, tssc-infrastructure, tssc-backing-services

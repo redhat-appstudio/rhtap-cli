@@ -8,6 +8,8 @@ import (
 	"github.com/redhat-appstudio/tssc/pkg/config"
 	"github.com/redhat-appstudio/tssc/pkg/flags"
 	"github.com/redhat-appstudio/tssc/pkg/k8s"
+	"github.com/redhat-appstudio/tssc/pkg/printer"
+	"github.com/redhat-appstudio/tssc/pkg/resolver"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -145,12 +147,27 @@ func (c *Config) Validate() error {
 // runCreate runs create action, makes sure a new configuration is applied in the
 // cluster and update when using the --force flag.
 func (c *Config) runCreate() error {
-	// Disclaimer
-	fmt.Printf("\n!!! DISCLAIMER: ONLY FOR EXPERIMENTAL DEPLOYMENTS - PRODUCTION IS UNSUPPORTED !!!\n")
+	printer.Disclaimer()
 
 	c.log().Debug("Loading configuration from file")
 	cfg, err := config.NewConfigFromFile(c.cfs, c.configPath)
 	if err != nil {
+		return err
+	}
+
+	// Ensuring the configuration is compabile with the Helm charts available for
+	// the installer, product associated charts and dependencies are verified.
+	c.log().Debug("Verifying installer Helm charts")
+	charts, err := c.cfs.GetAllCharts()
+	if err != nil {
+		return err
+	}
+	collection, err := resolver.NewCollection(charts)
+	if err != nil {
+		return err
+	}
+	r := resolver.NewResolver(cfg, collection, resolver.NewTopology())
+	if err = r.Resolve(); err != nil {
 		return err
 	}
 

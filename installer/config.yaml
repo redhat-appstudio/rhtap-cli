@@ -1,27 +1,45 @@
 ---
 tssc:
-  namespace: &installerNamespace tssc
+  namespace: tssc
   settings:
     crc: false
   products:
-    trustedProfileAnalyzer:
+    # Red Hat Trusted Profile Analyzer (TPA), which leverages the community-driven
+    # Trustification project, helps organizations manage their software supply
+    # chain's security by analyzing Software Bills of Materials (SBOMs), vendor
+    # Vulnerability Exploitability eXchange (VEX), and Common Vulnerabilities and
+    # Exposures (CVE) to assess their risk profile.
+    - name: Trusted Profile Analyzer
       enabled: &tpaEnabled true
-      namespace: &trustedProfileAnalyzerNamespace tssc-tpa
+      namespace: tssc-tpa
       properties:
         manageSubscription: true
-    keycloak:
+    # Keycloak is an open-source identity and access management solution that
+    # simplifies adding authentication and securing services for applications,
+    # offering features like Single Sign-On (SSO), user federation with external
+    # identity providers (IdPs) like GitHub and more. Trusted Profile Analyzer
+    # (TPA) depends on Keycloak for authentication and authorization.
+    - name: Keycloak
       enabled: *tpaEnabled
       namespace: tssc-keycloak
       properties:
         manageSubscription: true
-    trustedArtifactSigner:
-      enabled: &tasEnabled true
-      namespace: &trustedArtifactSignerNamespace tssc-tas
+    # Red Hat Trusted Artifact Signer (TAS) enhances software supply chain
+    # security by simplifying cryptographic signing and verification of software
+    # artifacts like container images, binaries, and documents, leveraging an
+    # OpenID Connect (OIDC) provider such as Keycloak for identity-based signing.
+    - name: Trusted Artifact Signer
+      enabled: true
+      namespace: tssc-tas
       properties:
         manageSubscription: true
-    developerHub:
-      enabled: &rhdhEnabled true
-      namespace: &rhdhNamespace tssc-dh
+    # Red Hat Developer Hub is an enterprise-grade internal developer portal built
+    # on Backstage, designed to enhance developer productivity, collaboration, and
+    # onboarding by centralizing tools, documentation, and resources within a
+    # unified and extensible platform. 
+    - name: Developer Hub
+      enabled: true
+      namespace: tssc-dh
       properties:
         catalogURL: https://github.com/redhat-appstudio/tssc-sample-templates/blob/release-v1.6.x/all.yaml
         manageSubscription: true
@@ -33,62 +51,32 @@ tssc:
         #   enabled: false
         #   orgs:
         #     - myOrg
-    advancedClusterSecurity:
-      enabled: &rhacsEnabled true
-      namespace: &rhacsNamespace tssc-acs
+    # Red Hat Advanced Cluster Security (ACS) for OpenShift is a comprehensive
+    # security platform that protects cloud-native applications across the entire
+    # container lifecycle -- from build and deployment to runtime -- by providing
+    # visibility, vulnerability management, compliance auditing, and threat
+    # detection for OpenShift environments.
+    - name: Advanced Cluster Security
+      enabled: true
+      namespace: tssc-acs
       properties:
         manageSubscription: true
-    openShiftGitOps:
-      enabled: &gitopsEnabled true
-      namespace: &gitopsNamespace tssc-gitops
+    # Red Hat OpenShift GitOps, built on ArgoCD, is an operator that provides a
+    # declarative, Git-centric workflow to automate continuous delivery and
+    # management of applications and infrastructure configurations across
+    # multicluster OpenShift environments, ensuring consistency and accelerating
+    # deployments.
+    - name: OpenShift GitOps
+      enabled: true
+      namespace: tssc-gitops
       properties:
         manageSubscription: true
-    openShiftPipelines:
-      enabled: &pipelinesEnabled true
+    # Red Hat OpenShift Pipelines is a cloud-native CI/CD (Continuous
+    # Integration/Continuous Delivery) solution built on Tekton that automates
+    # application delivery and reduces time to market on Red Hat OpenShift.
+    - name: OpenShift Pipelines
+      enabled: true
       # No new resources will be created in the namespace
       namespace: openshift-pipelines
       properties:
         manageSubscription: true
-  dependencies:
-    - chart: charts/tssc-openshift
-      namespace: *installerNamespace
-      enabled: true
-    - chart: charts/tssc-subscriptions
-      namespace: *installerNamespace
-      enabled: true
-    - chart: charts/tssc-infrastructure
-      namespace: *installerNamespace
-      enabled: true
-    - chart: charts/tssc-backing-services
-      namespace: *installerNamespace
-      enabled: *tpaEnabled
-    - chart: charts/tssc-acs
-      namespace: *rhacsNamespace
-      enabled: *rhacsEnabled
-    - chart: charts/tssc-gitops
-      namespace: *gitopsNamespace
-      enabled: *gitopsEnabled
-    - chart: charts/tssc-tas
-      namespace: *trustedArtifactSignerNamespace
-      enabled: *tasEnabled
-    - chart: charts/tssc-pipelines
-      namespace: *installerNamespace
-      enabled: *pipelinesEnabled
-    - chart: charts/tssc-tpa-realm
-      namespace: *trustedProfileAnalyzerNamespace
-      enabled: *tpaEnabled
-    - chart: charts/tssc-tpa
-      namespace: *trustedProfileAnalyzerNamespace
-      enabled: *tpaEnabled
-    - chart: charts/tssc-app-namespaces
-      namespace: *installerNamespace
-      enabled: *pipelinesEnabled
-    - chart: charts/tssc-dh
-      namespace: *rhdhNamespace
-      enabled: *rhdhEnabled
-    - chart: charts/tssc-acs-test
-      namespace: *rhacsNamespace
-      enabled: *rhacsEnabled
-    - chart: charts/tssc-integrations
-      namespace: *installerNamespace
-      enabled: true

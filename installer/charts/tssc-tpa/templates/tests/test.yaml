@@ -11,7 +11,7 @@
       command:
         - /scripts/test-rollout-status.sh
       args:
-        - {{ printf "app.kubernetes.io/instance=%s" .Release.Name }}
+        - {{ printf "app.kubernetes.io/instance=%s" .Values.trustedProfileAnalyzer.name }}
       volumeMounts:
         - name: scripts
           mountPath: /scripts

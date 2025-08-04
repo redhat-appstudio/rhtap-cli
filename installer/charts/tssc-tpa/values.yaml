@@ -1,6 +1,8 @@
 ---
 #
-# Trusted Profile Analyzer (Trustification)
+# Red Hat Trusted Profile Analyzer
+#
+#  https://access.redhat.com/products/red-hat-trusted-profile-analyzer
 #
 trustedProfileAnalyzer:
   # Controls whether Trusted Profile Analyzer (Trustification) is enabled,
@@ -9,14 +11,8 @@ trustedProfileAnalyzer:
   enabled: true
   # Realm's OIDC issuer URL, the endpoint to TPA's realm.
   oidcIssuerURL: __OVERWRITE_ME__
-
-#
-# Red Hat Trusted Profile Analyzer
-#
-#  https://access.redhat.com/products/red-hat-trusted-profile-analyzer
-#  https://github.com/openshift-helm-charts/charts/tree/main/charts/redhat/redhat/redhat-trusted-profile-analyzer
-#
-redhat-trusted-profile-analyzer:
+  name: trustedprofileanalyzer
+  namespace: __OVERWRITE_ME__
   appDomain: __OVERWRITE_ME__
   replicas: 1
   rust:
@@ -157,6 +153,19 @@ redhat-trusted-profile-analyzer:
             source: https://github.com/github/advisory-database
             path: advisories
             disabled: false
+    server:
+      enabled: true
+      image: {}
+      infrastructure: {}
+      ingress: {}
+      metrics: {}
+      replicas: 1
+      resources:
+        requests:
+          cpu: 1
+          memory: 8Gi
+      rust: {}
+      tracing: {}
   # Authentication method for the TPA application, by default "keycloak".
   authenticator:
     type: keycloak

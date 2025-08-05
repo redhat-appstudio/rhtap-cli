@@ -18,6 +18,17 @@ app:
 {{- $azureSecretObj := (lookup "v1" "Secret" $integrationNamespace "tssc-azure-integration") }}
 {{- $azureSecretData := ($azureSecretObj.data | default dict) }}
 
+# Validation
+{{- if and (not $githubSecretObj) (eq .Values.developerHub.authProvider "github") }}
+  {{- fail (printf "Github Integration required for github auth provider") }}
+{{- else if and (not $gitlabSecretObj) (eq .Values.developerHub.authProvider "gitlab") }}
+  {{- fail (printf "Gitlab Integration required for gitlab auth provider") }}
+{{- else if and (not $azureSecretObj) (eq .Values.developerHub.authProvider "microsoft") }}
+  {{- fail (printf "Azure Integration required for microsoft auth provider") }}
+{{- else if not (has .Values.developerHub.authProvider (list "github" "gitlab" "microsoft")) }}
+  {{- fail (printf "Auth provider %s is not supported, set it to github, gitlab, or microsoft" .Values.developerHub.authProvider) }}
+{{- end }}
+
 {{- if $argocdSecretData }}
 argocd:
   appLocatorMethods:
@@ -43,7 +54,7 @@ auth:
   environment: production
   providers:
   {{- $signInPage := "" }}
-  {{- if $azureSecretData }}
+  {{- if eq .Values.developerHub.authProvider "microsoft" }}
     {{- if and $azureSecretData.clientId $azureSecretData.clientSecret $azureSecretData.tenantId }}
     {{- $signInPage = "microsoft" }}
     microsoft:
@@ -53,7 +64,7 @@ auth:
         tenantId: ${AZURE__TENANT__ID}
     {{- end }}
   {{- end }}
-  {{- if $githubSecretObj }}
+  {{- if eq .Values.developerHub.authProvider "github" }}
     {{- $signInPage = "github" }}
     github:
       production:
@@ -62,15 +73,15 @@ auth:
       {{- if ne ($githubSecretObj.data.host | b64dec) "github.com" }}
         enterpriseInstanceUrl: ${GITHUB__URL}
       {{- end }}
-      {{- if not .Values.developerHub.enableRBAC }}
+      {{- if not .Values.developerHub.RBAC.enabled }}
         signIn:
           resolvers:
             - resolver: usernameMatchingUserEntityName
               dangerouslyAllowSignInWithoutUserInCatalog: true
       {{- end }}
   {{- end }}
-  {{- $gitlabSecretData := ($gitlabSecretObj.data | default dict) }}
-  {{- if $gitlabSecretData }}
+  {{- if eq .Values.developerHub.authProvider "gitlab" }}
+    {{- $gitlabSecretData := ($gitlabSecretObj.data | default dict) }}
     {{- if and $gitlabSecretData.clientId $gitlabSecretData.clientSecret }}
     {{- $signInPage = "gitlab" }}
     gitlab:
@@ -97,8 +108,9 @@ backend:
   cors:
     origin: ${BACKEND_URL}
 catalog:
-  {{- if and .Values.developerHub.RBAC.enabled $githubSecretObj }}
+  {{- if .Values.developerHub.RBAC.enabled }}
   providers:
+  {{- if eq .Values.developerHub.authProvider "github" }}
     githubOrg:
       id: production
       githubUrl: ${GITHUB__URL}
@@ -108,6 +120,18 @@ catalog:
         initialDelay: { seconds: 30 }
         frequency: { minutes: 15 }
         timeout: { minutes: 5 }
+  {{- end }}
+  {{- if eq .Values.developerHub.authProvider "gitlab" }}
+    gitlab:
+      default:
+        host: ${GITLAB__HOST}
+        orgEnabled: true
+        group: ${GITLAB__GROUP}
+        schedule:
+          initialDelay: { seconds: 30 }
+          frequency: { minutes: 15 }
+          timeout: { minutes: 5 }
+  {{- end }}
   {{- end }}
   locations:
     - target: ${DEVELOPER_HUB__CATALOG__URL}
@@ -174,17 +198,15 @@ jenkins:
 nexus:
   uiUrl: ${NEXUS__URL}
 {{- end }}
-{{- if .Values.developerHub.RBAC.enabled }}
+{{- if and .Values.developerHub.RBAC.enabled (has .Values.developerHub.authProvider (list "github" "gitlab")) }}
 permission:
   enabled: true
-  {{- if $githubSecretObj }}
   rbac:
     admin:
       users:
       {{- range .Values.developerHub.RBAC.adminUsers }}
         - name: user:default/{{ . }}
       {{- end }}
-  {{- end }}
 {{- else }}
 permission:
   enabled: false

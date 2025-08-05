@@ -27,10 +27,12 @@ tssc:
         manageSubscription: true
         # namespacePrefixes:
         #   - tssc-app
+        authProvider: github
+        # Possible values: github, gitlab, microsoft
         # RBAC:
         #   adminUsers:
         #     - myUsername
-        #   enabled: false
+        #   enabled: true
         #   orgs:
         #     - myOrg
     advancedClusterSecurity:

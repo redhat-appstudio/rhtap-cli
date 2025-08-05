@@ -123,8 +123,8 @@ configure_rhdh(){
 
     ./install-rhdh-catalog-source.sh --latest --install-operator rhdh
 
-    SUBSCRIPTION="redHatDeveloperHub"
-    CHANNEL="fast-1.6"
+    SUBSCRIPTION="developerHub"
+    CHANNEL="fast-1.7"
     SOURCE="rhdh-fast"
 }
 
@@ -188,7 +188,7 @@ type: kubernetes.io/dockerconfigjson
 
 configure_subscription(){
     # Prepare for pre-release install capabilities
-    subscription_values_file="$PROJECT_DIR/installer/charts/rhtap-subscriptions/values.yaml"
+    subscription_values_file="$PROJECT_DIR/installer/charts/tssc-subscriptions/values.yaml"
 
     yq -i "
         .subscriptions.$SUBSCRIPTION.channel = \"$CHANNEL\",

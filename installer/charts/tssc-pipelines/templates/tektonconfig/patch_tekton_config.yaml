@@ -16,8 +16,8 @@ spec:
         - name: patch-tekton-config
           image: registry.redhat.io/openshift4/ose-cli:latest
           resources:
-            ephemeral-storage: 100Mi
             limits:
+              ephemeral-storage: 100Mi
               memory: 128Mi
             requests:
               memory: 100Mi

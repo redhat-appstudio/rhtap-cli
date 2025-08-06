@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/redhat-appstudio/tssc/pkg/cmd"
+	"github.com/redhat-appstudio/tssc-cli/pkg/cmd"
 )
 
 func main() {

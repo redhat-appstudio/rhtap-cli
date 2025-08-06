@@ -25,12 +25,12 @@ Example:
 }
 
 parse_args() {
-    GIT_URL="git@github.com:redhat-appstudio/rhtap-cli.git"
+    GIT_URL="git@github.com:redhat-appstudio/tssc-cli.git"
     while [[ $# -gt 0 ]]; do
         case $1 in
         --dry-run)
             DRY_RUN=1
-            GIT_URL="https://github.com/redhat-appstudio/rhtap-cli.git"
+            GIT_URL="https://github.com/redhat-appstudio/tssc-cli.git"
             ;;
         -d | --debug)
             set -x
@@ -53,7 +53,7 @@ parse_args() {
 
 init() {
     TMP_DIR=$(mktemp -d)
-    PROJECT_DIR="$TMP_DIR/rhtap-cli"
+    PROJECT_DIR="$TMP_DIR/tssc-cli"
     trap cleanup EXIT
 
     git clone "$GIT_URL" "$PROJECT_DIR"
@@ -116,12 +116,12 @@ commit_freeze() {
 }
 
 update_ci() {
-    for PLR in ".tekton/rhtap-cli-pull-request.yaml" ".tekton/rhtap-cli-push.yaml"; do
+    for PLR in ".tekton/tssc-cli-pull-request.yaml" ".tekton/tssc-cli-push.yaml"; do
         sed -i --regexp-extended "s|== \"main\"|== \"$RELEASE_BRANCH\"|" "$PLR"
-        sed -i --regexp-extended "s|  *appstudio\.openshift\.io/application: rhtap-cli|\0-${VERSION_XY//./-}|" "$PLR"
-        sed -i --regexp-extended "s|  *appstudio\.openshift\.io/component: rhtap-cli|\0-${VERSION_XY//./-}|" "$PLR"
+        sed -i --regexp-extended "s|  *appstudio\.openshift\.io/application: tssc-cli|\0-${VERSION_XY//./-}|" "$PLR"
+        sed -i --regexp-extended "s|  *appstudio\.openshift\.io/component: tssc-cli|\0-${VERSION_XY//./-}|" "$PLR"
     done
-    yq -i '.spec.params |= map(select(.name != "image-expires-after"))' ".tekton/rhtap-cli-push.yaml"
+    yq -i '.spec.params |= map(select(.name != "image-expires-after"))' ".tekton/tssc-cli-push.yaml"
 }
 
 commit_release() {

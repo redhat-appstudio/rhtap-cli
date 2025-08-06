@@ -3,8 +3,8 @@ package mcpserver
 import (
 	_ "embed"
 
-	"github.com/redhat-appstudio/tssc/pkg/constants"
-	"github.com/redhat-appstudio/tssc/pkg/mcptools"
+	"github.com/redhat-appstudio/tssc-cli/pkg/constants"
+	"github.com/redhat-appstudio/tssc-cli/pkg/mcptools"
 
 	"github.com/mark3labs/mcp-go/server"
 )

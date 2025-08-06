@@ -25,12 +25,12 @@ Example:
 }
 
 parse_args() {
-    GIT_URL="git@github.com:redhat-appstudio/rhtap-cli.git"
+    GIT_URL="git@github.com:redhat-appstudio/tssc-cli.git"
     while [[ $# -gt 0 ]]; do
         case $1 in
         --dry-run)
             DRY_RUN=1
-            GIT_URL="https://github.com/redhat-appstudio/rhtap-cli.git"
+            GIT_URL="https://github.com/redhat-appstudio/tssc-cli.git"
             ;;
         -d | --debug)
             set -x

@@ -21,6 +21,9 @@ In order to succesfully run this integration test one must:
         * `bitbucket-username`
         * `bitbucket-app-password`
         * `rhdh-github-webhook-secret`
+        * `github-username`
+        * `github-password`
+        * `github-2fa-secret`
         * `github_token`
         * `rhdh-github-app-id`
         * `rhdh-github-private-key`

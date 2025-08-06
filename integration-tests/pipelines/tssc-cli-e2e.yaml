@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: rhtap-install-e2e
+  name: tssc-install-e2e
 spec:
   description: |-
     This pipeline automates the process of running end-to-end tests for TSSC
@@ -45,7 +45,7 @@ spec:
     - name: tssc-image
       type: string
       description: "Image from where the `tssc` binary will be extracted (from path /usr/local/bin)."
-      default: "quay.io/rhtap/rhtap-cli:latest"
+      default: "quay.io/redhat-user-workloads/rhtap-shared-team-tenant/tssc-cli:latest"
     - name: tssc-test-image
       type: string
       description: "Image from where the `tssc-test` binary will be extracted (from path /usr/local/bin)."
@@ -104,18 +104,18 @@ spec:
           value: "$(params.konflux-test-infra-secret)"
         - name: cloud-credential-key
           value: "$(params.cloud-credential-key)"
-    - name: rhtap-install
+    - name: tssc-install
       runAfter:
         - provision-rosa
       taskRef:
         resolver: git
         params:
           - name: url
-            value: https://github.com/redhat-appstudio/rhtap-cli.git
+            value: https://github.com/xinredhat/tssc-cli.git
           - name: revision
-            value: main
+            value: rename_its
           - name: pathInRepo
-            value: integration-tests/tasks/rhtap-install.yaml
+            value: integration-tests/tasks/tssc-install.yaml
       params:
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
@@ -127,7 +127,7 @@ spec:
           value: $(params.tssc-image)
     - name: sprayproxy-provision
       runAfter:
-        - rhtap-install
+        - tssc-install
       taskRef:
         resolver: git
         params:
@@ -140,7 +140,7 @@ spec:
       params:
         - name: ocp-login-command
           value: "$(tasks.provision-rosa.results.ocp-login-command)"
-    - name: rhtap-e2e-tests
+    - name: tssc-e2e-tests
       runAfter:
         - sprayproxy-provision
       taskRef:
@@ -163,7 +163,7 @@ spec:
           value: $(params.tssc-test-image)
     - name: rhtap-ui-tests
       runAfter:
-        - rhtap-e2e-tests
+        - tssc-e2e-tests
       onError: continue
       taskRef:
         resolver: git

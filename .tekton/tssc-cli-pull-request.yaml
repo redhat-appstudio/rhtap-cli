@@ -2,20 +2,21 @@ apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   annotations:
-    build.appstudio.openshift.io/repo: https://github.com/redhat-appstudio/rhtap-cli?rev={{revision}}
+    build.appstudio.openshift.io/repo: https://github.com/redhat-appstudio/tssc-cli?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: '3'
     pipelinesascode.tekton.dev/on-cel-expression: |
-      event == "push"
+      event == "pull_request"
       && target_branch == "main"
       && files.all.exists(x, !x.matches('^(?:docs|.github|.vscode|.ci)/|\\.md$|^(?:.*/)?(?:\\.gitignore|OWNERS|PROJECT|LICENSE.txt|.golangci.yaml|.goreleaser.yaml|.snyk|.dockerignore|yamllint.yaml)$'))
   creationTimestamp:
   labels:
-    appstudio.openshift.io/application: rhtap-cli
-    appstudio.openshift.io/component: rhtap-cli
+    appstudio.openshift.io/application: tssc-cli
+    appstudio.openshift.io/component: tssc-cli
     pipelines.appstudio.openshift.io/type: build
-  name: rhtap-cli-on-push
+  name: tssc-cli-on-pull-request
   namespace: rhtap-shared-team-tenant
 spec:
   params:
@@ -24,11 +25,11 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/rhtap/rhtap-cli:{{revision}}
-  - name: dockerfile
-    value: Dockerfile
+    value: quay.io/redhat-user-workloads/rhtap-shared-team-tenant/tssc-cli:on-pr-{{revision}}
   - name: image-expires-after
     value: 5d
+  - name: dockerfile
+    value: Dockerfile
   pipelineSpec:
     finally:
     - name: show-sbom
@@ -519,9 +520,6 @@ spec:
         - 'false'
     - name: apply-tags
       params:
-      - name: ADDITIONAL_TAGS
-        value:
-        - latest
       - name: IMAGE_URL
         value: $(tasks.build-container.results.IMAGE_URL)
       - name: IMAGE_DIGEST
@@ -566,11 +564,8 @@ spec:
     - name: netrc
       optional: true
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhtap-cli
+    serviceAccountName: build-pipeline-tssc-cli
   workspaces:
-  - name: rhtap-quay-credentials
-    secret:
-      secretName: rhtap-builder
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'

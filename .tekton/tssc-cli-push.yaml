@@ -568,9 +568,6 @@ spec:
   taskRunTemplate:
     serviceAccountName: build-pipeline-tssc-cli
   workspaces:
-  - name: rhtap-quay-credentials
-    secret:
-      secretName: rhtap-builder
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'

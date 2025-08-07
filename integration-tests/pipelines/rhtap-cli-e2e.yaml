@@ -161,6 +161,28 @@ spec:
           value: $(tasks.create-oci-container.results.oci-container)
         - name: tssc-test-image
           value: $(params.tssc-test-image)
+    - name: rhtap-ui-tests
+      runAfter:
+        - rhtap-e2e-tests
+      onError: continue
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/redhat-appstudio/tssc-test.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: integration-tests/tasks/tssc-ui.yaml
+      params:
+        - name: job-spec
+          value: $(params.job-spec)
+        - name: ocp-login-command
+          value: "$(tasks.provision-rosa.results.ocp-login-command)"
+        - name: oci-container
+          value: $(tasks.create-oci-container.results.oci-container)
+        - name: tssc-test-image
+          value: $(params.tssc-test-image)
   finally:
     - name: deprovision-rosa-collect-artifacts
       taskRef:

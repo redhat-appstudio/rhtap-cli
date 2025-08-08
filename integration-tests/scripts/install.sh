@@ -67,14 +67,14 @@ tmp_file="installer/charts/tmp_private_key.txt"
 
 ci_enabled() {
   echo "[INFO] Turn ci to true, this is required when you perform rhtap-e2e automation test against TSSC"
-  sed -i'' -e 's/ci: false/ci: true/g' "$tpl_file"
+  yq -i '.tssc.settings.ci.debug = true' "${config_file}"
 }
 
 update_dh_catalog_url() {
   # if DEVELOPER_HUB__CATALOG__URL is not empty string, then update the catalog url
   if [[ -n "${DEVELOPER_HUB__CATALOG__URL}" ]]; then
     echo "[INFO] Update dh catalog url with $DEVELOPER_HUB__CATALOG__URL"
-    yq -i ".tssc.products.developerHub.properties.catalogURL = strenv(DEVELOPER_HUB__CATALOG__URL)" "${config_file}"
+    yq -i '.tssc.products[] |= select(.name == "Developer Hub").properties.catalogURL=strenv(DEVELOPER_HUB__CATALOG__URL)' "${config_file}"
   fi
 }
 
@@ -149,8 +149,8 @@ disable_acs() {
   # if "remote" is in acs_config array, then disable ACS installation
   # Update the YAML anchor &rhacsEnabled from true to false (line 31 in config.yaml)
   if [[ " ${acs_config[*]} " =~ " remote " ]]; then
-    echo "[INFO] Disable ACS installation by setting &rhacsEnabled anchor to false"
-    sed -i 's/enabled: &rhacsEnabled true/enabled: \&rhacsEnabled false/' "${config_file}"
+    echo "[INFO] Disable ACS installation in the TSSC configuration"
+    yq -i '.tssc.products[] |= select(.name == "Advanced Cluster Security").enabled = false' "${config_file}"
   else
     echo "[INFO] ACS is set to local, keeping &rhacsEnabled anchor as true"
   fi
@@ -184,8 +184,8 @@ disable_tpa() {
   # if "remote" is in tpa_config array, then disable TPA installation
   # Update the YAML anchor &tpaEnabled from true to false (line 7 in config.yaml)
   if [[ " ${tpa_config[*]} " =~ " remote " ]]; then
-    echo "[INFO] Disable TPA installation by setting &tpaEnabled anchor to false"
-    sed -i 's/enabled: &tpaEnabled true/enabled: \&tpaEnabled false/' "${config_file}"
+    echo "[INFO] Disable TPA installation in TSSC configuration"
+    yq -i '.tssc.products[] |= select(.name == "Trusted Profile Analyzer").enabled = false' "${config_file}"
   else
     echo "[INFO] TPA is set to local, keeping &tpaEnabled anchor as true"
   fi

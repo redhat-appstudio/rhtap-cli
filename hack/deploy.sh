@@ -185,32 +185,29 @@ unshare() {
 configure() {
     if [ -n "${CATALOG_URL:-}" ]; then
         export CATALOG_URL
-        yq -i '.tssc.products.developerHub.properties.catalogURL=strenv(CATALOG_URL)' "$CONFIG"
+        yq -i '.tssc.products[] |= select(.name == "Developer Hub").properties.catalogURL=strenv(CATALOG_URL)' "${CONFIG}"
     fi
 
     if [[ -n "${ACS:-}" ]]; then
-        yq -i '.tssc.products.advancedClusterSecurity.enabled=false' "$CONFIG"
+        yq -i '.tssc.products[] |= select(.name == "Advanced Cluster Security").enabled = false' "${CONFIG}"
     fi
     if [[ -n "${CI:-}" ]]; then
         sed -i 's/\( *ci\): .*/\1: true/' "$VALUES"
     fi
     if [[ -n "${DH:-}" ]]; then
-        yq -i '.tssc.dependencies[] |= select(.chart == "charts/tssc-dh").enabled = false' "$CONFIG"
+        yq -i '.tssc.products[] |= select(.name == "Developer Hub").enabled = false' "${CONFIG}"
     fi
     if [[ -n "${GITOPS:-}" ]]; then
-        yq -i '.tssc.products.openShiftGitOps.enabled=false' "$CONFIG"
-    fi
-    if [[ -n "${QUAY:-}" ]]; then
-        yq -i '.tssc.products.quay.enabled=false' "$CONFIG"
+        yq -i '.tssc.products[] |= select(.name == "OpenShift GitOps").enabled = false' "${CONFIG}"
     fi
     if [[ -n "${TAS:-}" ]]; then
-        yq -i '.tssc.products.trustedArtifactSigner.enabled=false' "$CONFIG"
+        yq -i '.tssc.products[] |= select(.name == "Trusted Artifact Signer").enabled = false' "${CONFIG}"
     fi
     if [[ -n "${TPA:-}" ]]; then
-        yq -i '.tssc.products.trustedProfileAnalyzer.enabled=false' "$CONFIG"
+        yq -i '.tssc.products[] |= select(.name == "Trusted Profile Analyzer").enabled = false' "${CONFIG}"
     fi
     cd "$(dirname "$CONFIG")"
-    tssc_cli config --force --create "$(basename "$CONFIG")"
+    tssc_cli config --force --get --create "$(basename "$CONFIG")"
     cd - >/dev/null
 }
 

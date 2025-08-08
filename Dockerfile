@@ -22,7 +22,7 @@ RUN make GOFLAGS='-buildvcs=false'
 # Run
 #
 
-FROM registry.access.redhat.com/ubi9-minimal:9.6-1754327153
+FROM registry.access.redhat.com/ubi9-minimal:9.6-1754584681
 
 LABEL \
   name="tssc" \

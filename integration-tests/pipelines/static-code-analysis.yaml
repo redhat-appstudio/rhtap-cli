@@ -5,7 +5,7 @@ metadata:
   name: static-code-analysis
 spec:
   description: |-
-    This pipeline automates the process of running a few static code analysis for rhtap-cli repository.
+    This pipeline automates the process of running a few static code analysis for tssc-cli repository.
   params:
     - name: SNAPSHOT
       description: 'The JSON string representing the snapshot of the application under test.'

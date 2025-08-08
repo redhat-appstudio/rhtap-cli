@@ -5,8 +5,8 @@ metadata:
   name: e2e-main-pipeline
   namespace: rhtap-shared-team-tenant
   labels:
-    appstudio.openshift.io/component: rhtap-cli
-    appstudio.openshift.io/application: rhtap-cli
+    appstudio.openshift.io/component: tssc-cli
+    appstudio.openshift.io/application: tssc-cli
 spec:
   params:
     - name: SNAPSHOT
@@ -110,7 +110,7 @@ spec:
               echo "$RHADS_CONFIG_CONTENT"
 
               # get the tssc image and tssc-test image from the snapshot
-              tssc_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="rhtap-cli").containerImage')
+              tssc_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="tssc-cli").containerImage')
               tssc_test_image=$(echo "${SNAPSHOT}" | jq -r '.components[] |select(.name=="tssc-test").containerImage')
 
               # Extract OCP versions from RHADS config
@@ -150,7 +150,7 @@ spec:
               GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
               KONFLUX_URL="https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com"
 
-              if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
+              if [[ "${GIT_REPO}" = "tssc-cli" ]]; then
                 REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
                 BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
               else
@@ -164,7 +164,7 @@ spec:
               for OCP_VERSION in "${OCP_VERSIONS[@]}"; do
                 echo "Starting sub-pipeline for OCP version: $OCP_VERSION"
 
-                PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/rhtap-cli/refs/heads/$BRANCH/integration-tests/pipelines/rhtap-cli-e2e.yaml \
+                PIPELINE_RUN=$(tkn pipeline start -f https://raw.githubusercontent.com/$REPO_ORG/tssc-cli/refs/heads/$BRANCH/integration-tests/pipelines/tssc-cli-e2e.yaml \
                   --param ocp-version="$OCP_VERSION"\
                   --param job-spec="$JOB_SPEC"\
                   --param konflux-test-infra-secret="$(params.konflux-test-infra-secret)" \

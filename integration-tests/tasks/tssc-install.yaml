@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: rhtap-install
+  name: tssc-install
 spec:
   params:
     - name: ocp-login-command
@@ -18,7 +18,7 @@ spec:
       type: string
       description: "The tssc image containing the tssc binary."
   volumes:
-    - name: rhtap-cli-volume
+    - name: tssc-cli-volume
       secret:
         secretName: rhtap-cli-install
     - name: tssc-bin
@@ -32,14 +32,14 @@ spec:
         - name: tssc-bin
           mountPath: /tssc-bin
     - name: install
-      image: quay.io/redhat-user-workloads/rhtap-shared-team-tenant/rhtap-e2e/rhtap-e2e:56a53cd5d68adf7e7b0dccdc6c483a866d457cef
+      image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
       env:
         - name: JOB_SPEC
           value: "$(params.job-spec)"
         - name: OCP_LOGIN_COMMAND
           value: "$(params.ocp-login-command)"
       volumeMounts:
-        - name: rhtap-cli-volume
+        - name: tssc-cli-volume
           mountPath: /usr/local/rhtap-cli-install
         - name: tssc-bin
           mountPath: /usr/local/tssc-bin

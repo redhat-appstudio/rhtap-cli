@@ -531,6 +531,9 @@ spec:
         - "false"
     - name: apply-tags
       params:
+      - name: ADDITIONAL_TAGS
+        value:
+        - latest
       - name: IMAGE_URL
         value: $(tasks.build-image-index.results.IMAGE_URL)
       - name: IMAGE_DIGEST

@@ -31,6 +31,12 @@ openshift:
     - rhacs-operator
     {{- end }}
 {{- end }}
+{{- if $tpa.Enabled }}
+    - {{ $tpa.Namespace }}
+    {{- if $tpa.Properties.manageSubscription }}
+    - rhtpa-operator
+    {{- end }}
+{{- end }}
 {{- if $gitops.Enabled }}
     - {{ $gitops.Namespace }}
 {{- end }}
@@ -70,6 +76,9 @@ subscriptions:
   openshiftTrustedArtifactSigner:
     enabled: {{ $tas.Enabled }}
     managed: {{ and $tas.Enabled $tas.Properties.manageSubscription }}
+  openshiftTrustedProfileAnalyzer:
+    enabled: {{ $tpa.Enabled }}
+    managed: {{ and $tpa.Enabled $tpa.Properties.manageSubscription }}
   advancedClusterSecurity:
     enabled: {{ $acs.Enabled }}
     managed: {{ and $acs.Enabled $acs.Properties.manageSubscription }}
@@ -295,7 +304,8 @@ trustedProfileAnalyzer:
   enabled: {{ $tpa.Enabled }}
   oidcIssuerURL: {{ $tpaOIDCIssuerURL }}
 
-redhat-trusted-profile-analyzer:
+redhattrustedprofileanalyzer:
+  namespace: "{{ $tpa.Namespace }}"
   appDomain: "{{ $tpaAppDomain }}"
   ingress: &tpaIngress
     className: openshift-default
@@ -359,6 +369,8 @@ redhat-trusted-profile-analyzer:
 {{- end }}
 
 trustification:
+  name: trustedprofileanalyzer
+  namespace: "{{ $tpa.Namespace }}"
   appDomain: "{{ $tpaAppDomain }}"
   openshift: *tpaOpenShift
   storage: *tpaStorage

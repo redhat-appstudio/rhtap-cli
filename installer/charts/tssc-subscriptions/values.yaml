@@ -49,6 +49,19 @@ subscriptions:
     channel: stable-v1.2
     source: redhat-operators
     sourceNamespace: openshift-marketplace
+  openshiftTrustedProfileAnalyzer:
+    enabled: false
+    description: Red Hat Trusted Profile Analyzer
+    apiResource: trustedprofileanalyzers.rhtpa.io
+    namespace: tssc-tpa
+    name: rhtpa-operator
+    channel: stable
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    operatorGroup:
+      upgradeStrategy: Default
+      targetNamespaces:
+        - tssc-tpa
   advancedClusterSecurity:
     enabled: false
     description: Red Hat Advanced Cluster Security Operator

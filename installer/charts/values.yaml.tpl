@@ -1,17 +1,18 @@
 {{- $crc := required "CRC settings" .Installer.Settings.crc -}}
-{{- $tas := required "TAS settings" .Installer.Products.trustedArtifactSigner -}}
-{{- $tpa := required "TPA settings" .Installer.Products.trustedProfileAnalyzer -}}
-{{- $keycloak := required "Keycloak settings" .Installer.Products.keycloak -}}
-{{- $acs := required "Red Hat ACS settings" .Installer.Products.advancedClusterSecurity -}}
-{{- $gitops := required "GitOps settings" .Installer.Products.openShiftGitOps -}}
-{{- $pipelines := required "Pipelines settings" .Installer.Products.openShiftPipelines -}}
-{{- $rhdh := required "RHDH settings" .Installer.Products.developerHub -}}
+{{- $tas := required "TAS settings" .Installer.Products.Trusted_Artifact_Signer -}}
+{{- $tpa := required "TPA settings" .Installer.Products.Trusted_Profile_Analyzer -}}
+{{- $keycloak := required "Keycloak settings" .Installer.Products.Keycloak -}}
+{{- $acs := required "Red Hat ACS settings" .Installer.Products.Advanced_Cluster_Security -}}
+{{- $gitops := required "GitOps settings" .Installer.Products.OpenShift_GitOps -}}
+{{- $pipelines := required "Pipelines settings" .Installer.Products.OpenShift_Pipelines -}}
+{{- $pipelinesNamespace := "openshift-pipelines" -}}
+{{- $rhdh := required "RHDH settings" .Installer.Products.Developer_Hub -}}
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 {{- $ingressRouterCA := required "OpenShift RouterCA" .OpenShift.Ingress.RouterCA -}}
 {{- $openshiftMinorVersion := required "OpenShift Version" .OpenShift.MinorVersion -}}
 ---
 debug:
-  ci: {{ dig "ci" "debug" false .Installer.Settings -}}
+  ci: {{ dig "ci" "debug" false .Installer.Settings }}
 
 #
 # tssc-openshift
@@ -21,7 +22,7 @@ openshift:
   projects:
 {{- if $keycloak.Enabled }}
     - {{ $keycloak.Namespace }}
-    {{- if $gitops.Properties.manageSubscription }}
+    {{- if $keycloak.Properties.manageSubscription }}
     - rhbk-operator
     {{- end }}
 {{- end }}
@@ -93,7 +94,7 @@ infrastructure:
       namespace: {{ $tpa.Namespace }}
   openShiftPipelines:
     enabled: {{ $pipelines.Enabled }}
-    namespace: {{ $pipelines.Namespace }}
+    namespace: {{ $pipelinesNamespace }}
 
 #
 # tssc-backing-services
@@ -182,7 +183,7 @@ argoCD:
 #
 
 pipelines:
-  namespace: {{ $pipelines.Namespace }}
+  namespace: {{ $pipelinesNamespace }}
   tssc:
     namespace: {{ .Installer.Namespace }}
 
@@ -240,6 +241,7 @@ developerHub:
     adminUsers:
 {{ dig "Properties" "RBAC" "adminUsers" (list "${GITLAB__USERNAME}") $rhdh | toYaml | indent 6 }}
 {{- end }}
+
 #
 # tssc-tpa-realm
 #

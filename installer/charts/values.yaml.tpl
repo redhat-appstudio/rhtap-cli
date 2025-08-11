@@ -84,13 +84,15 @@ subscriptions:
 infrastructure:
   developerHub:
     namespace: {{ $rhdh.Namespace }}
+  pgsqlService:
+    instances:
+      - name: tpa
+        enabled: {{ $tpa.Enabled }}
+        namespace: {{ $tpa.Namespace }}
   postgresClusters:
     keycloak:
       enabled: {{ $keycloak.Enabled }}
       namespace: {{ $keycloak.Namespace }}
-    tpa:
-      enabled: {{ $tpa.Enabled }}
-      namespace: {{ $tpa.Namespace }}
   openShiftPipelines:
     enabled: {{ $pipelines.Enabled }}
     namespace: {{ $pipelines.Namespace }}
@@ -289,7 +291,7 @@ trustedProfileAnalyzerRealm:
 # tssc-tpa
 #
 
-{{- $tpaDatabaseSecretName := "tpa-pguser-tpa" }}
+{{- $tpaDatabaseSecretName := "tpa-pgsql-user" }}
 
 trustedProfileAnalyzer:
   enabled: {{ $tpa.Enabled }}

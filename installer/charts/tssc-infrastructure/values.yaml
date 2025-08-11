@@ -1,6 +1,31 @@
 ---
 infrastructure:
   #
+  # PostgreSQL Service
+  #
+  pgsqlService:
+    podName: pgsql-bee
+    secretName: pgsql-user
+    storageSize: 50Gi
+    image:
+      name: postgresql-16
+      repository: "registry.redhat.io/rhel9/"
+      pullPolicy: IfNotPresent
+      tag: "1-1754433677"
+    service:
+      name: pgsql
+      type: ClusterIP
+      port: 5432
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    instances: __OVERWRITE_ME__
+
+  #
   # PostgreSQL Clusters
   #
   postgresClusters:
@@ -30,38 +55,7 @@ infrastructure:
             resources:
               requests:
                 storage: 500Mi
-    tpa:
-      enabled: false
-      namespace: __OVERWRITE_ME__
-      postgresVersion: 14
-      image: registry.connect.redhat.com/crunchydata/crunchy-postgres@sha256:6f4db1e9707b196aaa9f98ada5c09523ec00ade573ff835bd1ca6367ac0bb9f1
-      pgbackrest:
-        global:
-          repo1-retention-full: "3"
-        image: registry.connect.redhat.com/crunchydata/crunchy-pgbackrest@sha256:7092a1036b0ff04004a45bae296262a97b96cb81eab266ce68197060f6711c6b
-      backupRepos:
-        - name: repo1
-          volume:
-            volumeClaimSpec:
-              accessModes:
-                - ReadWriteOnce
-              resources:
-                requests:
-                  storage: 50Gi
-      instances:
-        - replicas: 1
-          dataVolumeClaimSpec:
-            accessModes:
-              - ReadWriteOnce
-            resources:
-              requests:
-                storage: 50Gi
-      patroni:
-        dynamicConfiguration:
-          postgresql:
-            pg_hba:
-              - host all all 0.0.0.0/0 scram-sha-256
-              - host all all ::1/128 scram-sha-256
+
   #
   # OpenShift Pipelines
   #

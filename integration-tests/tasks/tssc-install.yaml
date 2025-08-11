@@ -55,18 +55,18 @@ spec:
           exit 1
         fi
 
-        # Clone the rhtap-cli repository
+        # Clone the tssc-cli repository
         cd "$(mktemp -d)"
 
-        if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
+        if [[ "${GIT_REPO}" = "tssc-cli" ]]; then
             GIT_URL="${GIT_URL:-$(echo "$JOB_SPEC" | jq -r '.git.source_repo_url')}"
             GIT_REVISION="${GIT_REVISION:-$(echo "$JOB_SPEC" | jq -r '.git.commit_sha')}"
             echo -e "INFO: Cloning repository '$GIT_REPO' with revision '$GIT_REVISION' from URL '$GIT_URL'"
             git clone "${GIT_URL}" .
             git checkout "${GIT_REVISION}"
         else
-            echo -e "INFO: Cloning repository 'redhat-appstudio/rhtap-cli' with revision 'main'"
-            git clone https://github.com/redhat-appstudio/rhtap-cli.git .
+            echo -e "INFO: Cloning repository 'redhat-appstudio/tssc-cli' with revision 'main'"
+            git clone https://github.com/redhat-appstudio/tssc-cli.git .
         fi
 
         # Generate the .env file for tssc installation based on the configuration given in the rhads-config

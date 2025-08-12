@@ -1,10 +1,3 @@
-PostgreSQL Clusters:
-{{- range $k, $v := include "infrastructure.postgresClusters.enabled" . | fromYaml }}
-  - Namespace: {{ $v.namespace }}
-    Name: {{ $k }}
-    Version: {{ $v.postgresVersion }}
-{{- end }}
-
 PostgreSQL Services:
 {{- with $pgsql := .Values.infrastructure.pgsqlService }}
 {{- range $inst := $pgsql.instances }}

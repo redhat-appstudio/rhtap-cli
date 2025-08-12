@@ -90,10 +90,9 @@ infrastructure:
       - name: tpa
         enabled: {{ $tpa.Enabled }}
         namespace: {{ $tpa.Namespace }}
-  postgresClusters:
-    keycloak:
-      enabled: {{ $keycloak.Enabled }}
-      namespace: {{ $keycloak.Namespace }}
+      - name: keycloak
+        enabled: {{ $keycloak.Enabled }}
+        namespace: {{ $keycloak.Namespace }}
   openShiftPipelines:
     enabled: {{ $pipelines.Enabled }}
     namespace: {{ $pipelinesNamespace }}
@@ -112,9 +111,9 @@ backingServices:
     namespace: {{ $keycloak.Namespace }}
     instances: 1
     database:
-      host: keycloak-primary
+      host: keycloak-pgsql
       name: keycloak
-      secretName: keycloak-pguser-keycloak
+      secretName: keycloak-pgsql-user
     route:
       host: {{ $keycloakRouteHost }}
       tls:

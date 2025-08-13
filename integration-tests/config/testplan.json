@@ -16,13 +16,6 @@
         "registry": "artifactory",
         "tpa": "local",
         "acs": "local"
-      },
-      {
-        "git": "gitlab",
-        "ci": "gitlabci",
-        "registry": "nexus",
-        "tpa": "local",
-        "acs": "local"
       }
     ],
     "tests": [

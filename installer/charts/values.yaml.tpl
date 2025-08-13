@@ -51,9 +51,6 @@ openshift:
 
 
 subscriptions:
-  crunchyData:
-    enabled: {{ or $tpa.Enabled $rhdh.Enabled }}
-    managed: {{ or (and $tpa.Enabled $tpa.Properties.manageSubscription ) (and $rhdh.Enabled $rhdh.Properties.manageSubscription) }}
   openshiftGitOps:
     enabled: {{ $gitops.Enabled }}
     managed: {{ and $gitops.Enabled $gitops.Properties.manageSubscription }}

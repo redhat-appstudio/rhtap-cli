@@ -4,3 +4,14 @@ PostgreSQL Clusters:
     Name: {{ $k }}
     Version: {{ $v.postgresVersion }}
 {{- end }}
+
+PostgreSQL Services:
+{{- with $pgsql := .Values.infrastructure.pgsqlService }}
+{{- range $inst := $pgsql.instances }}
+{{- if $inst.enabled }}
+  - Namespace: {{ $inst.namespace }}
+    Name: {{$inst.name }}
+    Image: {{ $pgsql.image.name }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -31,29 +31,6 @@
 {{- end }}
 {{- end }}
 {{- end }}
-{{- range $k, $v := include "infrastructure.postgresClusters.enabled" . | fromYaml }}
-    - name: {{ printf "postgrescluster-%s-test" $k }}
-      image: registry.redhat.io/openshift4/ose-tools-rhel9
-      env:
-        - name: NAMESPACE
-          value: {{ $v.namespace }}
-        - name: RESOURCE_TYPE
-          value: "statefulset"
-      command:
-        - /scripts/test-rollout-status.sh
-      args:
-        - {{
-          printf "%s,%s=%s"
-            "postgres-operator.crunchydata.com/data=pgbackrest"
-            "postgres-operator.crunchydata.com/cluster"
-            $k | quote
-        }}
-      volumeMounts:
-        - name: scripts
-          mountPath: /scripts
-      securityContext:
-        allowPrivilegeEscalation: false
-{{- end }}
 {{- $osp := .Values.infrastructure.openShiftPipelines }}
 {{- if $osp.enabled }}
     #

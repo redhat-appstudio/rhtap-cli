@@ -11,16 +11,6 @@ tssc:
       # Enables installer verbose logging messages for troubleshooting issues.
       debug: false
   products:
-    # Keycloak is an open-source identity and access management solution that
-    # simplifies adding authentication and securing services for applications,
-    # offering features like Single Sign-On (SSO), user federation with external
-    # identity providers (IdPs) like GitHub and more. Trusted Profile Analyzer
-    # (TPA) depends on Keycloak for authentication and authorization.
-    - name: Keycloak
-      enabled: &tpaEnabled true
-      namespace: tssc-keycloak
-      properties:
-        manageSubscription: true
     # Red Hat Advanced Cluster Security (ACS) for OpenShift is a comprehensive
     # security platform that protects cloud-native applications across the entire
     # container lifecycle -- from build and deployment to runtime -- by providing
@@ -65,7 +55,7 @@ tssc:
     # Vulnerability Exploitability eXchange (VEX), and Common Vulnerabilities and
     # Exposures (CVE) to assess their risk profile.
     - name: Trusted Profile Analyzer
-      enabled: *tpaEnabled
+      enabled: true
       namespace: tssc-tpa
       properties:
         manageSubscription: true

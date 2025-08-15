@@ -1,7 +1,6 @@
 {{- $crc := required "CRC settings" .Installer.Settings.crc -}}
 {{- $tas := required "TAS settings" .Installer.Products.Trusted_Artifact_Signer -}}
 {{- $tpa := required "TPA settings" .Installer.Products.Trusted_Profile_Analyzer -}}
-{{- $keycloak := required "Keycloak settings" .Installer.Products.Keycloak -}}
 {{- $acs := required "Red Hat ACS settings" .Installer.Products.Advanced_Cluster_Security -}}
 {{- $gitops := required "GitOps settings" .Installer.Products.OpenShift_GitOps -}}
 {{- $pipelines := required "Pipelines settings" .Installer.Products.OpenShift_Pipelines -}}
@@ -10,6 +9,8 @@
 {{- $ingressDomain := required "OpenShift ingress domain" .OpenShift.Ingress.Domain -}}
 {{- $ingressRouterCA := required "OpenShift RouterCA" .OpenShift.Ingress.RouterCA -}}
 {{- $openshiftMinorVersion := required "OpenShift Version" .OpenShift.MinorVersion -}}
+{{- $keycloakEnabled := or $tpa.Enabled $tas.Enabled }}
+{{- $keycloakNamespace := "tssc-keycloak" -}}
 ---
 debug:
   ci: {{ dig "ci" "debug" false .Installer.Settings }}
@@ -20,11 +21,9 @@ debug:
 
 openshift:
   projects:
-{{- if $keycloak.Enabled }}
-    - {{ $keycloak.Namespace }}
-    {{- if $keycloak.Properties.manageSubscription }}
+{{- if $keycloakEnabled }}
+    - {{ $keycloakNamespace }}
     - rhbk-operator
-    {{- end }}
 {{- end }}
 {{- if $acs.Enabled }}
     - {{ $acs.Namespace }}
@@ -57,11 +56,11 @@ subscriptions:
     config:
       argoCDClusterNamespace: {{ $gitops.Namespace }}
   openshiftKeycloak:
-    enabled: {{ $keycloak.Enabled }}
-    managed: {{ and $keycloak.Enabled $keycloak.Properties.manageSubscription }}
+    enabled: {{ $keycloakEnabled }}
+    managed: {{ $keycloakEnabled }}
     operatorGroup:
       targetNamespaces:
-        - {{ default "empty" $keycloak.Namespace }}
+        - {{ default "empty" $keycloakNamespace }}
   openshiftPipelines:
     enabled: {{ $pipelines.Enabled }}
     managed: {{ and $pipelines.Enabled $pipelines.Properties.manageSubscription }}
@@ -88,8 +87,8 @@ infrastructure:
         enabled: {{ $tpa.Enabled }}
         namespace: {{ $tpa.Namespace }}
       - name: keycloak
-        enabled: {{ $keycloak.Enabled }}
-        namespace: {{ $keycloak.Namespace }}
+        enabled: {{ $keycloakEnabled }}
+        namespace: {{ $keycloakNamespace }}
   openShiftPipelines:
     enabled: {{ $pipelines.Enabled }}
     namespace: {{ $pipelinesNamespace }}
@@ -100,12 +99,11 @@ infrastructure:
 
 {{- $keycloakRouteTLSSecretName := "keycloak-tls" }}
 {{- $keycloakRouteHost := printf "sso.%s" $ingressDomain }}
-{{- $argoCDName := printf "%s-gitops" .Installer.Namespace }}
 
 backingServices:
   keycloak:
-    enabled: {{ $keycloak.Enabled }}
-    namespace: {{ $keycloak.Namespace }}
+    enabled: {{ $keycloakEnabled }}
+    namespace: {{ $keycloakNamespace }}
     instances: 1
     database:
       host: keycloak-pgsql
@@ -124,13 +122,6 @@ backingServices:
     service:
       annotations:
         service.beta.openshift.io/serving-cert-secret-name: {{ $keycloakRouteTLSSecretName }}
-  argoCD:
-    enabled: {{ $gitops.Enabled }}
-    name: {{ $argoCDName }}
-    namespace: {{ $gitops.Namespace }}
-    integrationSecret:
-      namespace: {{ .Installer.Namespace }}
-    ingressDomain: {{ $ingressDomain }}
 
 #
 # tssc-acs
@@ -153,6 +144,9 @@ acsTest: *acs
 #
 # tssc-app-namespaces
 #
+
+{{- $argoCDName := printf "%s-gitops" .Installer.Namespace }}
+
 appNamespaces:
   argoCD:
     name: {{ $argoCDName }}
@@ -255,10 +249,10 @@ developerHub:
 {{- $tpaOIDCIssuerURL := printf "%s://%s/%s" $protocol $keycloakRouteHost $tpaRealmPath }}
 
 trustedProfileAnalyzerRealm:
-  enabled: {{ $keycloak.Enabled }}
+  enabled: {{ $keycloakEnabled }}
   appDomain: "{{ $tpaAppDomain }}"
   keycloakCR:
-    namespace: {{ $keycloak.Namespace }}
+    namespace: {{ $keycloakNamespace }}
     name: keycloak
   oidcIssuerURL: {{ $tpaOIDCIssuerURL }}
   oidcClientsSecretName: {{ $tpaOIDCClientsSecretName }}
@@ -377,9 +371,9 @@ trustedArtifactSigner:
   enabled: {{ $tas.Enabled }}
   ingressDomain: "{{ $ingressDomain }}"
   keycloakRealmImport:
-    enabled: {{ $keycloak.Enabled }}
+    enabled: {{ $keycloakEnabled }}
     keycloakCR:
-      namespace: {{ $keycloak.Namespace }}
+      namespace: {{ $keycloakNamespace }}
       name: keycloak
   secureSign:
     enabled: {{ $tas.Enabled }}

@@ -1,8 +1,7 @@
-{{- if .Values.backingServices.keycloak -}}
+{{- if .Values.backingServices.keycloak.enabled -}}
 ---
 {{- include "common.test" . }}
   containers:
-{{- if .Values.backingServices.keycloak.enabled }}
     #
     # Tests the Keycloak rollout status.
     #
@@ -27,7 +26,4 @@
           mountPath: /scripts
       securityContext:
         allowPrivilegeEscalation: false
-{{- else }}
-{{- include "common.noOp" . | nindent 4 }}
-{{- end }}
 {{- end }}

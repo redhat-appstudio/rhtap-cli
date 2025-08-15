@@ -182,12 +182,12 @@ bitbucket_integration() {
 # Currently, the tssc `config` subcommand lacks the ability to modify property values stored in cluster
 disable_tpa() {
   # if "remote" is in tpa_config array, then disable TPA installation
-  # Update the YAML anchor &tpaEnabled from true to false (line 7 in config.yaml)
+  # Update the enabled flag from true to false (line 7 in config.yaml)
   if [[ " ${tpa_config[*]} " =~ " remote " ]]; then
     echo "[INFO] Disable TPA installation in TSSC configuration"
     yq -i '.tssc.products[] |= select(.name == "Trusted Profile Analyzer").enabled = false' "${config_file}"
   else
-    echo "[INFO] TPA is set to local, keeping &tpaEnabled anchor as true"
+    echo "[INFO] TPA is set to local, keeping enabled flag as true"
   fi
 }
 

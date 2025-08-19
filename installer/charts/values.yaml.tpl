@@ -103,34 +103,33 @@ infrastructure:
     namespace: {{ $pipelinesNamespace }}
 
 #
-# tssc-backing-services
+# tssc-iam
 #
 
 {{- $keycloakRouteTLSSecretName := "keycloak-tls" }}
 {{- $keycloakRouteHost := printf "sso.%s" $ingressDomain }}
 
-backingServices:
-  keycloak:
-    enabled: {{ $keycloakEnabled }}
-    namespace: {{ $keycloakNamespace }}
-    instances: 1
-    database:
-      host: keycloak-pgsql
-      name: keycloak
-      secretName: keycloak-pgsql-user
-    route:
-      host: {{ $keycloakRouteHost }}
-      tls:
-        enabled: {{ not $crc }}
-        secretName: {{ $keycloakRouteTLSSecretName }}
-        termination: reencrypt
+iam:
+  enabled: {{ $keycloakEnabled }}
+  namespace: {{ $keycloakNamespace }}
+  instances: 1
+  database:
+    host: keycloak-pgsql
+    name: keycloak
+    secretName: keycloak-pgsql-user
+  route:
+    host: {{ $keycloakRouteHost }}
+    tls:
+      enabled: {{ not $crc }}
+      secretName: {{ $keycloakRouteTLSSecretName }}
+      termination: reencrypt
 {{- if $crc }}
-      annotations:
-        route.openshift.io/termination: reencrypt
+    annotations:
+      route.openshift.io/termination: reencrypt
 {{- end }}
-    service:
-      annotations:
-        service.beta.openshift.io/serving-cert-secret-name: {{ $keycloakRouteTLSSecretName }}
+  service:
+    annotations:
+      service.beta.openshift.io/serving-cert-secret-name: {{ $keycloakRouteTLSSecretName }}
 
 #
 # tssc-acs

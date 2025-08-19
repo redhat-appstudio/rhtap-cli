@@ -1,6 +1,6 @@
-{{- if .Values.backingServices.keycloak.enabled }}
-  {{- $keycloakName := include "backingServices.keycloak.name" . -}}
-  {{- $keycloak := .Values.backingServices.keycloak -}}
+{{- if .Values.iam.enabled }}
+  {{- $keycloakName := include "iam.name" . -}}
+  {{- $keycloak := .Values.iam -}}
 ---
 apiVersion: k8s.keycloak.org/v2alpha1
 kind: Keycloak

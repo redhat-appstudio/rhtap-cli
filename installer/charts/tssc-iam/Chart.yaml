@@ -1,7 +1,7 @@
 ---
 apiVersion: v2
-name: tssc-backing-services
-description: TSSC Backing Services
+name: tssc-iam
+description: TSSC IAM
 type: application
 version: "1.6.0"
 annotations:

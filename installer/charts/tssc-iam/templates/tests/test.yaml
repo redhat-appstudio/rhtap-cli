@@ -1,12 +1,12 @@
-{{- if .Values.backingServices.keycloak.enabled -}}
+{{- if .Values.iam.enabled -}}
 ---
 {{- include "common.test" . }}
   containers:
     #
     # Tests the Keycloak rollout status.
     #
-  {{- $keycloak := .Values.backingServices.keycloak }}
-  {{- $keycloakName := include "backingServices.keycloak.name" . }}
+  {{- $keycloak := .Values.iam }}
+  {{- $keycloakName := include "iam.name" . }}
     - name: {{ printf "keycloak-%s" $keycloakName }}
       image: registry.redhat.io/openshift4/ose-tools-rhel9
       env:

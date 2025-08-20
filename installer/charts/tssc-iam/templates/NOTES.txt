@@ -1,6 +1,6 @@
-{{- if .Values.backingServices.keycloak.enabled }}
-  {{- $k := .Values.backingServices.keycloak }}
-  {{- $keycloakName := include "backingServices.keycloak.name" . -}}
+{{- if .Values.iam.enabled }}
+  {{- $k := .Values.iam }}
+  {{- $keycloakName := include "iam.name" . -}}
 Keycloak:
   - Name: {{ $keycloakName }}
     Namespace: {{ $k.namespace }}

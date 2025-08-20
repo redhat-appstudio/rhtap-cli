@@ -1,4 +1,4 @@
-# Backing Services
+# IAM
 
 This chart deploys services needed by TSSC products.
 

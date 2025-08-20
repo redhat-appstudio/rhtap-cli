@@ -1,6 +1,6 @@
-{{- if .Values.backingServices.keycloak.enabled }}
-{{- $keycloakName := include "backingServices.keycloak.name" . -}}
-{{- $k := .Values.backingServices.keycloak -}}
+{{- if .Values.iam.enabled }}
+{{- $keycloakName := include "iam.name" . -}}
+{{- $k := .Values.iam -}}
 ---
 kind: Route
 apiVersion: route.openshift.io/v1

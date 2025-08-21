@@ -296,7 +296,7 @@ github.com/opencontainers/go-digest
 ## explicit; go 1.18
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
-# github.com/openshift/api v0.0.0-20250819183553-4bbb180684bc
+# github.com/openshift/api v0.0.0-20250821122144-58dfa6dd85fa
 ## explicit; go 1.24.0
 github.com/openshift/api/config/v1
 github.com/openshift/api/config/v1alpha1
@@ -985,7 +985,7 @@ k8s.io/kubectl/pkg/util/openapi/testing
 k8s.io/kubectl/pkg/util/templates
 k8s.io/kubectl/pkg/util/term
 k8s.io/kubectl/pkg/validation
-# k8s.io/utils v0.0.0-20250604170112-4c0f3b243397
+# k8s.io/utils v0.0.0-20250820121507-0af2bda4dd1d
 ## explicit; go 1.18
 k8s.io/utils/buffer
 k8s.io/utils/clock

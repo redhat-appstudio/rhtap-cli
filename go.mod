@@ -16,7 +16,7 @@ require (
 	github.com/quay/claircore v1.5.39
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.7
-	gitlab.com/gitlab-org/api/client-go v0.141.1
+	gitlab.com/gitlab-org/api/client-go v0.141.2
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.18.5
 	k8s.io/api v0.33.4
@@ -139,7 +139,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20250818200422-3122310a409c // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250818200422-3122310a409c // indirect
 	google.golang.org/grpc v1.75.0 // indirect
-	google.golang.org/protobuf v1.36.7 // indirect
+	google.golang.org/protobuf v1.36.8 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/apiextensions-apiserver v0.33.3 // indirect

@@ -386,7 +386,7 @@ github.com/xlzd/gotp
 # github.com/yosida95/uritemplate/v3 v3.0.2
 ## explicit; go 1.14
 github.com/yosida95/uritemplate/v3
-# gitlab.com/gitlab-org/api/client-go v0.141.1
+# gitlab.com/gitlab-org/api/client-go v0.141.2
 ## explicit; go 1.23.0
 gitlab.com/gitlab-org/api/client-go
 # go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0
@@ -497,8 +497,8 @@ google.golang.org/grpc/internal
 google.golang.org/grpc/internal/status
 google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/status
-# google.golang.org/protobuf v1.36.7
-## explicit; go 1.22
+# google.golang.org/protobuf v1.36.8
+## explicit; go 1.23
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/descfmt

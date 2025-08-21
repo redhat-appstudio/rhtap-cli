@@ -124,7 +124,7 @@ func (g *GitHubApp) oAuth2Workflow(
 			// Sanitize URL
 			u, _ := url.Parse(*result.appConfig.HTMLURL)
 			b, _ := u.MarshalBinary()
-			fmt.Fprintf(w, gitHubAppSuccessfullyCreatedTmpl, b)
+			fmt.Fprintf(w, gitHubAppSuccessfullyCreatedTmpl, string(b))
 
 			oAppConfigCh <- result
 		} else {

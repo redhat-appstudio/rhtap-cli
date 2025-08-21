@@ -97,15 +97,13 @@ update_charts() {
     yq -i '.appVersion = strenv(VERSION_XY)' "installer/charts/tssc-acs-test/Chart.yaml"
     get_version "developerHub"
     yq -i '.appVersion = strenv(VERSION_XY)' "installer/charts/tssc-dh/Chart.yaml"
-    get_version "quay"
-    yq -i '.appVersion = strenv(VERSION_XY)' "installer/charts/tssc-quay/Chart.yaml"
 }
 
 update_template() {
     CONFIG="installer/config.yaml"
     get_version "developerHub"
     CATALOG_URL="https://github.com/redhat-appstudio/tssc-sample-templates/blob/release-v${VERSION_XY}.x/all.yaml" \
-    yq -i '.tssc.products.developerHub.properties.catalogURL = strenv(CATALOG_URL)' "$CONFIG"
+    yq -i '(.tssc.products[] | select( .name == "Developer Hub") | .properties.catalogURL) = strenv(CATALOG_URL)' "$CONFIG"
 }
 
 commit_freeze() {

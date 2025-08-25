@@ -3,10 +3,6 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: e2e-main-pipeline
-  namespace: rhtap-shared-team-tenant
-  labels:
-    appstudio.openshift.io/component: rhtap-cli
-    appstudio.openshift.io/application: rhtap-cli
 spec:
   params:
     - name: SNAPSHOT
@@ -124,6 +120,7 @@ spec:
                     fieldPath: metadata.namespace
             script: |
               #!/usr/bin/env bash
+              set -x
 
               # Waits for condition for all started pipelines
               function waitFor() {
@@ -157,7 +154,7 @@ spec:
               GIT_REPO="$(jq -r '.git.repo // empty' <<< $JOB_SPEC)"
               KONFLUX_URL="https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com"
 
-              if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
+              if [[ "${GIT_REPO}" = "tssc-cli" ]]; then
                 REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
                 BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
               else

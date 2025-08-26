@@ -35,7 +35,7 @@ spec:
         secretName: rhtap-cli-install
   steps:
     - name: install
-      image: quay.io/redhat-user-workloads/rhtap-shared-team-tenant/rhtap-e2e/rhtap-e2e:56a53cd5d68adf7e7b0dccdc6c483a866d457cef
+      image: quay.io/redhat-user-workloads/rhtap-shared-team-tenant/rhtap-e2e:latest
       env:
         - name: JOB_SPEC
           value: "$(params.job-spec)"
@@ -60,7 +60,7 @@ spec:
         # Clone the rhtap-cli repository
         cd "$(mktemp -d)"
 
-        if [[ "${GIT_REPO}" = "rhtap-cli" ]]; then
+        if [[ "${GIT_REPO}" = "tssc-cli" ]]; then
             GIT_URL="${GIT_URL:-$(echo "$JOB_SPEC" | jq -r '.git.source_repo_url')}"
             GIT_REVISION="${GIT_REVISION:-$(echo "$JOB_SPEC" | jq -r '.git.commit_sha')}"
 
@@ -68,8 +68,8 @@ spec:
             git clone "${GIT_URL}" .
             git checkout "${GIT_REVISION}"
         else
-            echo -e "INFO: Cloning repository 'redhat-appstudio/rhtap-cli' with revision 'main'"
-            git clone https://github.com/redhat-appstudio/rhtap-cli.git .
+            echo -e "INFO: Cloning repository 'redhat-appstudio/tssc-cli' with revision 'main'"
+            git clone https://github.com/redhat-appstudio/tssc-cli.git .
         fi
 
         # Generate the .env file for tssc installation based on the configuration given in the pict file

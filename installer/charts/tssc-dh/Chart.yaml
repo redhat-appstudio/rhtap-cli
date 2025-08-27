@@ -2,7 +2,7 @@ apiVersion: v2
 name: tssc-dh
 description: Red Hat Developer Hub
 type: application
-version: "1.6.0"
+version: "1.7.0"
 appVersion: "1.7"
 annotations:
   tssc.redhat-appstudio.github.com/product-name: Developer Hub

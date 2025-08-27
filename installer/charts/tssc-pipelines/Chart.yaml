@@ -3,7 +3,7 @@ apiVersion: v2
 name: tssc-pipelines
 description: TSSC OpenShift Pipelines
 type: application
-version: "1.6.0"
+version: "1.7.0"
 appVersion: "1.19"
 annotations:
   tssc.redhat-appstudio.github.com/product-name: OpenShift Pipelines

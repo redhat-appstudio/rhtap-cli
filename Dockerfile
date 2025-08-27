@@ -12,10 +12,12 @@ COPY installer/ ./installer/
 
 COPY cmd/ ./cmd/
 COPY pkg/ ./pkg/
+COPY test/ ./test/
 COPY vendor/ ./vendor/
 
 COPY go.mod go.sum Makefile ./
 
+RUN make test
 RUN make GOFLAGS='-buildvcs=false'
 
 #

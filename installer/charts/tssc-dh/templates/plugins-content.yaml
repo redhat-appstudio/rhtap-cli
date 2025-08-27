@@ -97,11 +97,11 @@ plugins:
     package: ./dynamic-plugins/dist/backstage-community-plugin-jenkins-backend-dynamic
 {{- end }}
   - disabled: false
-    package: oci://registry.redhat.io/rhtap-backstage-plugins/rhtap-backstage-plugins-artifacts:1.5.0!rhtap-plugins-backstage-community-plugin-multi-source-security-viewer-dynamic
+    package: oci://quay.io/redhat-tssc/backstage-plugins:1.7.0!tssc-plugins-backstage-community-plugin-multi-source-security-viewer-dynamic
     pluginConfig:
       dynamicPlugins:
         frontend:
-          rhtap-plugins.backstage-community-plugin-multi-source-security-viewer:
+          tssc-plugins.backstage-community-plugin-multi-source-security-viewer:
             mountPoints:
               - config:
                   layout:

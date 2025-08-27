@@ -1,0 +1,40 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: tssc-unittest
+spec:
+  params:
+    - name: SOURCE_ARTIFACT
+      description: The Trusted Artifact URI pointing to the artifact with
+        the application source code.
+      type: string
+  steps:
+    - name: run-unittests
+      image: registry.access.redhat.com/ubi9/go-toolset:1.24.6-1755755147
+      workingDir: /var/workdir
+      env:
+        - name: SOURCE_ARTIFACT
+          value: "$(params.SOURCE_ARTIFACT)"
+      script: |
+        #!/bin/bash
+        set -euo pipefail
+
+        echo "[$(date --utc -Ins)] Run unit tests"
+
+        echo "SOURCE_ARTIFACT=$SOURCE_ARTIFACT"
+        echo "PWD=$PWD"
+        echo "ls -la"
+        ls
+        echo "find"
+        find . -name Makefile
+        echo "make test"
+        make test
+        echo "[$(date --utc -Ins)] End unit tests"
+  stepTemplate:
+    volumeMounts:
+      - mountPath: /var/workdir
+        name: workdir
+  volumes:
+    - name: workdir
+      emptyDir: {}

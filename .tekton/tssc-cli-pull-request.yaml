@@ -200,6 +200,26 @@ spec:
         workspace: git-auth
       - name: netrc
         workspace: netrc
+    - name: run-unittests
+      params:
+      - name: SOURCE_ARTIFACT
+        value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
+      runAfter:
+      - prefetch-dependencies
+      taskRef:
+        params:
+          - name: url
+            value: $(params.git-url)
+          - name: revision
+            value: $(params.revision)
+          - name: pathInRepo
+            value: integration-tests/tasks/tssc-unittest.yaml
+        resolver: git
+      when:
+      - input: $(tasks.init.results.build)
+        operator: in
+        values:
+        - "true"
     - name: build-container
       params:
       - name: IMAGE
@@ -228,7 +248,7 @@ spec:
       - name: CACHI2_ARTIFACT
         value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
       runAfter:
-      - prefetch-dependencies
+      - run-unittests
       taskRef:
         params:
         - name: name

@@ -111,11 +111,7 @@ spec:
         resolver: git
         params:
           - name: url
-<<<<<<< HEAD:integration-tests/pipelines/tssc-cli-e2e.yaml
-            value: https://github.com/redhat-appstudio/tssc-cli.git
-=======
-            value: https://github.com/jkopriva/rhtap-cli.git
->>>>>>> 031ae3a8 (patch for registry route):integration-tests/pipelines/rhtap-cli-e2e.yaml
+            value: https://github.com/jkopriva/tssc-cli.git
           - name: revision
             value: RHTAP-4516
           - name: pathInRepo

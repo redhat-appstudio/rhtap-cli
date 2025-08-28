@@ -528,7 +528,7 @@ spec:
         params:
           - name: ADDITIONAL_TAGS
             value:
-              - latest
+              - release-1.7
           - name: IMAGE_URL
             value: $(tasks.build-image-index.results.IMAGE_URL)
           - name: IMAGE_DIGEST

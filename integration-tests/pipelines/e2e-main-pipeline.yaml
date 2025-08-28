@@ -153,6 +153,7 @@ spec:
               if [[ "${GIT_REPO}" = "tssc-cli" ]]; then
                 REPO_ORG=$(jq -r '.git.source_repo_org' <<< $JOB_SPEC)
                 BRANCH=$(jq -r '.git.source_repo_branch' <<< $JOB_SPEC)
+                SOURCE_REPO_URL=$(jq -r '.git.source_repo_url' <<< $JOB_SPEC)
               else
                 REPO_ORG="redhat-appstudio"
                 BRANCH="main"
@@ -172,6 +173,8 @@ spec:
                   --param cloud-credential-key="$(params.cloud-credential-key)" \
                   --param machine-type="$(params.ocp-instance-type)" \
                   --param replicas="$(params.ocp-replicas)" \
+                  --param tssc-cli-version="$BRANCH" \
+                  --param tssc-cli-url="$SOURCE_REPO_URL" \
                   $(if [[ "${tssc_image}" != "" ]]; then echo "--param tssc-image=${tssc_image}"; fi) \
                   $(if [[ "${tssc_test_image}" != "" ]]; then echo "--param tssc-test-image=${tssc_test_image}"; fi) \
                   --use-param-defaults \

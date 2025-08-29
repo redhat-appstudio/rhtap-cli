@@ -115,9 +115,9 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/xinredhat/tssc-cli.git
+            value: https://github.com/redhat-appstudio/rhtap-cli.git
           - name: revision
-            value: update_ci_release1.6
+            value: release-1.6
           - name: pathInRepo
             value: integration-tests/tasks/rhtap-install.yaml
       params:

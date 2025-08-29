@@ -147,9 +147,9 @@ spec:
         resolver: git
         params:
           - name: url
-            value: https://github.com/redhat-appstudio/tssc-test.git
+            value: https://github.com/jsmid1/tssc-test.git
           - name: revision
-            value: main
+            value: RHTAP-4916
           - name: pathInRepo
             value: integration-tests/tasks/tssc-e2e.yaml
       params:
